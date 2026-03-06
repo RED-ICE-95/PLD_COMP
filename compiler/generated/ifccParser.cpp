@@ -56,44 +56,45 @@ void ifccParserInitialize() {
     },
     std::vector<std::string>{
       "", "'int'", "'main'", "'('", "')'", "'{'", "'}'", "';'", "'='", "','", 
-      "'|'", "'^'", "'&'", "'=='", "'!='", "'<'", "'>'", "'+'", "'-'", "'*'", 
-      "'/'", "'%'", "'!'", "'return'"
+      "'-'", "'!'", "'*'", "'/'", "'%'", "'+'", "'<'", "'>'", "'=='", "'!='", 
+      "'&'", "'^'", "'|'", "'return'"
     },
     std::vector<std::string>{
       "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 
-      "", "", "", "", "", "", "RETURN", "CONST", "ID", "COMMENT", "DIRECTIVE", 
-      "WS"
+      "", "", "", "", "", "", "RETURN", "CONST", "CHAR_CONST", "ID", "COMMENT", 
+      "LINE_COMMENT", "DIRECTIVE", "WS"
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,28,93,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,1,0,
+  	4,1,30,94,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,1,0,
   	1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,5,1,24,8,1,10,1,12,1,27,9,1,1,1,1,1,1,
   	2,1,2,1,2,3,2,34,8,2,1,2,1,2,1,3,1,3,1,3,1,4,1,4,1,4,1,4,1,5,1,5,1,5,
   	1,5,5,5,49,8,5,10,5,12,5,52,9,5,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,
-  	6,1,6,3,6,65,8,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,
-  	1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,5,6,88,8,6,10,6,12,6,91,9,6,1,6,0,1,12,
-  	7,0,2,4,6,8,10,12,0,4,1,0,13,14,1,0,15,16,1,0,17,18,1,0,19,21,100,0,14,
-  	1,0,0,0,2,17,1,0,0,0,4,33,1,0,0,0,6,37,1,0,0,0,8,40,1,0,0,0,10,44,1,0,
-  	0,0,12,64,1,0,0,0,14,15,3,2,1,0,15,16,5,0,0,1,16,1,1,0,0,0,17,18,5,1,
-  	0,0,18,19,5,2,0,0,19,20,5,3,0,0,20,21,5,4,0,0,21,25,5,5,0,0,22,24,3,4,
-  	2,0,23,22,1,0,0,0,24,27,1,0,0,0,25,23,1,0,0,0,25,26,1,0,0,0,26,28,1,0,
-  	0,0,27,25,1,0,0,0,28,29,5,6,0,0,29,3,1,0,0,0,30,34,3,6,3,0,31,34,3,8,
-  	4,0,32,34,3,10,5,0,33,30,1,0,0,0,33,31,1,0,0,0,33,32,1,0,0,0,34,35,1,
-  	0,0,0,35,36,5,7,0,0,36,5,1,0,0,0,37,38,5,23,0,0,38,39,3,12,6,0,39,7,1,
-  	0,0,0,40,41,5,25,0,0,41,42,5,8,0,0,42,43,3,12,6,0,43,9,1,0,0,0,44,45,
-  	5,1,0,0,45,50,5,25,0,0,46,47,5,9,0,0,47,49,5,25,0,0,48,46,1,0,0,0,49,
-  	52,1,0,0,0,50,48,1,0,0,0,50,51,1,0,0,0,51,11,1,0,0,0,52,50,1,0,0,0,53,
-  	54,6,6,-1,0,54,55,5,18,0,0,55,65,3,12,6,5,56,57,5,22,0,0,57,65,3,12,6,
-  	4,58,59,5,3,0,0,59,60,3,12,6,0,60,61,5,4,0,0,61,65,1,0,0,0,62,65,5,24,
-  	0,0,63,65,5,25,0,0,64,53,1,0,0,0,64,56,1,0,0,0,64,58,1,0,0,0,64,62,1,
-  	0,0,0,64,63,1,0,0,0,65,89,1,0,0,0,66,67,10,12,0,0,67,68,5,10,0,0,68,88,
-  	3,12,6,13,69,70,10,11,0,0,70,71,5,11,0,0,71,88,3,12,6,12,72,73,10,10,
-  	0,0,73,74,5,12,0,0,74,88,3,12,6,11,75,76,10,9,0,0,76,77,7,0,0,0,77,88,
-  	3,12,6,10,78,79,10,8,0,0,79,80,7,1,0,0,80,88,3,12,6,9,81,82,10,7,0,0,
-  	82,83,7,2,0,0,83,88,3,12,6,8,84,85,10,6,0,0,85,86,7,3,0,0,86,88,3,12,
-  	6,7,87,66,1,0,0,0,87,69,1,0,0,0,87,72,1,0,0,0,87,75,1,0,0,0,87,78,1,0,
-  	0,0,87,81,1,0,0,0,87,84,1,0,0,0,88,91,1,0,0,0,89,87,1,0,0,0,89,90,1,0,
-  	0,0,90,13,1,0,0,0,91,89,1,0,0,0,6,25,33,50,64,87,89
+  	6,1,6,1,6,3,6,66,8,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,
+  	1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,5,6,89,8,6,10,6,12,6,92,9,6,1,6,0,
+  	1,12,7,0,2,4,6,8,10,12,0,4,1,0,12,14,2,0,10,10,15,15,1,0,16,17,1,0,18,
+  	19,102,0,14,1,0,0,0,2,17,1,0,0,0,4,33,1,0,0,0,6,37,1,0,0,0,8,40,1,0,0,
+  	0,10,44,1,0,0,0,12,65,1,0,0,0,14,15,3,2,1,0,15,16,5,0,0,1,16,1,1,0,0,
+  	0,17,18,5,1,0,0,18,19,5,2,0,0,19,20,5,3,0,0,20,21,5,4,0,0,21,25,5,5,0,
+  	0,22,24,3,4,2,0,23,22,1,0,0,0,24,27,1,0,0,0,25,23,1,0,0,0,25,26,1,0,0,
+  	0,26,28,1,0,0,0,27,25,1,0,0,0,28,29,5,6,0,0,29,3,1,0,0,0,30,34,3,6,3,
+  	0,31,34,3,8,4,0,32,34,3,10,5,0,33,30,1,0,0,0,33,31,1,0,0,0,33,32,1,0,
+  	0,0,34,35,1,0,0,0,35,36,5,7,0,0,36,5,1,0,0,0,37,38,5,23,0,0,38,39,3,12,
+  	6,0,39,7,1,0,0,0,40,41,5,26,0,0,41,42,5,8,0,0,42,43,3,12,6,0,43,9,1,0,
+  	0,0,44,45,5,1,0,0,45,50,5,26,0,0,46,47,5,9,0,0,47,49,5,26,0,0,48,46,1,
+  	0,0,0,49,52,1,0,0,0,50,48,1,0,0,0,50,51,1,0,0,0,51,11,1,0,0,0,52,50,1,
+  	0,0,0,53,54,6,6,-1,0,54,55,5,10,0,0,55,66,3,12,6,13,56,57,5,11,0,0,57,
+  	66,3,12,6,12,58,59,5,3,0,0,59,60,3,12,6,0,60,61,5,4,0,0,61,66,1,0,0,0,
+  	62,66,5,24,0,0,63,66,5,25,0,0,64,66,5,26,0,0,65,53,1,0,0,0,65,56,1,0,
+  	0,0,65,58,1,0,0,0,65,62,1,0,0,0,65,63,1,0,0,0,65,64,1,0,0,0,66,90,1,0,
+  	0,0,67,68,10,7,0,0,68,69,7,0,0,0,69,89,3,12,6,8,70,71,10,6,0,0,71,72,
+  	7,1,0,0,72,89,3,12,6,7,73,74,10,5,0,0,74,75,7,2,0,0,75,89,3,12,6,6,76,
+  	77,10,4,0,0,77,78,7,3,0,0,78,89,3,12,6,5,79,80,10,3,0,0,80,81,5,20,0,
+  	0,81,89,3,12,6,4,82,83,10,2,0,0,83,84,5,21,0,0,84,89,3,12,6,3,85,86,10,
+  	1,0,0,86,87,5,22,0,0,87,89,3,12,6,2,88,67,1,0,0,0,88,70,1,0,0,0,88,73,
+  	1,0,0,0,88,76,1,0,0,0,88,79,1,0,0,0,88,82,1,0,0,0,88,85,1,0,0,0,89,92,
+  	1,0,0,0,90,88,1,0,0,0,90,91,1,0,0,0,91,13,1,0,0,0,92,90,1,0,0,0,6,25,
+  	33,50,65,88,90
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -252,7 +253,7 @@ ifccParser::ProgContext* ifccParser::prog() {
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 41943042) != 0)) {
+      ((1ULL << _la) & 75497474) != 0)) {
       setState(22);
       stmt();
       setState(27);
@@ -548,6 +549,97 @@ void ifccParser::ExprContext::copyFrom(ExprContext *ctx) {
   ParserRuleContext::copyFrom(ctx);
 }
 
+//----------------- ExprUnaryNotContext ------------------------------------------------------------------
+
+ifccParser::ExprContext* ifccParser::ExprUnaryNotContext::expr() {
+  return getRuleContext<ifccParser::ExprContext>(0);
+}
+
+ifccParser::ExprUnaryNotContext::ExprUnaryNotContext(ExprContext *ctx) { copyFrom(ctx); }
+
+
+std::any ifccParser::ExprUnaryNotContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<ifccVisitor*>(visitor))
+    return parserVisitor->visitExprUnaryNot(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- ExprEqContext ------------------------------------------------------------------
+
+std::vector<ifccParser::ExprContext *> ifccParser::ExprEqContext::expr() {
+  return getRuleContexts<ifccParser::ExprContext>();
+}
+
+ifccParser::ExprContext* ifccParser::ExprEqContext::expr(size_t i) {
+  return getRuleContext<ifccParser::ExprContext>(i);
+}
+
+ifccParser::ExprEqContext::ExprEqContext(ExprContext *ctx) { copyFrom(ctx); }
+
+
+std::any ifccParser::ExprEqContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<ifccVisitor*>(visitor))
+    return parserVisitor->visitExprEq(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- ExprMultContext ------------------------------------------------------------------
+
+std::vector<ifccParser::ExprContext *> ifccParser::ExprMultContext::expr() {
+  return getRuleContexts<ifccParser::ExprContext>();
+}
+
+ifccParser::ExprContext* ifccParser::ExprMultContext::expr(size_t i) {
+  return getRuleContext<ifccParser::ExprContext>(i);
+}
+
+ifccParser::ExprMultContext::ExprMultContext(ExprContext *ctx) { copyFrom(ctx); }
+
+
+std::any ifccParser::ExprMultContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<ifccVisitor*>(visitor))
+    return parserVisitor->visitExprMult(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- ExprCmpContext ------------------------------------------------------------------
+
+std::vector<ifccParser::ExprContext *> ifccParser::ExprCmpContext::expr() {
+  return getRuleContexts<ifccParser::ExprContext>();
+}
+
+ifccParser::ExprContext* ifccParser::ExprCmpContext::expr(size_t i) {
+  return getRuleContext<ifccParser::ExprContext>(i);
+}
+
+ifccParser::ExprCmpContext::ExprCmpContext(ExprContext *ctx) { copyFrom(ctx); }
+
+
+std::any ifccParser::ExprCmpContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<ifccVisitor*>(visitor))
+    return parserVisitor->visitExprCmp(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- ExprBitAndContext ------------------------------------------------------------------
+
+std::vector<ifccParser::ExprContext *> ifccParser::ExprBitAndContext::expr() {
+  return getRuleContexts<ifccParser::ExprContext>();
+}
+
+ifccParser::ExprContext* ifccParser::ExprBitAndContext::expr(size_t i) {
+  return getRuleContext<ifccParser::ExprContext>(i);
+}
+
+ifccParser::ExprBitAndContext::ExprBitAndContext(ExprContext *ctx) { copyFrom(ctx); }
+
+
+std::any ifccParser::ExprBitAndContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<ifccVisitor*>(visitor))
+    return parserVisitor->visitExprBitAnd(this);
+  else
+    return visitor->visitChildren(this);
+}
 //----------------- ExprUnaryMinusContext ------------------------------------------------------------------
 
 ifccParser::ExprContext* ifccParser::ExprUnaryMinusContext::expr() {
@@ -578,40 +670,6 @@ std::any ifccParser::ExprParenContext::accept(tree::ParseTreeVisitor *visitor) {
   else
     return visitor->visitChildren(this);
 }
-//----------------- ExprUnaryNotContext ------------------------------------------------------------------
-
-ifccParser::ExprContext* ifccParser::ExprUnaryNotContext::expr() {
-  return getRuleContext<ifccParser::ExprContext>(0);
-}
-
-ifccParser::ExprUnaryNotContext::ExprUnaryNotContext(ExprContext *ctx) { copyFrom(ctx); }
-
-
-std::any ifccParser::ExprUnaryNotContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<ifccVisitor*>(visitor))
-    return parserVisitor->visitExprUnaryNot(this);
-  else
-    return visitor->visitChildren(this);
-}
-//----------------- ExprBitXorContext ------------------------------------------------------------------
-
-std::vector<ifccParser::ExprContext *> ifccParser::ExprBitXorContext::expr() {
-  return getRuleContexts<ifccParser::ExprContext>();
-}
-
-ifccParser::ExprContext* ifccParser::ExprBitXorContext::expr(size_t i) {
-  return getRuleContext<ifccParser::ExprContext>(i);
-}
-
-ifccParser::ExprBitXorContext::ExprBitXorContext(ExprContext *ctx) { copyFrom(ctx); }
-
-
-std::any ifccParser::ExprBitXorContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<ifccVisitor*>(visitor))
-    return parserVisitor->visitExprBitXor(this);
-  else
-    return visitor->visitChildren(this);
-}
 //----------------- ExprAddContext ------------------------------------------------------------------
 
 std::vector<ifccParser::ExprContext *> ifccParser::ExprAddContext::expr() {
@@ -631,22 +689,22 @@ std::any ifccParser::ExprAddContext::accept(tree::ParseTreeVisitor *visitor) {
   else
     return visitor->visitChildren(this);
 }
-//----------------- ExprEqContext ------------------------------------------------------------------
+//----------------- ExprBitXorContext ------------------------------------------------------------------
 
-std::vector<ifccParser::ExprContext *> ifccParser::ExprEqContext::expr() {
+std::vector<ifccParser::ExprContext *> ifccParser::ExprBitXorContext::expr() {
   return getRuleContexts<ifccParser::ExprContext>();
 }
 
-ifccParser::ExprContext* ifccParser::ExprEqContext::expr(size_t i) {
+ifccParser::ExprContext* ifccParser::ExprBitXorContext::expr(size_t i) {
   return getRuleContext<ifccParser::ExprContext>(i);
 }
 
-ifccParser::ExprEqContext::ExprEqContext(ExprContext *ctx) { copyFrom(ctx); }
+ifccParser::ExprBitXorContext::ExprBitXorContext(ExprContext *ctx) { copyFrom(ctx); }
 
 
-std::any ifccParser::ExprEqContext::accept(tree::ParseTreeVisitor *visitor) {
+std::any ifccParser::ExprBitXorContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<ifccVisitor*>(visitor))
-    return parserVisitor->visitExprEq(this);
+    return parserVisitor->visitExprBitXor(this);
   else
     return visitor->visitChildren(this);
 }
@@ -684,63 +742,6 @@ std::any ifccParser::ExprBitOrContext::accept(tree::ParseTreeVisitor *visitor) {
   else
     return visitor->visitChildren(this);
 }
-//----------------- ExprMultContext ------------------------------------------------------------------
-
-std::vector<ifccParser::ExprContext *> ifccParser::ExprMultContext::expr() {
-  return getRuleContexts<ifccParser::ExprContext>();
-}
-
-ifccParser::ExprContext* ifccParser::ExprMultContext::expr(size_t i) {
-  return getRuleContext<ifccParser::ExprContext>(i);
-}
-
-ifccParser::ExprMultContext::ExprMultContext(ExprContext *ctx) { copyFrom(ctx); }
-
-
-std::any ifccParser::ExprMultContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<ifccVisitor*>(visitor))
-    return parserVisitor->visitExprMult(this);
-  else
-    return visitor->visitChildren(this);
-}
-//----------------- ExprBitAndContext ------------------------------------------------------------------
-
-std::vector<ifccParser::ExprContext *> ifccParser::ExprBitAndContext::expr() {
-  return getRuleContexts<ifccParser::ExprContext>();
-}
-
-ifccParser::ExprContext* ifccParser::ExprBitAndContext::expr(size_t i) {
-  return getRuleContext<ifccParser::ExprContext>(i);
-}
-
-ifccParser::ExprBitAndContext::ExprBitAndContext(ExprContext *ctx) { copyFrom(ctx); }
-
-
-std::any ifccParser::ExprBitAndContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<ifccVisitor*>(visitor))
-    return parserVisitor->visitExprBitAnd(this);
-  else
-    return visitor->visitChildren(this);
-}
-//----------------- ExprCmpContext ------------------------------------------------------------------
-
-std::vector<ifccParser::ExprContext *> ifccParser::ExprCmpContext::expr() {
-  return getRuleContexts<ifccParser::ExprContext>();
-}
-
-ifccParser::ExprContext* ifccParser::ExprCmpContext::expr(size_t i) {
-  return getRuleContext<ifccParser::ExprContext>(i);
-}
-
-ifccParser::ExprCmpContext::ExprCmpContext(ExprContext *ctx) { copyFrom(ctx); }
-
-
-std::any ifccParser::ExprCmpContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<ifccVisitor*>(visitor))
-    return parserVisitor->visitExprCmp(this);
-  else
-    return visitor->visitChildren(this);
-}
 //----------------- ExprConstContext ------------------------------------------------------------------
 
 tree::TerminalNode* ifccParser::ExprConstContext::CONST() {
@@ -753,6 +754,21 @@ ifccParser::ExprConstContext::ExprConstContext(ExprContext *ctx) { copyFrom(ctx)
 std::any ifccParser::ExprConstContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<ifccVisitor*>(visitor))
     return parserVisitor->visitExprConst(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- ExprCharConstContext ------------------------------------------------------------------
+
+tree::TerminalNode* ifccParser::ExprCharConstContext::CHAR_CONST() {
+  return getToken(ifccParser::CHAR_CONST, 0);
+}
+
+ifccParser::ExprCharConstContext::ExprCharConstContext(ExprContext *ctx) { copyFrom(ctx); }
+
+
+std::any ifccParser::ExprCharConstContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<ifccVisitor*>(visitor))
+    return parserVisitor->visitExprCharConst(this);
   else
     return visitor->visitChildren(this);
 }
@@ -782,29 +798,29 @@ ifccParser::ExprContext* ifccParser::expr(int precedence) {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(64);
+    setState(65);
     _errHandler->sync(this);
     switch (_input->LA(1)) {
-      case ifccParser::T__17: {
+      case ifccParser::T__9: {
         _localctx = _tracker.createInstance<ExprUnaryMinusContext>(_localctx);
         _ctx = _localctx;
         previousContext = _localctx;
 
         setState(54);
-        match(ifccParser::T__17);
+        match(ifccParser::T__9);
         setState(55);
-        expr(5);
+        expr(13);
         break;
       }
 
-      case ifccParser::T__21: {
+      case ifccParser::T__10: {
         _localctx = _tracker.createInstance<ExprUnaryNotContext>(_localctx);
         _ctx = _localctx;
         previousContext = _localctx;
         setState(56);
-        match(ifccParser::T__21);
+        match(ifccParser::T__10);
         setState(57);
-        expr(4);
+        expr(12);
         break;
       }
 
@@ -830,11 +846,20 @@ ifccParser::ExprContext* ifccParser::expr(int precedence) {
         break;
       }
 
+      case ifccParser::CHAR_CONST: {
+        _localctx = _tracker.createInstance<ExprCharConstContext>(_localctx);
+        _ctx = _localctx;
+        previousContext = _localctx;
+        setState(63);
+        match(ifccParser::CHAR_CONST);
+        break;
+      }
+
       case ifccParser::ID: {
         _localctx = _tracker.createInstance<ExprIdContext>(_localctx);
         _ctx = _localctx;
         previousContext = _localctx;
-        setState(63);
+        setState(64);
         match(ifccParser::ID);
         break;
       }
@@ -843,7 +868,7 @@ ifccParser::ExprContext* ifccParser::expr(int precedence) {
       throw NoViableAltException(this);
     }
     _ctx->stop = _input->LT(-1);
-    setState(89);
+    setState(90);
     _errHandler->sync(this);
     alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 5, _ctx);
     while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
@@ -851,48 +876,74 @@ ifccParser::ExprContext* ifccParser::expr(int precedence) {
         if (!_parseListeners.empty())
           triggerExitRuleEvent();
         previousContext = _localctx;
-        setState(87);
+        setState(88);
         _errHandler->sync(this);
         switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 4, _ctx)) {
         case 1: {
-          auto newContext = _tracker.createInstance<ExprBitOrContext>(_tracker.createInstance<ExprContext>(parentContext, parentState));
+          auto newContext = _tracker.createInstance<ExprMultContext>(_tracker.createInstance<ExprContext>(parentContext, parentState));
           _localctx = newContext;
           pushNewRecursionContext(newContext, startState, RuleExpr);
-          setState(66);
-
-          if (!(precpred(_ctx, 12))) throw FailedPredicateException(this, "precpred(_ctx, 12)");
           setState(67);
-          match(ifccParser::T__9);
+
+          if (!(precpred(_ctx, 7))) throw FailedPredicateException(this, "precpred(_ctx, 7)");
           setState(68);
-          expr(13);
+          _la = _input->LA(1);
+          if (!((((_la & ~ 0x3fULL) == 0) &&
+            ((1ULL << _la) & 28672) != 0))) {
+          _errHandler->recoverInline(this);
+          }
+          else {
+            _errHandler->reportMatch(this);
+            consume();
+          }
+          setState(69);
+          expr(8);
           break;
         }
 
         case 2: {
-          auto newContext = _tracker.createInstance<ExprBitXorContext>(_tracker.createInstance<ExprContext>(parentContext, parentState));
+          auto newContext = _tracker.createInstance<ExprAddContext>(_tracker.createInstance<ExprContext>(parentContext, parentState));
           _localctx = newContext;
           pushNewRecursionContext(newContext, startState, RuleExpr);
-          setState(69);
-
-          if (!(precpred(_ctx, 11))) throw FailedPredicateException(this, "precpred(_ctx, 11)");
           setState(70);
-          match(ifccParser::T__10);
+
+          if (!(precpred(_ctx, 6))) throw FailedPredicateException(this, "precpred(_ctx, 6)");
           setState(71);
-          expr(12);
+          _la = _input->LA(1);
+          if (!(_la == ifccParser::T__9
+
+          || _la == ifccParser::T__14)) {
+          _errHandler->recoverInline(this);
+          }
+          else {
+            _errHandler->reportMatch(this);
+            consume();
+          }
+          setState(72);
+          expr(7);
           break;
         }
 
         case 3: {
-          auto newContext = _tracker.createInstance<ExprBitAndContext>(_tracker.createInstance<ExprContext>(parentContext, parentState));
+          auto newContext = _tracker.createInstance<ExprCmpContext>(_tracker.createInstance<ExprContext>(parentContext, parentState));
           _localctx = newContext;
           pushNewRecursionContext(newContext, startState, RuleExpr);
-          setState(72);
-
-          if (!(precpred(_ctx, 10))) throw FailedPredicateException(this, "precpred(_ctx, 10)");
           setState(73);
-          match(ifccParser::T__11);
+
+          if (!(precpred(_ctx, 5))) throw FailedPredicateException(this, "precpred(_ctx, 5)");
           setState(74);
-          expr(11);
+          _la = _input->LA(1);
+          if (!(_la == ifccParser::T__15
+
+          || _la == ifccParser::T__16)) {
+          _errHandler->recoverInline(this);
+          }
+          else {
+            _errHandler->reportMatch(this);
+            consume();
+          }
+          setState(75);
+          expr(6);
           break;
         }
 
@@ -900,90 +951,64 @@ ifccParser::ExprContext* ifccParser::expr(int precedence) {
           auto newContext = _tracker.createInstance<ExprEqContext>(_tracker.createInstance<ExprContext>(parentContext, parentState));
           _localctx = newContext;
           pushNewRecursionContext(newContext, startState, RuleExpr);
-          setState(75);
-
-          if (!(precpred(_ctx, 9))) throw FailedPredicateException(this, "precpred(_ctx, 9)");
           setState(76);
-          _la = _input->LA(1);
-          if (!(_la == ifccParser::T__12
 
-          || _la == ifccParser::T__13)) {
+          if (!(precpred(_ctx, 4))) throw FailedPredicateException(this, "precpred(_ctx, 4)");
+          setState(77);
+          _la = _input->LA(1);
+          if (!(_la == ifccParser::T__17
+
+          || _la == ifccParser::T__18)) {
           _errHandler->recoverInline(this);
           }
           else {
             _errHandler->reportMatch(this);
             consume();
           }
-          setState(77);
-          expr(10);
+          setState(78);
+          expr(5);
           break;
         }
 
         case 5: {
-          auto newContext = _tracker.createInstance<ExprCmpContext>(_tracker.createInstance<ExprContext>(parentContext, parentState));
+          auto newContext = _tracker.createInstance<ExprBitAndContext>(_tracker.createInstance<ExprContext>(parentContext, parentState));
           _localctx = newContext;
           pushNewRecursionContext(newContext, startState, RuleExpr);
-          setState(78);
-
-          if (!(precpred(_ctx, 8))) throw FailedPredicateException(this, "precpred(_ctx, 8)");
           setState(79);
-          _la = _input->LA(1);
-          if (!(_la == ifccParser::T__14
 
-          || _la == ifccParser::T__15)) {
-          _errHandler->recoverInline(this);
-          }
-          else {
-            _errHandler->reportMatch(this);
-            consume();
-          }
+          if (!(precpred(_ctx, 3))) throw FailedPredicateException(this, "precpred(_ctx, 3)");
           setState(80);
-          expr(9);
+          match(ifccParser::T__19);
+          setState(81);
+          expr(4);
           break;
         }
 
         case 6: {
-          auto newContext = _tracker.createInstance<ExprAddContext>(_tracker.createInstance<ExprContext>(parentContext, parentState));
+          auto newContext = _tracker.createInstance<ExprBitXorContext>(_tracker.createInstance<ExprContext>(parentContext, parentState));
           _localctx = newContext;
           pushNewRecursionContext(newContext, startState, RuleExpr);
-          setState(81);
-
-          if (!(precpred(_ctx, 7))) throw FailedPredicateException(this, "precpred(_ctx, 7)");
           setState(82);
-          _la = _input->LA(1);
-          if (!(_la == ifccParser::T__16
 
-          || _la == ifccParser::T__17)) {
-          _errHandler->recoverInline(this);
-          }
-          else {
-            _errHandler->reportMatch(this);
-            consume();
-          }
+          if (!(precpred(_ctx, 2))) throw FailedPredicateException(this, "precpred(_ctx, 2)");
           setState(83);
-          expr(8);
+          match(ifccParser::T__20);
+          setState(84);
+          expr(3);
           break;
         }
 
         case 7: {
-          auto newContext = _tracker.createInstance<ExprMultContext>(_tracker.createInstance<ExprContext>(parentContext, parentState));
+          auto newContext = _tracker.createInstance<ExprBitOrContext>(_tracker.createInstance<ExprContext>(parentContext, parentState));
           _localctx = newContext;
           pushNewRecursionContext(newContext, startState, RuleExpr);
-          setState(84);
-
-          if (!(precpred(_ctx, 6))) throw FailedPredicateException(this, "precpred(_ctx, 6)");
           setState(85);
-          _la = _input->LA(1);
-          if (!((((_la & ~ 0x3fULL) == 0) &&
-            ((1ULL << _la) & 3670016) != 0))) {
-          _errHandler->recoverInline(this);
-          }
-          else {
-            _errHandler->reportMatch(this);
-            consume();
-          }
+
+          if (!(precpred(_ctx, 1))) throw FailedPredicateException(this, "precpred(_ctx, 1)");
           setState(86);
-          expr(7);
+          match(ifccParser::T__21);
+          setState(87);
+          expr(2);
           break;
         }
 
@@ -991,7 +1016,7 @@ ifccParser::ExprContext* ifccParser::expr(int precedence) {
           break;
         } 
       }
-      setState(91);
+      setState(92);
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 5, _ctx);
     }
@@ -1016,13 +1041,13 @@ bool ifccParser::sempred(RuleContext *context, size_t ruleIndex, size_t predicat
 
 bool ifccParser::exprSempred(ExprContext *_localctx, size_t predicateIndex) {
   switch (predicateIndex) {
-    case 0: return precpred(_ctx, 12);
-    case 1: return precpred(_ctx, 11);
-    case 2: return precpred(_ctx, 10);
-    case 3: return precpred(_ctx, 9);
-    case 4: return precpred(_ctx, 8);
-    case 5: return precpred(_ctx, 7);
-    case 6: return precpred(_ctx, 6);
+    case 0: return precpred(_ctx, 7);
+    case 1: return precpred(_ctx, 6);
+    case 2: return precpred(_ctx, 5);
+    case 3: return precpred(_ctx, 4);
+    case 4: return precpred(_ctx, 3);
+    case 5: return precpred(_ctx, 2);
+    case 6: return precpred(_ctx, 1);
 
   default:
     break;

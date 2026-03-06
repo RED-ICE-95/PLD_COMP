@@ -15,8 +15,8 @@ public:
     T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, T__4 = 5, T__5 = 6, T__6 = 7, 
     T__7 = 8, T__8 = 9, T__9 = 10, T__10 = 11, T__11 = 12, T__12 = 13, T__13 = 14, 
     T__14 = 15, T__15 = 16, T__16 = 17, T__17 = 18, T__18 = 19, T__19 = 20, 
-    T__20 = 21, T__21 = 22, RETURN = 23, CONST = 24, ID = 25, COMMENT = 26, 
-    DIRECTIVE = 27, WS = 28
+    T__20 = 21, T__21 = 22, RETURN = 23, CONST = 24, CHAR_CONST = 25, ID = 26, 
+    COMMENT = 27, LINE_COMMENT = 28, DIRECTIVE = 29, WS = 30
   };
 
   enum {
@@ -147,6 +147,55 @@ public:
    
   };
 
+  class  ExprUnaryNotContext : public ExprContext {
+  public:
+    ExprUnaryNotContext(ExprContext *ctx);
+
+    ExprContext *expr();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ExprEqContext : public ExprContext {
+  public:
+    ExprEqContext(ExprContext *ctx);
+
+    std::vector<ExprContext *> expr();
+    ExprContext* expr(size_t i);
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ExprMultContext : public ExprContext {
+  public:
+    ExprMultContext(ExprContext *ctx);
+
+    std::vector<ExprContext *> expr();
+    ExprContext* expr(size_t i);
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ExprCmpContext : public ExprContext {
+  public:
+    ExprCmpContext(ExprContext *ctx);
+
+    std::vector<ExprContext *> expr();
+    ExprContext* expr(size_t i);
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ExprBitAndContext : public ExprContext {
+  public:
+    ExprBitAndContext(ExprContext *ctx);
+
+    std::vector<ExprContext *> expr();
+    ExprContext* expr(size_t i);
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  ExprUnaryMinusContext : public ExprContext {
   public:
     ExprUnaryMinusContext(ExprContext *ctx);
@@ -165,25 +214,6 @@ public:
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
-  class  ExprUnaryNotContext : public ExprContext {
-  public:
-    ExprUnaryNotContext(ExprContext *ctx);
-
-    ExprContext *expr();
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class  ExprBitXorContext : public ExprContext {
-  public:
-    ExprBitXorContext(ExprContext *ctx);
-
-    std::vector<ExprContext *> expr();
-    ExprContext* expr(size_t i);
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
   class  ExprAddContext : public ExprContext {
   public:
     ExprAddContext(ExprContext *ctx);
@@ -194,9 +224,9 @@ public:
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
-  class  ExprEqContext : public ExprContext {
+  class  ExprBitXorContext : public ExprContext {
   public:
-    ExprEqContext(ExprContext *ctx);
+    ExprBitXorContext(ExprContext *ctx);
 
     std::vector<ExprContext *> expr();
     ExprContext* expr(size_t i);
@@ -223,41 +253,20 @@ public:
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
-  class  ExprMultContext : public ExprContext {
-  public:
-    ExprMultContext(ExprContext *ctx);
-
-    std::vector<ExprContext *> expr();
-    ExprContext* expr(size_t i);
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class  ExprBitAndContext : public ExprContext {
-  public:
-    ExprBitAndContext(ExprContext *ctx);
-
-    std::vector<ExprContext *> expr();
-    ExprContext* expr(size_t i);
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class  ExprCmpContext : public ExprContext {
-  public:
-    ExprCmpContext(ExprContext *ctx);
-
-    std::vector<ExprContext *> expr();
-    ExprContext* expr(size_t i);
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
   class  ExprConstContext : public ExprContext {
   public:
     ExprConstContext(ExprContext *ctx);
 
     antlr4::tree::TerminalNode *CONST();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ExprCharConstContext : public ExprContext {
+  public:
+    ExprCharConstContext(ExprContext *ctx);
+
+    antlr4::tree::TerminalNode *CHAR_CONST();
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

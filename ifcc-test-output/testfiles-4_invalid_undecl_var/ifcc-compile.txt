@@ -1,0 +1,3 @@
+Erreur : variable 'x' utilisée sans déclaration.
+
+exit status: 1

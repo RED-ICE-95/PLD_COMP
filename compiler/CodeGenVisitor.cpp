@@ -18,7 +18,11 @@ CodeGenVisitor::CodeGenVisitor(std::unordered_map<std::string, int> offsets)
     for (auto& [name, offset] : varOffsets) {
         offset = minOffset - offset - 4;
     }
-    currentOffset = minOffset;
+    // currentOffset doit être le minimum des offsets remappés (= adresse la plus basse utilisée)
+    currentOffset = 0;
+    for (auto& [name, offset] : varOffsets) {
+        currentOffset = std::min(currentOffset, offset);
+    }
 }
 
 
@@ -82,6 +86,29 @@ antlrcpp::Any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx) {
 antlrcpp::Any CodeGenVisitor::visitExprConst(ifccParser::ExprConstContext *ctx)
 {
     std::cout << "    movl $" << ctx->CONST()->getText() << ", %eax\n";
+    return 0;
+}
+
+antlrcpp::Any CodeGenVisitor::visitExprCharConst(ifccParser::ExprCharConstContext *ctx)
+{
+    std::string text = ctx->CHAR_CONST()->getText(); // ex: 'Z' or '\n'
+    std::string inner = text.substr(1, text.size() - 2);
+    int value = 0;
+    if (inner.size() == 1) {
+        value = (int)(unsigned char)inner[0];
+    } else if (inner.size() == 2 && inner[0] == '\\') {
+        switch (inner[1]) {
+            case 'n':  value = '\n'; break;
+            case 't':  value = '\t'; break;
+            case 'r':  value = '\r'; break;
+            case '0':  value = '\0'; break;
+            case '\\': value = '\\'; break;
+            case '\'': value = '\''; break;
+            case '"':  value = '"';  break;
+            default:   value = (int)(unsigned char)inner[1]; break;
+        }
+    }
+    std::cout << "    movl $" << value << ", %eax\n";
     return 0;
 }
 
