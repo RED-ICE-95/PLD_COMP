@@ -1,3 +1,4 @@
+.vscode/
 compiler/build/
 compiler/generated/
 compiler/config.mk
