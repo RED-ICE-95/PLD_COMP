@@ -80,6 +80,24 @@ Source C  →  [ANTLR4 Lexer/Parser]  →  [SymbolTableVisitor]  →  [CodeGenVi
 | `-expr` | Négation unaire | [9_unary.c](testfiles/9_unary.c) |
 | `!expr` | NOT logique | [9_unary.c](testfiles/9_unary.c) |
 
+#### Constantes caractère
+
+Les constantes de type `char` sont supportées comme des entiers 32 bits (valeur ASCII). Elles peuvent être utilisées dans n'importe quelle expression à la place d'un entier.
+
+| Forme | Exemple | Valeur | Fichier de test |
+|---|---|---|---|
+| Caractère simple | `'A'` | 65 | [12_char_const.c](testfiles/12_char_const.c) |
+| Séquence d'échappement `\n` | `'\n'` | 10 | [13_char_escape.c](testfiles/13_char_escape.c) |
+| Séquence d'échappement `\t` | `'\t'` | 9 | [13_char_escape.c](testfiles/13_char_escape.c) |
+| Char dans une expression | `'A' + 5` | 70 | [20_char_plus_int.c](testfiles/20_char_plus_int.c) |
+| Arithmétique entre chars | `'Z' - 'A'` | 25 | [12_char_const.c](testfiles/12_char_const.c) |
+
+Les séquences d'échappement reconnues sont : `\n`, `\t`, `\r`, `\0`, `\\`, `\'`, `\"`.
+
+Le lexer ANTLR4 capture la règle `CHAR_CONST : '\'' (~['\\] | '\\' .) '\''` et `visitExprCharConst` dans [CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) convertit la valeur en entier avant d'émettre un `movl $valeur, %eax`.
+
+---
+
 #### Opérateurs bit-à-bit
 | Opérateur | Description | Fichier de test |
 |---|---|---|
@@ -211,7 +229,7 @@ Le projet est développé en sprints courts, chacun produisant un compilateur fo
 | 2 | 4.2 — Compilateur v0 | `return CONST` ; prologue/épilogue x86-64 ; génération assembleur AT&T | [1_return42.c](testfiles/1_return42.c) |
 | 3 | 4.3 — Tests | Prise en main de `ifcc-test.py` ; ajout de programmes invalides ; validation flux gcc vs ifcc | [2_invalid_program.c](testfiles/2_invalid_program.c), [4_invalid_undecl_var.c](testfiles/4_invalid_undecl_var.c) |
 | 4 | 4.4 — Variables | Déclaration `int` (simple et multiple) ; allocation sur la pile via `%rbp` ; affectation et lecture | [3_return_var.c](testfiles/3_return_var.c), [21_multi_var_chain.c](testfiles/21_multi_var_chain.c) |
-| 5 | 4.5 — Table des symboles | `SymbolTableVisitor` : double déclaration, variable non déclarée, variable inutilisée | [23_invalid_double_decl.c](testfiles/23_invalid_double_decl.c), [24_invalid_undecl_rhs.c](testfiles/24_invalid_undecl_rhs.c), [25_invalid_undecl_lhs.c](testfiles/25_invalid_undecl_lhs.c) |
+| 5 | 4.5 — Table des symboles | `SymbolTableVisitor` : double déclaration, variable non déclarée, variable inutilisée | [23_invalid_double_decl.c](testfiles/23_invalid_double_decl.c), [24_invalid_undecl_rhs.c](testfiles/24_invalid_undecl_rhs.c), [25_invalid_undecl_lhs.c](testfiles/25_invalid_undecl_lhs.c), [26_unused_var_warning.c](testfiles/26_unused_var_warning.c) |
 | 6 | 4.6 — Bout en bout | `CodeGenVisitor` complet : variables sur la pile, temporaires dynamiques, `return expr` | [3_return_var.c](testfiles/3_return_var.c) et suivants |
 | 7 | 4.7 — Expressions | Opérations `+`, `-`, `*`, `/`, `%` ; unaires `-`, `!` ; bit-à-bit `&`, `^`, `|` ; comparaisons `<`, `>`, `==`, `!=` ; priorités et parenthèses ; constantes char | [5](testfiles/5_mul_priority.c) à [22](testfiles/22_cmp_in_arith.c) |
 
