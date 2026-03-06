@@ -1,9 +1,12 @@
-# Ignorer fichiers build et générés
 compiler/build/
 compiler/generated/
+compiler/config.mk
+compiler/config-wsl-2025.mk
+compiler/config-IF501.mk
 
-# Ignorer fichiers objets et assembly dans compiler
+
 compiler/*.o
 compiler/*.s
 ifcc-test-output
+
 
