@@ -1,0 +1,9 @@
+.vscode/
+compiler/build/
+compiler/generated/
+compiler/ifcc
+compiler/*.o
+compiler/*.s
+ifcc-test-output
+
+
