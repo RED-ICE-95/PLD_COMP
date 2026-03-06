@@ -113,7 +113,7 @@ Le [`SymbolTableVisitor`](compiler/SymbolTableVisitor.cpp) effectue, en un seul 
 | Double déclaration | `Erreur : variable 'x' déjà déclarée.` | [23_invalid_double_decl.c](testfiles/23_invalid_double_decl.c) |
 | Variable non déclarée à droite d'une expression | `Erreur : variable 'x' utilisée sans déclaration.` | [24_invalid_undecl_rhs.c](testfiles/24_invalid_undecl_rhs.c) |
 | Variable non déclarée à gauche d'une affectation | `Erreur : variable 'x' utilisée sans déclaration.` | [25_invalid_undecl_lhs.c](testfiles/25_invalid_undecl_lhs.c) |
-| Variable déclarée mais jamais utilisée | `Avertissement : variable 'x' déclarée mais jamais utilisée.` | — |
+| Variable déclarée mais jamais utilisée | `Avertissement : variable 'x' déclarée mais jamais utilisée.` | [26_unused_var_warning.c](testfiles/26_unused_var_warning.c) |
 | Erreur de syntaxe | `error: syntax error during parsing` | [2_invalid_program.c](testfiles/2_invalid_program.c) |
 
 ---
@@ -174,7 +174,8 @@ c:\PLD-COMP\
 │   ├── 22_cmp_in_arith.c        # Comparaison dans une expression
 │   ├── 23_invalid_double_decl.c # Erreur : double déclaration
 │   ├── 24_invalid_undecl_rhs.c  # Erreur : non déclarée en lecture
-│   └── 25_invalid_undecl_lhs.c  # Erreur : non déclarée en écriture
+│   ├── 25_invalid_undecl_lhs.c  # Erreur : non déclarée en écriture
+│   └── 26_unused_var_warning.c  # Avertissement : variable déclarée non utilisée
 └── ifcc-test.py                 # Script de test automatisé
 ```
 
