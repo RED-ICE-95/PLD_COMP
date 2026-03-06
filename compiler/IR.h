@@ -37,6 +37,7 @@ class IRInstr {
 
 		/**  constructor */
 		IRInstr(BasicBlock* bb_, Operation op, Type t, vector<string> params);
+		    : bb(bb_), op(op), t(t), params(params) {}
 		
 		/** Actual code generation */
 		void gen_asm(ostream &o); /**< x86 assembly code generation for this IR instruction */
@@ -82,7 +83,8 @@ Possible optimization:
 
 class BasicBlock {
  public:
-	BasicBlock(CFG* cfg, string entry_label);
+	BasicBlock(CFG* cfg, string entry_label) : cfg(cfg), label(entry_label), exit_true(nullptr), exit_false(nullptr) {};
+	
 	void gen_asm(ostream &o); /**< x86 assembly code generation for this basic block (very simple) */
 
 	void add_IRInstr(IRInstr::Operation op, Type t, vector<string> params);
@@ -93,7 +95,7 @@ class BasicBlock {
 	string label; /**< label of the BB, also will be the label in the generated code */
 	CFG* cfg; /** < the CFG where this block belongs */
 	vector<IRInstr*> instrs; /** < the instructions themselves. */
-  string test_var_name;  /** < when generating IR code for an if(expr) or while(expr) etc,
+  	string test_var_name;  /** < when generating IR code for an if(expr) or while(expr) etc,
 													 store here the name of the variable that holds the value of expr */
  protected:
 
