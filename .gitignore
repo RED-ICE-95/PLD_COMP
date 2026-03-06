@@ -2,9 +2,6 @@
 compiler/build/
 compiler/generated/
 compiler/ifcc
-compiler/config.mk
-compiler/config-wsl-2025.mk
-compiler/config-IF501.mk
 compiler/*.o
 compiler/*.s
 ifcc-test-output
