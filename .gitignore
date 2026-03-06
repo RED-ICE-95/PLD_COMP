@@ -1,0 +1,9 @@
+# Ignorer fichiers build et générés
+compiler/build/
+compiler/generated/
+
+# Ignorer fichiers objets et assembly dans compiler
+compiler/*.o
+compiler/*.s
+ifcc-test-output
+
