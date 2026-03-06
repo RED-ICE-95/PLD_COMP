@@ -31,7 +31,16 @@ class IRInstr {
 			call,    // appel d'une fonction
 			cmp_eq,  // comparaison d'égalité (==)
 			cmp_lt,  // comparaison inférieur strict (<)
-			cmp_le   // comparaison inférieur ou égal (<=)
+			cmp_le,   // comparaison inférieur ou égal (<=)
+			div,
+			mod,
+			bit_or,
+			bit_xor,
+			bit_and,
+			unary_minus,
+			unary_not,
+			cmp_ne,
+			cmp_gt
 		} Operation;
 
 
