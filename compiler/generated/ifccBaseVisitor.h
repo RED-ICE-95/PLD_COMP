@@ -39,6 +39,26 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual std::any visitExprUnaryNot(ifccParser::ExprUnaryNotContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitExprEq(ifccParser::ExprEqContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitExprMult(ifccParser::ExprMultContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitExprCmp(ifccParser::ExprCmpContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitExprBitAnd(ifccParser::ExprBitAndContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual std::any visitExprUnaryMinus(ifccParser::ExprUnaryMinusContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -47,19 +67,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual std::any visitExprUnaryNot(ifccParser::ExprUnaryNotContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual std::any visitExprBitXor(ifccParser::ExprBitXorContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual std::any visitExprAdd(ifccParser::ExprAddContext *ctx) override {
     return visitChildren(ctx);
   }
 
-  virtual std::any visitExprEq(ifccParser::ExprEqContext *ctx) override {
+  virtual std::any visitExprBitXor(ifccParser::ExprBitXorContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -71,19 +83,11 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual std::any visitExprMult(ifccParser::ExprMultContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual std::any visitExprBitAnd(ifccParser::ExprBitAndContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual std::any visitExprCmp(ifccParser::ExprCmpContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual std::any visitExprConst(ifccParser::ExprConstContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitExprCharConst(ifccParser::ExprCharConstContext *ctx) override {
     return visitChildren(ctx);
   }
 

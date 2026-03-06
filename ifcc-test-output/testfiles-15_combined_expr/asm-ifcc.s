@@ -1,0 +1,37 @@
+.globl main
+ main: 
+    push %rbp
+    mov %rsp, %rbp
+    sub $4, %rsp
+    sub $4, %rsp
+    sub $4, %rsp
+    movl $17, %eax
+    movl %eax, -12(%rbp)
+    movl $42, %eax
+    movl %eax, -8(%rbp)
+    movl -12(%rbp), %eax
+    sub $4, %rsp
+    movl %eax, -16(%rbp)
+    movl -12(%rbp), %eax
+    imull -16(%rbp), %eax
+    add $4, %rsp
+    sub $4, %rsp
+    movl %eax, -16(%rbp)
+    movl -8(%rbp), %eax
+    sub $4, %rsp
+    movl %eax, -20(%rbp)
+    movl -8(%rbp), %eax
+    imull -20(%rbp), %eax
+    add $4, %rsp
+    addl -16(%rbp), %eax
+    add $4, %rsp
+    sub $4, %rsp
+    movl %eax, -16(%rbp)
+    movl $1, %eax
+    addl -16(%rbp), %eax
+    add $4, %rsp
+    movl %eax, -4(%rbp)
+    movl -4(%rbp), %eax
+    mov %rbp, %rsp
+    pop %rbp
+    ret

@@ -1,0 +1,10 @@
+Déclaration : a -> offset 0
+Déclaration : b -> offset -4
+Déclaration : c -> offset -8
+Usage : a -> index 0
+Usage : a -> index 0
+Usage : b -> index -4
+Usage : b -> index -4
+Usage : c -> index -8
+
+exit status: 0

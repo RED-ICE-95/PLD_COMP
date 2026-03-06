@@ -15,8 +15,8 @@ public:
     T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, T__4 = 5, T__5 = 6, T__6 = 7, 
     T__7 = 8, T__8 = 9, T__9 = 10, T__10 = 11, T__11 = 12, T__12 = 13, T__13 = 14, 
     T__14 = 15, T__15 = 16, T__16 = 17, T__17 = 18, T__18 = 19, T__19 = 20, 
-    T__20 = 21, T__21 = 22, RETURN = 23, CONST = 24, ID = 25, COMMENT = 26, 
-    DIRECTIVE = 27, WS = 28
+    T__20 = 21, T__21 = 22, RETURN = 23, CONST = 24, CHAR_CONST = 25, ID = 26, 
+    COMMENT = 27, LINE_COMMENT = 28, DIRECTIVE = 29, WS = 30
   };
 
   explicit ifccLexer(antlr4::CharStream *input);
