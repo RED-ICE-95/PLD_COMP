@@ -18,7 +18,7 @@ CodeGenVisitor::CodeGenVisitor(std::unordered_map<std::string, int> offsets)
     for (auto& [name, offset] : varOffsets) {
         offset = minOffset - offset - 4;
     }
-    // currentOffset doit être le minimum des offsets remappés (= adresse la plus basse utilisée)
+    // currentOffset = min des offsets remappés (= adresse la plus basse utilisée)
     currentOffset = 0;
     for (auto& [name, offset] : varOffsets) {
         currentOffset = std::min(currentOffset, offset);
