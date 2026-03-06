@@ -1,4 +1,0 @@
-Déclaration : x -> offset 0
-Usage : x -> index 0
-
-exit status: 0

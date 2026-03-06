@@ -1,5 +1,0 @@
-Déclaration : a -> offset 0
-Erreur : variable 'a' déjà déclarée.
-Usage : a -> index 0
-
-exit status: 1

@@ -1,4 +1,42 @@
-# Rapport du projet compilateur IFCC
+# Compilateur IFCC — Livrable intermédiaire (tâches 4.1 à 4.7)
+
+> **INSA de Lyon — 4IF — PLD-Comp — Année 2025-2026**
+
+## Compilation et exécution
+
+### Prérequis
+
+- ANTLR4 et son runtime C++ installés (voir section 4.1 du sujet)
+- GCC (g++) pour la compilation du compilateur et de l'assembleur produit
+- Python 3 pour le script de tests
+
+### Construire le compilateur
+
+```bash
+cd compiler
+make
+```
+
+L'exécutable `compiler/ifcc` est produit.
+
+### Utilisation
+
+```bash
+./compiler/ifcc monprogramme.c > monprogramme.s
+gcc monprogramme.s -o monprogramme
+./monprogramme
+echo $?
+```
+
+### Lancer les tests
+
+```bash
+python3 ifcc-test.py testfiles/
+```
+
+L'option `--help` affiche toutes les options disponibles.
+
+---
 
 ## 1. Fonctionnalités implémentées
 
@@ -10,9 +48,9 @@ Le compilateur suit un pipeline classique en trois étapes :
 Source C  →  [ANTLR4 Lexer/Parser]  →  [SymbolTableVisitor]  →  [CodeGenVisitor]  →  Assembleur x86-64
 ```
 
-1. **Analyse lexicale et syntaxique** : assurée par ANTLR4 à partir de la grammaire [`compiler/ifcc.g4`](compiler/ifcc.g4).
-2. **Analyse sémantique** : effectuée par [`SymbolTableVisitor`](compiler/SymbolTableVisitor.cpp) (premier passage sur l'AST).
-3. **Génération de code** : effectuée par [`CodeGenVisitor`](compiler/CodeGenVisitor.cpp) (deuxième passage).
+1. **Analyse lexicale et syntaxique** : assurée par ANTLR4 à partir de la grammaire [compiler/ifcc.g4](compiler/ifcc.g4).
+2. **Analyse sémantique** : effectuée par [SymbolTableVisitor](compiler/SymbolTableVisitor.cpp) (premier passage sur l'AST).
+3. **Génération de code** : effectuée par [CodeGenVisitor](compiler/CodeGenVisitor.cpp) (deuxième passage).
 
 ---
 
@@ -21,7 +59,7 @@ Source C  →  [ANTLR4 Lexer/Parser]  →  [SymbolTableVisitor]  →  [CodeGenVi
 #### Types
 | Type | Support |
 |------|---------|
-| `int` (32 bits) | ✅ |
+| `int` (32 bits) | ok |
 
 #### Instructions
 | Construction | Exemple | Fichier de test |
@@ -41,6 +79,24 @@ Source C  →  [ANTLR4 Lexer/Parser]  →  [SymbolTableVisitor]  →  [CodeGenVi
 | `%` | Modulo | [8_div_mod.c](testfiles/8_div_mod.c) |
 | `-expr` | Négation unaire | [9_unary.c](testfiles/9_unary.c) |
 | `!expr` | NOT logique | [9_unary.c](testfiles/9_unary.c) |
+
+#### Constantes caractère
+
+Les constantes de type `char` sont supportées comme des entiers 32 bits (valeur ASCII). Elles peuvent être utilisées dans n'importe quelle expression à la place d'un entier.
+
+| Forme | Exemple | Valeur | Fichier de test |
+|---|---|---|---|
+| Caractère simple | `'A'` | 65 | [12_char_const.c](testfiles/12_char_const.c) |
+| Séquence d'échappement `\n` | `'\n'` | 10 | [13_char_escape.c](testfiles/13_char_escape.c) |
+| Séquence d'échappement `\t` | `'\t'` | 9 | [13_char_escape.c](testfiles/13_char_escape.c) |
+| Char dans une expression | `'A' + 5` | 70 | [20_char_plus_int.c](testfiles/20_char_plus_int.c) |
+| Arithmétique entre chars | `'Z' - 'A'` | 25 | [12_char_const.c](testfiles/12_char_const.c) |
+
+Les séquences d'échappement reconnues sont : `\n`, `\t`, `\r`, `\0`, `\\`, `\'`, `\"`.
+
+Le lexer ANTLR4 capture la règle `CHAR_CONST : '\'' (~['\\] | '\\' .) '\''` et `visitExprCharConst` dans [CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) convertit la valeur en entier avant d'émettre un `movl $valeur, %eax`.
+
+---
 
 #### Opérateurs bit-à-bit
 | Opérateur | Description | Fichier de test |
@@ -75,7 +131,7 @@ Le [`SymbolTableVisitor`](compiler/SymbolTableVisitor.cpp) effectue, en un seul 
 | Double déclaration | `Erreur : variable 'x' déjà déclarée.` | [23_invalid_double_decl.c](testfiles/23_invalid_double_decl.c) |
 | Variable non déclarée à droite d'une expression | `Erreur : variable 'x' utilisée sans déclaration.` | [24_invalid_undecl_rhs.c](testfiles/24_invalid_undecl_rhs.c) |
 | Variable non déclarée à gauche d'une affectation | `Erreur : variable 'x' utilisée sans déclaration.` | [25_invalid_undecl_lhs.c](testfiles/25_invalid_undecl_lhs.c) |
-| Variable déclarée mais jamais utilisée | `Avertissement : variable 'x' déclarée mais jamais utilisée.` | — |
+| Variable déclarée mais jamais utilisée | `Avertissement : variable 'x' déclarée mais jamais utilisée.` | [26_unused_var_warning.c](testfiles/26_unused_var_warning.c) |
 | Erreur de syntaxe | `error: syntax error during parsing` | [2_invalid_program.c](testfiles/2_invalid_program.c) |
 
 ---
@@ -136,7 +192,8 @@ c:\PLD-COMP\
 │   ├── 22_cmp_in_arith.c        # Comparaison dans une expression
 │   ├── 23_invalid_double_decl.c # Erreur : double déclaration
 │   ├── 24_invalid_undecl_rhs.c  # Erreur : non déclarée en lecture
-│   └── 25_invalid_undecl_lhs.c  # Erreur : non déclarée en écriture
+│   ├── 25_invalid_undecl_lhs.c  # Erreur : non déclarée en écriture
+│   └── 26_unused_var_warning.c  # Avertissement : variable déclarée non utilisée
 └── ifcc-test.py                 # Script de test automatisé
 ```
 
@@ -160,25 +217,39 @@ c:\PLD-COMP\
 
 ## 3. Gestion de projet
 
-### Travail réalisé
+### Méthodologie agile
 
-| Étape | Contenu |
-|---|---|
-| Mise en place | Initialisation du projet avec ANTLR4, Makefile, grammaire minimale (`return` entier). |
-| Expressions | Ajout de toutes les expressions arithmétiques, unaires, bit-à-bit et de comparaison avec gestion de la priorité dans la grammaire. |
-| Variables | Support des déclarations (`int`) simples et multiples, affectations, lecture de variables dans les expressions. |
-| Table des symboles | Implémentation du `SymbolTableVisitor` : double déclaration, variable non déclarée, variable inutilisée. |
-| Génération de code | `CodeGenVisitor` complet : allocation de variables sur la pile, temporaires dynamiques, assembleur x86-64 AT&T. |
-| Tests | Rédaction de 25 fichiers de test couvrant les cas valides et invalides. |
+Le projet est développé en sprints courts, chacun produisant un compilateur fonctionnel de bout en bout sur un sous-ensemble bien défini du C. Chaque sprint est précédé par l'écriture de tests (approche TDD) qui vérifient les nouvelles fonctionnalités.
 
-### Travail à venir
+### Sprints réalisés (tâches 4.1 à 4.7)
 
-| Priorité | Fonctionnalité |
-|---|---|
-| Haute | Support des constantes caractères (`'A'`, `'\n'`) dans la grammaire (tests 12, 13, 20 actuellement non couverts par le lexer). |
-| Haute | Représentation intermédiaire (IR / 3-adresses) pour découpler l'analyse du backend et préparer les optimisations. |
-| Moyenne | Structures de contrôle : `if`/`else`, `while`. |
-| Moyenne | Type `char` (store/load 8 bits, cast implicite vers `int`). |
-| Moyenne | Appels de fonctions (au moins `putchar`/`getchar` pour les entrées/sorties). |
-| Basse | Optimisations : propagation de constantes, élimination de code mort. |
-| Basse | Meilleure gestion des erreurs : numéros de ligne dans les messages d'erreur sémantique. |
+| Sprint | Tâche TP | Fonctionnalités ajoutées | Tests associés |
+|---|---|---|---|
+| 1 | 4.1 — Prise en main | Installation ANTLR4, build Makefile, grammaire minimale, pipeline complet | — |
+| 2 | 4.2 — Compilateur v0 | `return CONST` ; prologue/épilogue x86-64 ; génération assembleur AT&T | [1_return42.c](testfiles/1_return42.c) |
+| 3 | 4.3 — Tests | Prise en main de `ifcc-test.py` ; ajout de programmes invalides ; validation flux gcc vs ifcc | [2_invalid_program.c](testfiles/2_invalid_program.c), [4_invalid_undecl_var.c](testfiles/4_invalid_undecl_var.c) |
+| 4 | 4.4 — Variables | Déclaration `int` (simple et multiple) ; allocation sur la pile via `%rbp` ; affectation et lecture | [3_return_var.c](testfiles/3_return_var.c), [21_multi_var_chain.c](testfiles/21_multi_var_chain.c) |
+| 5 | 4.5 — Table des symboles | `SymbolTableVisitor` : double déclaration, variable non déclarée, variable inutilisée | [23_invalid_double_decl.c](testfiles/23_invalid_double_decl.c), [24_invalid_undecl_rhs.c](testfiles/24_invalid_undecl_rhs.c), [25_invalid_undecl_lhs.c](testfiles/25_invalid_undecl_lhs.c), [26_unused_var_warning.c](testfiles/26_unused_var_warning.c) |
+| 6 | 4.6 — Bout en bout | `CodeGenVisitor` complet : variables sur la pile, temporaires dynamiques, `return expr` | [3_return_var.c](testfiles/3_return_var.c) et suivants |
+| 7 | 4.7 — Expressions | Opérations `+`, `-`, `*`, `/`, `%` ; unaires `-`, `!` ; bit-à-bit `&`, `^`, `|` ; comparaisons `<`, `>`, `==`, `!=` ; priorités et parenthèses ; constantes char | [5](testfiles/5_mul_priority.c) à [22](testfiles/22_cmp_in_arith.c) |
+
+### État des tests à ce stade
+
+Sur les 25 fichiers de test présents dans `testfiles/` :
+
+- **Programmes valides (tests 1, 3, 5–22)** : tous passent (sortie gcc = sortie ifcc).
+- **Programmes invalides (tests 2, 4, 23, 24, 25)** : ifcc et gcc échouent tous les deux à compiler → tests considérés comme réussis.
+
+### Sprints à venir (tâches 4.8 et suivantes)
+
+| Priorité | Tâche TP | Fonctionnalité |
+|---|---|---|
+| Haute | 4.10 | Appels de fonctions standard : `putchar`, `getchar` (ABI x86-64, passages de paramètres dans `%rdi`) |
+| Haute | 4.11 | Programmes à plusieurs fonctions : prologue/épilogue par fonction, enregistrement d'activation, passage de paramètres |
+| Haute | 4.12 | Structure de contrôle `if`/`else` (blocs de base, branchements conditionnels) |
+| Haute | 4.14 | Boucles `while` |
+| Haute | 4.13 | `return` n'importe où dans une fonction (saut vers épilogue unique) |
+| Moyenne | 4.15 | Vérifications statiques sur les fonctions (cohérence des appels, nombre de paramètres) |
+| Moyenne | 4.8 | Représentation intermédiaire (IR) pour préparer multi-cible et optimisations |
+| Basse | 4.9 | Propagation de constantes dans les expressions |
+| Basse | 4.16 | Propagation de variables constantes (analyse data-flow) |

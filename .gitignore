@@ -1,8 +1,9 @@
-compiler/config.mk
-compiler/config-IF501.mk
-compiler/config-wsl-2025.mk
-compiler/build
-compiler/generated
-*.exe
-*.o
-*.s
+.vscode/
+compiler/build/
+compiler/generated/
+compiler/ifcc
+compiler/*.o
+compiler/*.s
+ifcc-test-output
+
+
