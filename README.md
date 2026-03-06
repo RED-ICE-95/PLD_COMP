@@ -59,7 +59,7 @@ Source C  →  [ANTLR4 Lexer/Parser]  →  [SymbolTableVisitor]  →  [CodeGenVi
 #### Types
 | Type | Support |
 |------|---------|
-| `int` (32 bits) | ✅ |
+| `int` (32 bits) | ok |
 
 #### Instructions
 | Construction | Exemple | Fichier de test |
