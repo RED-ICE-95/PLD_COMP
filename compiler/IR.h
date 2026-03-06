@@ -36,7 +36,7 @@ class IRInstr {
 
 
 		/**  constructor */
-		IRInstr(BasicBlock* bb_, Operation op, Type t, vector<string> params);
+		IRInstr(BasicBlock* bb_, Operation op, Type t, vector<string> params)
 		    : bb(bb_), op(op), t(t), params(params) {}
 		
 		/** Actual code generation */
@@ -116,7 +116,7 @@ class BasicBlock {
  */
 class CFG {
  public:
-	CFG(DefFonction* ast);
+	CFG(DefFonction* ast) : ast(ast), nextFreeSymbolIndex(4), nextBBnumber(0) {};
 
 	DefFonction* ast; /**< The AST this CFG comes from */
 	

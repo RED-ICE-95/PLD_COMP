@@ -1,0 +1,8 @@
+compiler/config.mk
+compiler/config-IF501.mk
+compiler/config-wsl-2025.mk
+compiler/build
+compiler/generated
+*.exe
+*.o
+*.s
