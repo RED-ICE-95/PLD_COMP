@@ -254,3 +254,6 @@ Sur les 25 fichiers de test présents dans `testfiles/` :
 | Moyenne | 4.8 | Représentation intermédiaire (IR) pour préparer multi-cible et optimisations |
 | Basse | 4.9 | Propagation de constantes dans les expressions |
 | Basse | 4.16 | Propagation de variables constantes (analyse data-flow) |
+
+### Source  
+Ce fichier README.md a été rédigé à l'aide d'une IA (Claude Sonnet 4.6).
