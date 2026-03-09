@@ -1,6 +1,7 @@
 # Compilateur IFCC — Livrable intermédiaire (tâches 4.1 à 4.7)
 
-> **INSA de Lyon — 4IF — PLD-Comp — Année 2025-2026**
+> **INSA de Lyon — 4IF — PLD-Comp — Année 2025-2026**  
+> **Etudiants** : Ines Souibgui, Yassine Taharaste, Bilal Kaya, Hiba Ben Amor, Ikram Iqdari, Nour El Ouardighi, Malak Bahda
 
 ## Compilation et exécution
 
