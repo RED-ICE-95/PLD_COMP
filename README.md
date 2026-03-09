@@ -2,6 +2,7 @@
 
 > **INSA de Lyon — 4IF — PLD-Comp — Année 2025-2026**  
 > **Etudiants** : Ines Souibgui, Yassine Taharaste, Bilal Kaya, Hiba Ben Amor, Ikram Iqdari, Nour El Ouardighi, Malak Bahda
+> **Lien github** : https://github.com/RED-ICE-95/PLD_COMP.git
 
 ## Compilation et exécution
 
