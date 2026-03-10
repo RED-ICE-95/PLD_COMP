@@ -263,6 +263,8 @@ if args.debug:
 ##            otherwise, this is a fail.
 
 all_ok=True
+nb_ok=0
+nb_fail=0
 
 for jobname in jobs:
     os.chdir(f'{pld_base_dir}/ifcc-test-output')
@@ -286,16 +288,19 @@ for jobname in jobs:
     if gccstatus != 0 and ifccstatus != 0:
         ## ifcc correctly rejects invalid program -> test-case ok
         print("TEST OK")
+        nb_ok+=1
         continue
     elif gccstatus != 0 and ifccstatus == 0:
         ## ifcc wrongly accepts invalid program -> error
         print("TEST FAIL (your compiler accepts an invalid program)")
         all_ok=False
+        nb_fail+=1
         continue
     elif gccstatus == 0 and ifccstatus != 0:
         ## ifcc wrongly rejects valid program -> error
         print("TEST FAIL (your compiler rejects a valid program)")
         all_ok=False
+        nb_fail+=1
         if args.verbose:
             dumpfile("asm-ifcc.s")       # stdout of ifcc
             dumpfile("ifcc-compile.txt") # stderr of ifcc
@@ -306,6 +311,7 @@ for jobname in jobs:
         if ldstatus:
             print("TEST FAIL (your compiler produces incorrect assembly)")
             all_ok=False
+            nb_fail+=1
             if args.verbose:
                 dumpfile("asm-ifcc.s")
                 dumpfile("ifcc-link.txt")
@@ -318,6 +324,7 @@ for jobname in jobs:
     if open("gcc-execute.txt").read() != open("ifcc-execute.txt").read() :
         print("TEST FAIL (different results at execution)")
         all_ok=False
+        nb_fail+=1
 
         if args.verbose:
             print("GCC:")
@@ -328,6 +335,16 @@ for jobname in jobs:
 
     ## last but not least
     print("TEST OK")
+    nb_ok+=1
+
+nb_total=nb_ok+nb_fail
+print(f"\n{'='*40}")
+print(f"RÉSULTATS : {nb_ok}/{nb_total} tests validés", end="")
+if nb_fail > 0:
+    print(f" ({nb_fail} échec(s))")
+else:
+    print(" -- Tous les tests sont OK !")
+print('='*40)
 
 if not (all_ok or args.verbose):
     print("Some test-cases failed. Run ifcc-test.py with option '--verbose' for more detailed feedback.")
