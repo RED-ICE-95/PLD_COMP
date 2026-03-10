@@ -129,23 +129,17 @@ antlrcpp::Any CodeGenVisitor::visitExprParen(ifccParser::ExprParenContext *ctx)
 // Opérations unaires
 antlrcpp::Any CodeGenVisitor::visitExprUnaryMinus(ifccParser::ExprUnaryMinusContext *ctx)
 {
-    // on stocke zero et on fait soustraction : 0 - expr
     string exprVar = this->visit(ctx->expr()).as<string>();
-    string zero = cfg->create_new_tempvar(INT32);
     string destVar = cfg->create_new_tempvar(INT32);
-    cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {zero, "0"});
-    cfg->current_bb->add_IRInstr(IRInstr::sub, INT32, {destVar, zero, exprVar});
+    cfg->current_bb->add_IRInstr(IRInstr::unary_minus, INT32, {destVar, exprVar});
     return destVar;
 }
 
 antlrcpp::Any CodeGenVisitor::visitExprUnaryNot(ifccParser::ExprUnaryNotContext *ctx)
 {
-    // on stocke zero et on fait comparaison : 0 == expr
     string exprVar = this->visit(ctx->expr()).as<string>();
-    string zero = cfg->create_new_tempvar(INT32);
     string destVar = cfg->create_new_tempvar(INT32);
-    cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {zero, "0"});
-    cfg->current_bb->add_IRInstr(IRInstr::cmp_eq, INT32, {destVar, zero, exprVar});
+    cfg->current_bb->add_IRInstr(IRInstr::unary_not, INT32, {destVar, exprVar});
     return destVar;
 }
 
@@ -187,79 +181,58 @@ antlrcpp::Any CodeGenVisitor::visitExprMult(ifccParser::ExprMultContext *ctx)
 // Bit-à-bit
 antlrcpp::Any CodeGenVisitor::visitExprBitOr(ifccParser::ExprBitOrContext *ctx)
 {
-    this->visit(ctx->expr(0));
-    int tmp = allocTemp();
-    std::cout << "    movl %eax, " << tmp << "(%rbp)\n";
-    this->visit(ctx->expr(1));
-    std::cout << "    orl " << tmp << "(%rbp), %eax\n";
-    std::cout << "    add $4, %rsp\n";
-    currentOffset += 4;
-    return 0;
+    string leftVar = this->visit(ctx->expr(0)).as<string>();
+    string rightVar = this->visit(ctx->expr(1)).as<string>();
+    string destVar = cfg->create_new_tempvar(INT32);
+    cfg->current_bb->add_IRInstr(IRInstr::bit_or, INT32, {destVar, leftVar, rightVar});
+    return destVar;
 }
 
 antlrcpp::Any CodeGenVisitor::visitExprBitXor(ifccParser::ExprBitXorContext *ctx)
 {
-    this->visit(ctx->expr(0));
-    int tmp = allocTemp();
-    std::cout << "    movl %eax, " << tmp << "(%rbp)\n";
-    this->visit(ctx->expr(1));
-    std::cout << "    xorl " << tmp << "(%rbp), %eax\n";
-    std::cout << "    add $4, %rsp\n";
-    currentOffset += 4;
-    return 0;
+    string leftVar = this->visit(ctx->expr(0)).as<string>();
+    string rightVar = this->visit(ctx->expr(1)).as<string>();
+    string destVar = cfg->create_new_tempvar(INT32);
+    cfg->current_bb->add_IRInstr(IRInstr::bit_xor, INT32, {destVar, leftVar, rightVar});
+    return destVar;
 }
 
 antlrcpp::Any CodeGenVisitor::visitExprBitAnd(ifccParser::ExprBitAndContext *ctx)
 {
-    this->visit(ctx->expr(0));
-    int tmp = allocTemp();
-    std::cout << "    movl %eax, " << tmp << "(%rbp)\n";
-    this->visit(ctx->expr(1));
-    std::cout << "    andl " << tmp << "(%rbp), %eax\n";
-    std::cout << "    add $4, %rsp\n";
-    currentOffset += 4;
-    return 0;
+    string leftVar = this->visit(ctx->expr(0)).as<string>();
+    string rightVar = this->visit(ctx->expr(1)).as<string>();
+    string destVar = cfg->create_new_tempvar(INT32);
+    cfg->current_bb->add_IRInstr(IRInstr::bit_and, INT32, {destVar, leftVar, rightVar});
+    return destVar;
 }
 
 // Comparaisons
 antlrcpp::Any CodeGenVisitor::visitExprEq(ifccParser::ExprEqContext *ctx)
 {
-    this->visit(ctx->expr(0));              // gauche → %eax
-    int tmp = allocTemp();
-    std::cout << "    movl %eax, " << tmp << "(%rbp)\n";
-    this->visit(ctx->expr(1));              // droite → %eax
-    std::cout << "    movl " << tmp << "(%rbp), %ecx\n";
-    std::cout << "    cmpl %eax, %ecx\n";  // ecx - eax  (gauche - droite)
-
-    std::string opText = ctx->children[1]->getText();
+    string leftVar = this->visit(ctx->expr(0)).as<string>();
+    string rightVar = this->visit(ctx->expr(1)).as<string>();
+    string destVar = cfg->create_new_tempvar(INT32);
+    string opText = ctx->children[1]->getText();
     if (opText == "==") {
-        std::cout << "    sete %al\n";
+        cfg->current_bb->add_IRInstr(IRInstr::cmp_eq, INT32, {destVar, leftVar, rightVar});
     } else { // !=
-        std::cout << "    setne %al\n";
+        cfg->current_bb->add_IRInstr(IRInstr::cmp_ne, INT32, {destVar, leftVar, rightVar});
     }
-    std::cout << "    movzbl %al, %eax\n";
-    std::cout << "    add $4, %rsp\n";
-    currentOffset += 4;
-    return 0;
+    return destVar;
 }
 
 antlrcpp::Any CodeGenVisitor::visitExprCmp(ifccParser::ExprCmpContext *ctx)
 {
-    this->visit(ctx->expr(0));              // gauche → %eax
-    int tmp = allocTemp();
-    std::cout << "    movl %eax, " << tmp << "(%rbp)\n";
-    this->visit(ctx->expr(1));              // droite → %eax
-    std::cout << "    movl " << tmp << "(%rbp), %ecx\n";
-    std::cout << "    cmpl %eax, %ecx\n";  // ecx - eax  (gauche - droite)
-
-    std::string opText = ctx->children[1]->getText();
+    string leftVar = this->visit(ctx->expr(0)).as<string>();
+    string rightVar = this->visit(ctx->expr(1)).as<string>();
+    string destVar = cfg->create_new_tempvar(INT32);
+    string opText = ctx->children[1]->getText();
     if (opText == "<") {
-        std::cout << "    setl %al\n";
+        cfg->current_bb->add_IRInstr(IRInstr::cmp_lt, INT32, {destVar, leftVar, rightVar});
     } else { // >
-        std::cout << "    setg %al\n";
+        cfg->current_bb->add_IRInstr(IRInstr::cmp_gt, INT32, {destVar, leftVar, rightVar});
     }
-    std::cout << "    movzbl %al, %eax\n";
-    std::cout << "    add $4, %rsp\n";
-    currentOffset += 4;
-    return 0;
+    return destVar;
 }
+
+

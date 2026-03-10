@@ -91,3 +91,84 @@ antlrcpp::Any CodeGenVisitor::visitExprMult(ifccParser::ExprMultContext *ctx)
     currentOffset += 4;
     return 0;
 }
+
+
+antlrcpp::Any CodeGenVisitor::visitExprBitOr(ifccParser::ExprBitOrContext *ctx)
+{
+    this->visit(ctx->expr(0));
+    int tmp = allocTemp();
+    std::cout << "    movl %eax, " << tmp << "(%rbp)\n";
+    this->visit(ctx->expr(1));
+    std::cout << "    orl " << tmp << "(%rbp), %eax\n";
+    std::cout << "    add $4, %rsp\n";
+    currentOffset += 4;
+    return 0;
+}
+
+antlrcpp::Any CodeGenVisitor::visitExprBitXor(ifccParser::ExprBitXorContext *ctx)
+{
+    this->visit(ctx->expr(0));
+    int tmp = allocTemp();
+    std::cout << "    movl %eax, " << tmp << "(%rbp)\n";
+    this->visit(ctx->expr(1));
+    std::cout << "    xorl " << tmp << "(%rbp), %eax\n";
+    std::cout << "    add $4, %rsp\n";
+    currentOffset += 4;
+    return 0;
+}
+
+
+antlrcpp::Any CodeGenVisitor::visitExprBitAnd(ifccParser::ExprBitAndContext *ctx)
+{
+    this->visit(ctx->expr(0));
+    int tmp = allocTemp();
+    std::cout << "    movl %eax, " << tmp << "(%rbp)\n";
+    this->visit(ctx->expr(1));
+    std::cout << "    andl " << tmp << "(%rbp), %eax\n";
+    std::cout << "    add $4, %rsp\n";
+    currentOffset += 4;
+    return 0;
+}
+
+antlrcpp::Any CodeGenVisitor::visitExprEq(ifccParser::ExprEqContext *ctx)
+{
+    this->visit(ctx->expr(0));              // gauche → %eax
+    int tmp = allocTemp();
+    std::cout << "    movl %eax, " << tmp << "(%rbp)\n";
+    this->visit(ctx->expr(1));              // droite → %eax
+    std::cout << "    movl " << tmp << "(%rbp), %ecx\n";
+    std::cout << "    cmpl %eax, %ecx\n";  // ecx - eax  (gauche - droite)
+
+    std::string opText = ctx->children[1]->getText();
+    if (opText == "==") {
+        std::cout << "    sete %al\n";
+    } else { // !=
+        std::cout << "    setne %al\n";
+    }
+    std::cout << "    movzbl %al, %eax\n";
+    std::cout << "    add $4, %rsp\n";
+    currentOffset += 4;
+    return 0;
+}
+
+
+antlrcpp::Any CodeGenVisitor::visitExprCmp(ifccParser::ExprCmpContext *ctx)
+{
+    this->visit(ctx->expr(0));              // gauche → %eax
+    int tmp = allocTemp();
+    std::cout << "    movl %eax, " << tmp << "(%rbp)\n";
+    this->visit(ctx->expr(1));              // droite → %eax
+    std::cout << "    movl " << tmp << "(%rbp), %ecx\n";
+    std::cout << "    cmpl %eax, %ecx\n";  // ecx - eax  (gauche - droite)
+
+    std::string opText = ctx->children[1]->getText();
+    if (opText == "<") {
+        std::cout << "    setl %al\n";
+    } else { // >
+        std::cout << "    setg %al\n";
+    }
+    std::cout << "    movzbl %al, %eax\n";
+    std::cout << "    add $4, %rsp\n";
+    currentOffset += 4;
+    return 0;
+}

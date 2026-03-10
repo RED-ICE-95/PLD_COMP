@@ -40,7 +40,8 @@ class IRInstr {
 			unary_minus,
 			unary_not,
 			cmp_ne,
-			cmp_gt
+			cmp_gt,
+			cmp_ge
 		} Operation;
 
 

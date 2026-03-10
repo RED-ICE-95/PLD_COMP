@@ -177,6 +177,13 @@ void IRInstr::gen_asm(ostream& o) {
             o << "  movzbl %al, %eax\n";
             o << "  movl %eax, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
             break;
+        case cmp_ge:
+            o << "  movl " << bb->cfg->IR_reg_to_asm(params[1]) << ", %eax\n";
+            o << "  cmpl " << bb->cfg->IR_reg_to_asm(params[2]) << ", %eax\n";
+            o << "  setge %al\n";
+            o << "  movzbl %al, %eax\n";
+            o << "  movl %eax, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
         default:
             break;
     }
