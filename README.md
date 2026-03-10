@@ -1,6 +1,8 @@
 # Compilateur IFCC — Livrable intermédiaire (tâches 4.1 à 4.7)
 
-> **INSA de Lyon — 4IF — PLD-Comp — Année 2025-2026**
+> **INSA de Lyon — 4IF — PLD-Comp — Année 2025-2026**  
+> **Etudiants** : Ines Souibgui, Yassine Taharaste, Bilal Kaya, Hiba Ben Amor, Ikram Iqdari, Nour El Ouardighi, Malak Bahda
+> **Lien github** : https://github.com/RED-ICE-95/PLD_COMP.git
 
 ## Compilation et exécution
 
@@ -253,3 +255,6 @@ Sur les 25 fichiers de test présents dans `testfiles/` :
 | Moyenne | 4.8 | Représentation intermédiaire (IR) pour préparer multi-cible et optimisations |
 | Basse | 4.9 | Propagation de constantes dans les expressions |
 | Basse | 4.16 | Propagation de variables constantes (analyse data-flow) |
+
+### Source  
+Ce fichier README.md a été rédigé à l'aide d'une IA (Claude Sonnet 4.6).
