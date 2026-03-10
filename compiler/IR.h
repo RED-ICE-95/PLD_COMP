@@ -3,17 +3,28 @@
 
 #include <vector>
 #include <string>
+#include <map>
 #include <iostream>
 #include <initializer_list>
 
 // Declarations from the parser -- replace with your own
 #include "type.h"
-#include "symbole.h"
+//#include "symbole.h" PTDR T QUI TOI CHEF
+
+using namespace std;
 
 class BasicBlock;
 class CFG;
 class DefFonction;
 
+class DefFonction {
+public:
+	string name;
+	vector<pair<string, Type>> params; // list of (param name, param type)
+	Type returnType;
+	DefFonction(string name, vector<pair<string, Type>> params, Type returnType)
+		: name(name), params(params), returnType(returnType) {}
+};
 
 //! The class for one 3-address instruction
 class IRInstr {
@@ -135,6 +146,7 @@ class CFG {
 	// x86 code generation: could be encapsulated in a processor class in a retargetable compiler
 	void gen_asm(ostream& o);
 	string IR_reg_to_asm(string reg); /**< helper method: inputs a IR reg or input variable, returns e.g. "-24(%rbp)" for the proper value of 24 */
+	void gen_asm_header(ostream& o); /**< generates the assembly header for this function, including the label and the prologue */
 	void gen_asm_prologue(ostream& o);
 	void gen_asm_epilogue(ostream& o);
 

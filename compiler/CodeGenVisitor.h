@@ -13,25 +13,25 @@ class  CodeGenVisitor : public ifccBaseVisitor {
 	public:
         explicit CodeGenVisitor(DefFonction* ast);
 
-        virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override ;
-        virtual antlrcpp::Any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
-        virtual antlrcpp::Any visitDeclar(ifccParser::DeclarContext *ctx) override;
-        virtual antlrcpp::Any visitAssign(ifccParser::AssignContext *ctx) override;
+        virtual std::any visitProg(ifccParser::ProgContext *ctx) override ;
+        virtual std::any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
+        virtual std::any visitDeclar(ifccParser::DeclarContext *ctx) override;
+        virtual std::any visitAssign(ifccParser::AssignContext *ctx) override;
 
         // pour les différentes formes d'expressions
-        virtual antlrcpp::Any visitExprConst(ifccParser::ExprConstContext *ctx) override;
-        virtual antlrcpp::Any visitExprCharConst(ifccParser::ExprCharConstContext *ctx) override;
-        virtual antlrcpp::Any visitExprId(ifccParser::ExprIdContext *ctx) override;
-        virtual antlrcpp::Any visitExprUnaryMinus(ifccParser::ExprUnaryMinusContext *ctx) override;
-        virtual antlrcpp::Any visitExprUnaryNot(ifccParser::ExprUnaryNotContext *ctx) override;
-        virtual antlrcpp::Any visitExprParen(ifccParser::ExprParenContext *ctx) override;
-        virtual antlrcpp::Any visitExprAdd(ifccParser::ExprAddContext *ctx) override;
-        virtual antlrcpp::Any visitExprMult(ifccParser::ExprMultContext *ctx) override;
-        virtual antlrcpp::Any visitExprBitOr(ifccParser::ExprBitOrContext *ctx) override;
-        virtual antlrcpp::Any visitExprBitXor(ifccParser::ExprBitXorContext *ctx) override;
-        virtual antlrcpp::Any visitExprBitAnd(ifccParser::ExprBitAndContext *ctx) override;
-        virtual antlrcpp::Any visitExprEq(ifccParser::ExprEqContext *ctx) override;
-        virtual antlrcpp::Any visitExprCmp(ifccParser::ExprCmpContext *ctx) override;
+        virtual std::any visitExprConst(ifccParser::ExprConstContext *ctx) override;
+        virtual std::any visitExprCharConst(ifccParser::ExprCharConstContext *ctx) override;
+        virtual std::any visitExprId(ifccParser::ExprIdContext *ctx) override;
+        virtual std::any visitExprUnaryMinus(ifccParser::ExprUnaryMinusContext *ctx) override;
+        virtual std::any visitExprUnaryNot(ifccParser::ExprUnaryNotContext *ctx) override;
+        virtual std::any visitExprParen(ifccParser::ExprParenContext *ctx) override;
+        virtual std::any visitExprAdd(ifccParser::ExprAddContext *ctx) override;
+        virtual std::any visitExprMult(ifccParser::ExprMultContext *ctx) override;
+        virtual std::any visitExprBitOr(ifccParser::ExprBitOrContext *ctx) override;
+        virtual std::any visitExprBitXor(ifccParser::ExprBitXorContext *ctx) override;
+        virtual std::any visitExprBitAnd(ifccParser::ExprBitAndContext *ctx) override;
+        virtual std::any visitExprEq(ifccParser::ExprEqContext *ctx) override;
+        virtual std::any visitExprCmp(ifccParser::ExprCmpContext *ctx) override;
 
         private:
         CFG* cfg;

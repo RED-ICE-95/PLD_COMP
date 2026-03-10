@@ -9,23 +9,23 @@ CodeGenVisitor::CodeGenVisitor(DefFonction* ast) {
     cfg->add_to_symbol_table("!ret", INT32);
 }
 
-antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
+std::any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
     for (auto sctx : ctx->stmt()) {
         this->visit(sctx);
     }
-    cfg->gen_asm(std::cout);
+    cfg->gen_asm(cout);
     return 0;
 }
 
-antlrcpp::Any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
+std::any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 {
-    string exprVar = this->visit(ctx->expr()).as<string>();
+    string exprVar = any_cast<string>(this->visit(ctx->expr()));
     cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {"!ret", exprVar});
     return 0;
 }
 
-antlrcpp::Any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
+std::any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
 {
     for (auto id : ctx->ID()) {
         cfg->add_to_symbol_table(id->getText(), INT32);
@@ -33,22 +33,22 @@ antlrcpp::Any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
     return 0;
 }
 
-antlrcpp::Any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx)
+std::any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx)
 {
     string varName = ctx->ID()->getText();
-    string exprVar = this->visit(ctx->expr()).as<string>();
+    string exprVar = any_cast<string>(this->visit(ctx->expr()));
     cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
     return varName;
 }
 
-antlrcpp::Any CodeGenVisitor::visitExprConst(ifccParser::ExprConstContext *ctx)
+std::any CodeGenVisitor::visitExprConst(ifccParser::ExprConstContext *ctx)
 {
     string destVar = cfg->create_new_tempvar(INT32);
     cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {destVar, ctx->CONST()->getText()});
     return destVar;
 }
 
-antlrcpp::Any CodeGenVisitor::visitExprCharConst(ifccParser::ExprCharConstContext *ctx)
+std::any CodeGenVisitor::visitExprCharConst(ifccParser::ExprCharConstContext *ctx)
 {
     string text = ctx->CHAR_CONST()->getText(); 
     string inner = text.substr(1, text.size() - 2);    // on enlève guillemets
@@ -72,7 +72,7 @@ antlrcpp::Any CodeGenVisitor::visitExprCharConst(ifccParser::ExprCharConstContex
     return destVar;
 }
 
-antlrcpp::Any CodeGenVisitor::visitExprId(ifccParser::ExprIdContext *ctx)
+std::any CodeGenVisitor::visitExprId(ifccParser::ExprIdContext *ctx)
 {
     string varName = ctx->ID()->getText();
     string destVar = cfg->create_new_tempvar(INT32);
@@ -80,33 +80,33 @@ antlrcpp::Any CodeGenVisitor::visitExprId(ifccParser::ExprIdContext *ctx)
     return destVar;
 }
 
-antlrcpp::Any CodeGenVisitor::visitExprParen(ifccParser::ExprParenContext *ctx)
+std::any CodeGenVisitor::visitExprParen(ifccParser::ExprParenContext *ctx)
 {
     return this->visit(ctx->expr());
 }
 
 // Opérations unaires
-antlrcpp::Any CodeGenVisitor::visitExprUnaryMinus(ifccParser::ExprUnaryMinusContext *ctx)
+std::any CodeGenVisitor::visitExprUnaryMinus(ifccParser::ExprUnaryMinusContext *ctx)
 {
-    string exprVar = this->visit(ctx->expr()).as<string>();
+    string exprVar = any_cast<string>(this->visit(ctx->expr()));
     string destVar = cfg->create_new_tempvar(INT32);
     cfg->current_bb->add_IRInstr(IRInstr::unary_minus, INT32, {destVar, exprVar});
     return destVar;
 }
 
-antlrcpp::Any CodeGenVisitor::visitExprUnaryNot(ifccParser::ExprUnaryNotContext *ctx)
+std::any CodeGenVisitor::visitExprUnaryNot(ifccParser::ExprUnaryNotContext *ctx)
 {
-    string exprVar = this->visit(ctx->expr()).as<string>();
+    string exprVar = any_cast<string>(this->visit(ctx->expr()));
     string destVar = cfg->create_new_tempvar(INT32);
     cfg->current_bb->add_IRInstr(IRInstr::unary_not, INT32, {destVar, exprVar});
     return destVar;
 }
 
 // Opérations binaires
-antlrcpp::Any CodeGenVisitor::visitExprAdd(ifccParser::ExprAddContext *ctx)
+std::any CodeGenVisitor::visitExprAdd(ifccParser::ExprAddContext *ctx)
 {
-    string leftVar = this->visit(ctx->expr(0)).as<string>();
-    string rightVar = this->visit(ctx->expr(1)).as<string>();
+    string leftVar = any_cast<string>(this->visit(ctx->expr(0)));
+    string rightVar = any_cast<string>(this->visit(ctx->expr(1)));
     string destVar = cfg->create_new_tempvar(INT32);
 
     // instruction IR
@@ -121,10 +121,10 @@ antlrcpp::Any CodeGenVisitor::visitExprAdd(ifccParser::ExprAddContext *ctx)
     return destVar;
 }
 
-antlrcpp::Any CodeGenVisitor::visitExprMult(ifccParser::ExprMultContext *ctx)
+std::any CodeGenVisitor::visitExprMult(ifccParser::ExprMultContext *ctx)
 {
-    string leftVar = this->visit(ctx->expr(0)).as<string>();
-    string rightVar = this->visit(ctx->expr(1)).as<string>();
+    string leftVar = any_cast<string>(this->visit(ctx->expr(0)));
+    string rightVar = any_cast<string>(this->visit(ctx->expr(1)));
     string destVar = cfg->create_new_tempvar(INT32);
     string opText = ctx->children[1]->getText();
     if (opText == "*") {
@@ -138,38 +138,38 @@ antlrcpp::Any CodeGenVisitor::visitExprMult(ifccParser::ExprMultContext *ctx)
 }
 
 // Bit-à-bit
-antlrcpp::Any CodeGenVisitor::visitExprBitOr(ifccParser::ExprBitOrContext *ctx)
+std::any CodeGenVisitor::visitExprBitOr(ifccParser::ExprBitOrContext *ctx)
 {
-    string leftVar = this->visit(ctx->expr(0)).as<string>();
-    string rightVar = this->visit(ctx->expr(1)).as<string>();
+    string leftVar = any_cast<string>(this->visit(ctx->expr(0)));
+    string rightVar = any_cast<string>(this->visit(ctx->expr(1)));
     string destVar = cfg->create_new_tempvar(INT32);
     cfg->current_bb->add_IRInstr(IRInstr::bit_or, INT32, {destVar, leftVar, rightVar});
     return destVar;
 }
 
-antlrcpp::Any CodeGenVisitor::visitExprBitXor(ifccParser::ExprBitXorContext *ctx)
+std::any CodeGenVisitor::visitExprBitXor(ifccParser::ExprBitXorContext *ctx)
 {
-    string leftVar = this->visit(ctx->expr(0)).as<string>();
-    string rightVar = this->visit(ctx->expr(1)).as<string>();
+    string leftVar = any_cast<string>(this->visit(ctx->expr(0)));
+    string rightVar = any_cast<string>(this->visit(ctx->expr(1)));
     string destVar = cfg->create_new_tempvar(INT32);
     cfg->current_bb->add_IRInstr(IRInstr::bit_xor, INT32, {destVar, leftVar, rightVar});
     return destVar;
 }
 
-antlrcpp::Any CodeGenVisitor::visitExprBitAnd(ifccParser::ExprBitAndContext *ctx)
+std::any CodeGenVisitor::visitExprBitAnd(ifccParser::ExprBitAndContext *ctx)
 {
-    string leftVar = this->visit(ctx->expr(0)).as<string>();
-    string rightVar = this->visit(ctx->expr(1)).as<string>();
+    string leftVar = any_cast<string>(this->visit(ctx->expr(0)));
+    string rightVar = any_cast<string>(this->visit(ctx->expr(1)));
     string destVar = cfg->create_new_tempvar(INT32);
     cfg->current_bb->add_IRInstr(IRInstr::bit_and, INT32, {destVar, leftVar, rightVar});
     return destVar;
 }
 
 // Comparaisons
-antlrcpp::Any CodeGenVisitor::visitExprEq(ifccParser::ExprEqContext *ctx)
+std::any CodeGenVisitor::visitExprEq(ifccParser::ExprEqContext *ctx)
 {
-    string leftVar = this->visit(ctx->expr(0)).as<string>();
-    string rightVar = this->visit(ctx->expr(1)).as<string>();
+    string leftVar = any_cast<string>(this->visit(ctx->expr(0)));
+    string rightVar = any_cast<string>(this->visit(ctx->expr(1)));
     string destVar = cfg->create_new_tempvar(INT32);
     string opText = ctx->children[1]->getText();
     if (opText == "==") {
@@ -180,10 +180,10 @@ antlrcpp::Any CodeGenVisitor::visitExprEq(ifccParser::ExprEqContext *ctx)
     return destVar;
 }
 
-antlrcpp::Any CodeGenVisitor::visitExprCmp(ifccParser::ExprCmpContext *ctx)
+std::any CodeGenVisitor::visitExprCmp(ifccParser::ExprCmpContext *ctx)
 {
-    string leftVar = this->visit(ctx->expr(0)).as<string>();
-    string rightVar = this->visit(ctx->expr(1)).as<string>();
+    string leftVar = any_cast<string>(this->visit(ctx->expr(0)));
+    string rightVar = any_cast<string>(this->visit(ctx->expr(1)));
     string destVar = cfg->create_new_tempvar(INT32);
     string opText = ctx->children[1]->getText();
     if (opText == "<") {

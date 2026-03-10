@@ -38,18 +38,32 @@ string CFG::IR_reg_to_asm(string reg) {
     return "-" + to_string(get_var_index(reg)) + "(%rbp)";
 }
 
+void CFG::gen_asm_header(ostream& o) {
+    o << "  .text\n";
+    o << "  .globl " << ast->name << "\n";
+    o << ast->name << ":\n";
+}
+
 void CFG::gen_asm_prologue(ostream& o) {
     o << "  pushq %rbp\n";
     o << "  movq %rsp, %rbp\n";
+    int rawSize = nextFreeSymbolIndex - 4;
+    int stackSize = ((rawSize + 15) / 16) * 16;
+    if (stackSize > 0) {
+        o << "  subq $" << stackSize << ", %rsp\n";
+    }
 }
 
 void CFG::gen_asm_epilogue(ostream& o) {
+    o << "  movl " << IR_reg_to_asm("!ret") << ", %eax\n";
     o << "  movq %rbp, %rsp\n";
     o << "  popq %rbp\n";
     o << "  ret\n";
 }
 
 void CFG::gen_asm(ostream& o) {
+    gen_asm_header(o);
+    gen_asm_prologue(o);
     for (BasicBlock* bb : bbs)
         bb->gen_asm(o);
 }
