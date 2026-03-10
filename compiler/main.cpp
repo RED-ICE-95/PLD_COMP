@@ -56,7 +56,7 @@ int main(int argn, const char **argv)
     return 1; // on arrête la compilation s'il y a des erreurs de déclaration ou d'utilisation
   }
 
-  CodeGenVisitor cgv(stv.getVarOffsets());
+  CodeGenVisitor cgv(new DefFonction("main", vector<pair<string,Type>>{}, INT32));
   cgv.visit(tree);
 
   return 0;

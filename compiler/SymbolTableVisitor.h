@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 
 #include "antlr4-runtime.h"
@@ -18,12 +17,8 @@ public:
     
     bool hasErrors() const { return errorFlag; }
 
-    // CodeGenVisitor pourra récupèrer cette map directement
-    const std::unordered_map<std::string, int>& getVarOffsets() const { return varIndexMap; }
-
 private:
-    std::unordered_map<std::string, int> varIndexMap; // nom -> index
+    std::unordered_set<std::string> declaredVars;     // variables déclarées
     std::unordered_set<std::string> usedVars;         // variables utilisées
-    int nextIndex = 0;                                // compteur d'index
     bool errorFlag = false;
 };
