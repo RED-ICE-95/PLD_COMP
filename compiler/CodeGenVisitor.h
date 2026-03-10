@@ -3,6 +3,7 @@
 
 #include "antlr4-runtime.h"
 #include "generated/ifccBaseVisitor.h"
+#include "IR.h"
 
 #include <iostream>
 #include <unordered_map>
@@ -10,7 +11,7 @@
 
 class  CodeGenVisitor : public ifccBaseVisitor {
 	public:
-        explicit CodeGenVisitor(std::unordered_map<std::string, int> offsets);
+        explicit CodeGenVisitor(DefFonction* ast);
 
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override ;
         virtual antlrcpp::Any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
@@ -33,9 +34,6 @@ class  CodeGenVisitor : public ifccBaseVisitor {
         virtual antlrcpp::Any visitExprCmp(ifccParser::ExprCmpContext *ctx) override;
 
         private:
-        std::unordered_map<std::string, int> varOffsets;
-        int currentOffset = 0;
-        
-        int allocTemp();
+        CFG* cfg;
 };
 

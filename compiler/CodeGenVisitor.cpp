@@ -2,84 +2,43 @@
 #include <unordered_map>
 #include <string>
 
-std::unordered_map<std::string, int> varOffsets;
-int currentOffset = 0;
-
-// constructeur : on récupèrera les offsets de variables depuis SymbolTableVisitor
-CodeGenVisitor::CodeGenVisitor(std::unordered_map<std::string, int> offsets)
-    : varOffsets(std::move(offsets)), currentOffset(0){
-    // on cherche l'offset le plus bas (ex: -12 pour 3 variables)
-    int minOffset = 0;
-    for (auto& [name, offset] : varOffsets) {
-        minOffset = std::min(minOffset, offset);
-    }
-
-    // on inverse les offsets : ex: -4 → -12, -8 → -8, -12 → -4
-    for (auto& [name, offset] : varOffsets) {
-        offset = minOffset - offset - 4;
-    }
-    // currentOffset = min des offsets remappés (= adresse la plus basse utilisée)
-    currentOffset = 0;
-    for (auto& [name, offset] : varOffsets) {
-        currentOffset = std::min(currentOffset, offset);
-    }
+CodeGenVisitor::CodeGenVisitor(DefFonction* ast) {
+    cfg = new CFG(ast);
+    BasicBlock* bb = new BasicBlock(cfg, cfg->new_BB_name());
+    cfg->add_bb(bb);
+    cfg->add_to_symbol_table("!ret", INT32);
 }
 
-
-// Pour les opérations binaires, il faudra stocker résultat intermédiaire
-int CodeGenVisitor::allocTemp() {
-    currentOffset -= 4;
-    std::cout << "    sub $4, %rsp\n";
-    return currentOffset;
-}
-
-antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx) 
+antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
-    #ifdef __APPLE__
-    std::cout<< ".globl _main\n" ;
-    std::cout<< " _main: \n" ;
-    #else
-    std::cout<< ".globl main\n" ;
-    std::cout<< " main: \n" ;
-    #endif
-
-    std::cout << "    push %rbp\n";
-    std::cout << "    mov %rsp, %rbp\n";
-
     for (auto sctx : ctx->stmt()) {
         this->visit(sctx);
     }
-
-    std::cout << "    mov %rbp, %rsp\n";
-    std::cout << "    pop %rbp\n";
-
-    std::cout << "    ret\n";
-
+    cfg->gen_asm(std::cout);
     return 0;
 }
-
 
 antlrcpp::Any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 {
-    // on délègue à visitExpr et on obtient la valeur dans %eax (CONST ou ID)
-    this->visit(ctx->expr());
+    string exprVar = this->visit(ctx->expr()).as<string>();
+    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {"!ret", exprVar});
     return 0;
 }
 
-antlrcpp::Any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx) {
+antlrcpp::Any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
+{
     for (auto id : ctx->ID()) {
-        std::cout << "    sub $4, %rsp\n";
+        cfg->add_to_symbol_table(id->getText(), INT32);
     }
     return 0;
 }
 
-
-antlrcpp::Any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx) {
-    std::string varName = ctx->ID()->getText();
-    // on délègue à visitExpr, puis on récupère la valeur dans %eax 
-    this->visit(ctx->expr());
-    std::cout << "    movl %eax, " << varOffsets[varName] << "(%rbp)\n";
-    return 0;
+antlrcpp::Any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx)
+{
+    string varName = ctx->ID()->getText();
+    string exprVar = this->visit(ctx->expr()).as<string>();
+    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
+    return varName;
 }
 
 antlrcpp::Any CodeGenVisitor::visitExprConst(ifccParser::ExprConstContext *ctx)
