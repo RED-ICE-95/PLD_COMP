@@ -96,14 +96,17 @@ antlrcpp::Any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx) {
     std::cout << "    movl %eax, " << offset << "(%rbp)\n";
     return nullptr;
 }
-
-// return
+//return
 antlrcpp::Any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx) {
-    this->visit(ctx->expr()); // valeur dans %eax
+    this->visit(ctx->expr()); // résultat dans %eax
+
+    std::cout << "    mov %rbp, %rsp\n";
+    std::cout << "    pop %rbp\n";
+    std::cout << "    ret\n";
+
     return nullptr;
 }
-
-// ================================= EXPR =================================
+// EXPR 
 
 // constantes
 antlrcpp::Any CodeGenVisitor::visitExprConst(ifccParser::ExprConstContext *ctx) {

@@ -6,10 +6,10 @@
     movl $2, %eax
     movl %eax, -4(%rbp)
     sub $4, %rsp
-    movl $2, %eax
+    movl $7, %eax
     movl %eax, -8(%rbp)
     sub $4, %rsp
-    movl $5, %eax
+    movl $8, %eax
     movl %eax, -12(%rbp)
     sub $4, %rsp
     movl -12(%rbp), %eax
@@ -19,8 +19,10 @@
     addl -20(%rbp), %eax
     add $4, %rsp
     movl %eax, -16(%rbp)
-    movl -4(%rbp), %eax
-    movl -4(%rbp), %eax
+    movl -8(%rbp), %eax
+    mov %rbp, %rsp
+    pop %rbp
+    ret
     mov %rbp, %rsp
     pop %rbp
     ret
