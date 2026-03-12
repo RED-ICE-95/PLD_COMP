@@ -2,8 +2,9 @@ grammar ifcc;
 
 axiom : prog EOF ;
 
-prog : 'int' 'main' '(' ')' '{' stmt* '}' ;
+prog : fonctDecl* 'int' 'main' '(' ')' '{' stmt* '}' ;
 
+fonctDecl : 'void' ID '(' ')' '{' stmt* '}';
 stmt :(return_stmt | assign | declar) ';' ;
 return_stmt : RETURN expr ;
 assign : ID '=' expr ;
@@ -14,6 +15,7 @@ expr : '-' expr                            # exprUnaryMinus
     | '(' expr ')'                        # exprParen
     | CONST                               # exprConst
     | CHAR_CONST                          # exprCharConst
+    | ID '(' ')'                          # exprFonctCall
     | ID                                  # exprId
     | expr ('*' | '/' | '%') expr         # exprMult
     | expr ('+' | '-') expr               # exprAdd

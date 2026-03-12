@@ -14,7 +14,25 @@ std::any SymbolTableVisitor::visitDeclar(ifccParser::DeclarContext *ctx) {
 
     return visitChildren(ctx);
 }
+std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {
+    std::string fctName = ctx->ID()->getText();
+    functionReturnTypes[fctName] = VOID; // void hardcodé pour l'instant
+    return visitChildren(ctx);
+}
 
+std::any SymbolTableVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext *ctx) {
+    std::string fctName = ctx->ID()->getText();
+
+    if (functionReturnTypes.count(fctName) && functionReturnTypes[fctName] == VOID) {
+        std::cerr << "Erreur : la fonction void '" << fctName << "' ne peut pas être utilisée dans une expression.\n";
+        errorFlag = true;
+    } else if (!functionReturnTypes.count(fctName)) {
+        std::cerr << "Erreur : fonction '" << fctName << "' appelée mais non déclarée.\n";
+        errorFlag = true;
+    }
+
+    return visitChildren(ctx);
+}
 std::any SymbolTableVisitor::visitAssign(ifccParser::AssignContext *ctx) {
     std::string varName = ctx->ID()->getText();
 
