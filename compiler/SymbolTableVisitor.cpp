@@ -1,8 +1,9 @@
 #include "SymbolTableVisitor.h"
 
 std::any SymbolTableVisitor::visitDeclar(ifccParser::DeclarContext *ctx) {
-    for (size_t i = 0; i < ctx->ID().size(); i++) {
-        std::string varName = ctx->ID(i)->getText();
+    // On itère sur les declItem (chaque ID avec son éventuelle initialisation)
+    for (auto item : ctx->declItem()) {
+        std::string varName = item->ID()->getText();
 
         if (declaredVars.count(varName)) {
             std::cerr << "Erreur : variable '" << varName << "' déjà déclarée.\n";
@@ -12,6 +13,7 @@ std::any SymbolTableVisitor::visitDeclar(ifccParser::DeclarContext *ctx) {
         }
     }
 
+    // visitChildren visite aussi les expr d'initialisation → visitExprId détecte les variables utilisées
     return visitChildren(ctx);
 }
 

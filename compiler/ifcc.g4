@@ -7,7 +7,8 @@ prog : 'int' 'main' '(' ')' '{' stmt* '}' ;
 stmt :(return_stmt | assign | declar) ';' ;
 return_stmt : RETURN expr ;
 assign : ID '=' expr ;
-declar : 'int' ID (',' ID)* ;
+declar : 'int' declItem (',' declItem)* ;
+declItem : ID ('=' expr)? ;
 
 expr : '-' expr                            # exprUnaryMinus
     | '!' expr                            # exprUnaryNot
