@@ -52,11 +52,11 @@ int main(int argn, const char **argv)
   SymbolTableVisitor stv;
   stv.visit(tree);
 
-  if (stv.hasErrors()) {
+  if (stv.errorFlag) {
     return 1; // on arrête la compilation s'il y a des erreurs de déclaration ou d'utilisation
   }
 
-  CodeGenVisitor cgv(stv.getVarOffsets());
+  CodeGenVisitor cgv;
   cgv.visit(tree);
 
   return 0;

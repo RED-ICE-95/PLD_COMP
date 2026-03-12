@@ -31,6 +31,8 @@ public:
 
     virtual std::any visitDeclar(ifccParser::DeclarContext *context) = 0;
 
+    virtual std::any visitBlock(ifccParser::BlockContext *context) = 0;
+
     virtual std::any visitExprUnaryNot(ifccParser::ExprUnaryNotContext *context) = 0;
 
     virtual std::any visitExprEq(ifccParser::ExprEqContext *context) = 0;

@@ -1,4 +1,0 @@
-Erreur : variable 'z' utilisée sans déclaration.
-Erreur : variable 'z' utilisée sans déclaration.
-
-exit status: 1

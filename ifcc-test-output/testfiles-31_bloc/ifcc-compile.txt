@@ -1,0 +1,6 @@
+Déclaration : a -> offset 0
+Déclaration : b -> offset -4
+Déclaration : a -> offset -8
+Déclaration : d -> offset -12
+
+exit status: 0
