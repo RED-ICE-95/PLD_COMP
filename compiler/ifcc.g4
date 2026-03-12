@@ -12,7 +12,8 @@ stmt
 
 return_stmt : RETURN expr ;
 assign : ID '=' expr ;
-declar : 'int' ID ('=' expr)? (',' ID ('=' expr)?)* ;
+declar : 'int' declItem (',' declItem)* ;
+declItem : ID ('=' expr)? ;
 block : '{' stmt* '}' ;
 call_stmt : ID '(' expr? ')' ;
 

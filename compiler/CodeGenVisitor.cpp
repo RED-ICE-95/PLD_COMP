@@ -99,11 +99,17 @@ std::any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 
 std::any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
 {
-    for (auto id : ctx->ID()) {
-        string originalName = id->getText();
+    for (auto item : ctx->declItem()) {
+        string originalName = item->ID()->getText();
         string uniqueName = originalName + "_" + to_string(cfg->getNextIndex());
         cfg->add_to_symbol_table(uniqueName, INT32);
         scopeRename.back()[originalName] = uniqueName;
+        // Si le declItem a une expression d'initialisation, on la compile
+        // et on copie le résultat dans la variable nouvellement déclarée
+        if (item->expr()) {
+            string exprVar = any_cast<string>(this->visit(item->expr()));
+            cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {uniqueName, exprVar});
+        }
     }
     return 0;
 }
