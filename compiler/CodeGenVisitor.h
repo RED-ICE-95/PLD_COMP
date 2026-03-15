@@ -36,14 +36,14 @@ class  CodeGenVisitor : public ifccBaseVisitor {
 
 
         private:
-    CFG* cfg;
-    vector<map<string, string>> scopeRename;
+        CFG* cfg;
+        vector<map<string, string>> scopeRename;
 
-    string resolve(const string& name) {
-        for (int i = scopeRename.size() - 1; i >= 0; i--)
-            if (scopeRename[i].count(name))
-                return scopeRename[i][name];
-        return name; // !ret, !tmpN passent tels quels
-    }
+        string resolve(const string& name) {
+                for (int i = scopeRename.size() - 1; i >= 0; i--)
+                if (scopeRename[i].count(name))
+                        return scopeRename[i][name];
+                return name; // !ret, !tmpN passent tels quels
+        }
 };
 

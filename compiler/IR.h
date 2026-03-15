@@ -156,17 +156,20 @@ class CFG {
 	int get_var_index(string name);
 	Type get_var_type(string name);
 
-	// IR.h dans public de CFG
-int getNextIndex() const { return nextFreeSymbolIndex; }
+	
+	int getNextIndex() const { return nextFreeSymbolIndex; }
 
 	// basic block management
 	string new_BB_name();
 	BasicBlock* current_bb;
+	BasicBlock* exit_bb;
 
 	void push_scope();
 	void pop_scope();
 
+
  protected:
+ 
 	vector<map<string, Type>> ScopeType;
 	vector<map<string, int>>  ScopeIndex;
 	int nextFreeSymbolIndex; /**< to allocate new symbols in the symbol table */

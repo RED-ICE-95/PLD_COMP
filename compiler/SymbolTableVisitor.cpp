@@ -9,7 +9,6 @@ std::any SymbolTableVisitor::visitBlock(ifccParser::BlockContext *ctx) {
     pushScope();
     auto result = visitChildren(ctx);
     
-    // warning variables non utilisées : seulement celles du scope qu'on ferme
     for (auto& varName : scopeStack.back()) {
         if (!usedVars.count(varName)) {
             std::cerr << "Avertissement : variable '" << varName 

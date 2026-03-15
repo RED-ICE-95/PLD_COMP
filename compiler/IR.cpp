@@ -84,7 +84,7 @@ void CFG::gen_asm(ostream& o) {
     gen_asm_prologue(o);
     for (BasicBlock* bb : bbs)
         bb->gen_asm(o);
-    o << "  .section .note.GNU-stack,\"\",@progbits\n"; //eviter les avertissements de linker
+    exit_bb->gen_asm(o);  
 }
 
 void BasicBlock::gen_asm(ostream& o) {
