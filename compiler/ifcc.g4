@@ -2,12 +2,17 @@ grammar ifcc;
 
 axiom : prog EOF ;
 
-prog : 'int' 'main' '(' ')' '{' stmt* '}' ;
+prog : 'int' 'main' '(' ')' block  ;
 
-stmt :(return_stmt | assign | declar) ';' ;
+stmt
+    : (return_stmt | assign | declar) ';'
+    | block
+    ;
+
 return_stmt : RETURN expr ;
 assign : ID '=' expr ;
 declar : 'int' ID (',' ID)* ;
+block : '{' stmt* '}' ;
 
 expr : '-' expr                            # exprUnaryMinus
     | '!' expr                            # exprUnaryNot

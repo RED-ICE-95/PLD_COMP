@@ -5,16 +5,28 @@ void BasicBlock::add_IRInstr(IRInstr::Operation op, Type t, vector<string> param
     instrs.push_back(new IRInstr (this, op, t, params));
 }
 
+void CFG::push_scope() {
+    ScopeIndex.push_back({});
+    ScopeType.push_back({});
+}
+
+void CFG::pop_scope() {
+    ScopeIndex.pop_back();
+    ScopeType.pop_back();
+}
+
+
 void CFG::add_bb(BasicBlock* bb) {
     bbs.push_back(bb);
     current_bb = bb;
 }
 
 void CFG::add_to_symbol_table(string name, Type t) {
-    SymbolType[name] = t;
-    SymbolIndex[name] = nextFreeSymbolIndex;
+    ScopeType.back()[name] = t;
+    ScopeIndex.back()[name] = nextFreeSymbolIndex;
     nextFreeSymbolIndex += 4;
 }
+
 
 string CFG::create_new_tempvar(Type t) {
     string name = "!tmp" + to_string(nextFreeSymbolIndex);
@@ -23,11 +35,17 @@ string CFG::create_new_tempvar(Type t) {
 }
 
 int CFG::get_var_index(string name) {
-    return SymbolIndex[name];
+    for (int i = ScopeIndex.size() - 1; i >= 0; i--)
+        if (ScopeIndex[i].count(name))
+            return ScopeIndex[i][name];
+    return -1; // ne devrait pas arriver si SymbolTableVisitor a fait son travail
 }
 
 Type CFG::get_var_type(string name) {
-    return SymbolType[name];
+    for (int i = ScopeType.size() - 1; i >= 0; i--)
+        if (ScopeType[i].count(name))
+            return ScopeType[i][name];
+    return INT32;
 }
 
 string CFG::new_BB_name() {

@@ -17,6 +17,7 @@ class  CodeGenVisitor : public ifccBaseVisitor {
         virtual std::any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
         virtual std::any visitDeclar(ifccParser::DeclarContext *ctx) override;
         virtual std::any visitAssign(ifccParser::AssignContext *ctx) override;
+        virtual std::any visitBlock(ifccParser::BlockContext *ctx) override;
 
         // pour les différentes formes d'expressions
         virtual std::any visitExprConst(ifccParser::ExprConstContext *ctx) override;

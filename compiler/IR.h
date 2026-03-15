@@ -160,9 +160,12 @@ class CFG {
 	string new_BB_name();
 	BasicBlock* current_bb;
 
+	void push_scope();
+	void pop_scope();
+
  protected:
-	map <string, Type> SymbolType; /**< part of the symbol table  */
-	map <string, int> SymbolIndex; /**< part of the symbol table  */
+	vector<map<string, Type>> ScopeType;
+	vector<map<string, int>>  ScopeIndex;
 	int nextFreeSymbolIndex; /**< to allocate new symbols in the symbol table */
 	int nextBBnumber; /**< just for naming */
 	

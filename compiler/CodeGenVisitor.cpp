@@ -4,6 +4,7 @@
 
 CodeGenVisitor::CodeGenVisitor(DefFonction* ast) {
     cfg = new CFG(ast);
+    cfg->push_scope();                                        
     BasicBlock* bb = new BasicBlock(cfg, cfg->new_BB_name());
     cfg->add_bb(bb);
     cfg->add_to_symbol_table("!ret", INT32);
@@ -11,10 +12,16 @@ CodeGenVisitor::CodeGenVisitor(DefFonction* ast) {
 
 std::any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
+    this->visit(ctx->block());
+    cfg->gen_asm(cout);
+    return 0;
+}
+
+std::any CodeGenVisitor::visitBlock(ifccParser::BlockContext *ctx)
+{
     for (auto sctx : ctx->stmt()) {
         this->visit(sctx);
     }
-    cfg->gen_asm(cout);
     return 0;
 }
 
