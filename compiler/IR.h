@@ -156,6 +156,9 @@ class CFG {
 	int get_var_index(string name);
 	Type get_var_type(string name);
 
+	// IR.h dans public de CFG
+int getNextIndex() const { return nextFreeSymbolIndex; }
+
 	// basic block management
 	string new_BB_name();
 	BasicBlock* current_bb;

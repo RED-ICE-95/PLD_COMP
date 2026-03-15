@@ -19,9 +19,10 @@ std::any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 
 std::any CodeGenVisitor::visitBlock(ifccParser::BlockContext *ctx)
 {
-    for (auto sctx : ctx->stmt()) {
+    scopeRename.push_back({});
+    for (auto sctx : ctx->stmt())
         this->visit(sctx);
-    }
+    scopeRename.pop_back();
     return 0;
 }
 
@@ -35,18 +36,14 @@ std::any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 std::any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
 {
     for (auto id : ctx->ID()) {
-        cfg->add_to_symbol_table(id->getText(), INT32);
+        string originalName = id->getText();
+        string uniqueName = originalName + "_" + to_string(cfg->getNextIndex());
+        cfg->add_to_symbol_table(uniqueName, INT32);
+        scopeRename.back()[originalName] = uniqueName;
     }
     return 0;
 }
 
-std::any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx)
-{
-    string varName = ctx->ID()->getText();
-    string exprVar = any_cast<string>(this->visit(ctx->expr()));
-    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
-    return varName;
-}
 
 std::any CodeGenVisitor::visitExprConst(ifccParser::ExprConstContext *ctx)
 {
@@ -79,9 +76,17 @@ std::any CodeGenVisitor::visitExprCharConst(ifccParser::ExprCharConstContext *ct
     return destVar;
 }
 
+std::any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx)
+{
+    string varName = resolve(ctx->ID()->getText());
+    string exprVar = any_cast<string>(this->visit(ctx->expr()));
+    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
+    return varName;
+}
+
 std::any CodeGenVisitor::visitExprId(ifccParser::ExprIdContext *ctx)
 {
-    string varName = ctx->ID()->getText();
+    string varName = resolve(ctx->ID()->getText());
     string destVar = cfg->create_new_tempvar(INT32);
     cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {destVar, varName});
     return destVar;
