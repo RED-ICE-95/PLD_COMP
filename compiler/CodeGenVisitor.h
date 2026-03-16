@@ -18,6 +18,7 @@ class  CodeGenVisitor : public ifccBaseVisitor {
         virtual std::any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
         virtual std::any visitDeclar(ifccParser::DeclarContext *ctx) override;
         virtual std::any visitAssign(ifccParser::AssignContext *ctx) override;
+        virtual std::any visitBlock(ifccParser::BlockContext *ctx) override;
 
         // pour les différentes formes d'expressions
         virtual std::any visitExprConst(ifccParser::ExprConstContext *ctx) override;
@@ -33,8 +34,27 @@ class  CodeGenVisitor : public ifccBaseVisitor {
         virtual std::any visitExprBitAnd(ifccParser::ExprBitAndContext *ctx) override;
         virtual std::any visitExprEq(ifccParser::ExprEqContext *ctx) override;
         virtual std::any visitExprCmp(ifccParser::ExprCmpContext *ctx) override;
+        virtual std::any visitCall_stmt(ifccParser::Call_stmtContext *ctx) override;
+        virtual std::any visitExprCall(ifccParser::ExprCallContext *ctx) override;
+        virtual std::any visitFonctDecl(ifccParser::FonctDeclContext *ctx) override;
+        virtual std::any visitExprFonctCall(ifccParser::ExprFonctCallContext *ctx) override;
+
 
         private:
         CFG* cfg;
+        vector<map<string, string>> scopeRename;
+
+        string resolve(const string& name) {
+                for (int i = scopeRename.size() - 1; i >= 0; i--)
+                if (scopeRename[i].count(name))
+                        return scopeRename[i][name];
+                return name; // !ret, !tmpN passent tels quels
+        }
+
+        // ── Propagation de constantes ─────────────────────────────────────────
+        // Convention : un visit* peut retourner "$n" (ex: "$42") pour signifier
+        // une constante connue à la compilation. Aucune IRInstr n'est alors émise.
+        // materialize() convertit une telle valeur en vrai registre IR si besoin.
+        std::string materialize(const std::string& val);
 };
 
