@@ -4,7 +4,7 @@ axiom : prog EOF ;
 
 prog : fonctDecl* 'int' 'main' '(' ')' block ;
 
-fonctDecl: ('void'|'int') ID '(' ')' block;
+fonctDecl: ('void'|'int') ID '('list_decl_param')' block;
 stmt
     : (return_stmt | assign | declar| call_stmt) ';'
     | block
@@ -15,6 +15,8 @@ assign : ID '=' expr ;
 declar : 'int' ID ('=' expr)? (',' ID ('=' expr)?)* ;
 block : '{' stmt* '}' ;
 call_stmt : ID '(' expr? ')' ;
+list_decl_param : ('int' ID (',' 'int' ID)*)?;
+list_param : (expr (',' expr)*)?;
 
 expr : ID '(' expr? ')'                    # exprCall
     | '-' expr                            # exprUnaryMinus
@@ -22,7 +24,7 @@ expr : ID '(' expr? ')'                    # exprCall
     | '(' expr ')'                        # exprParen
     | CONST                               # exprConst
     | CHAR_CONST                          # exprCharConst
-    | ID '(' ')'                          # exprFonctCall
+    | ID '(' list_param ')'               # exprFonctCall
     | ID                                  # exprId
     | expr ('*' | '/' | '%') expr         # exprMult
     | expr ('+' | '-') expr               # exprAdd
