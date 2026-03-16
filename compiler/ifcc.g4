@@ -5,28 +5,30 @@ axiom : prog EOF ;
 prog : 'int' 'main' '(' ')' block  ;
 
 stmt
-    : (return_stmt | assign | declar) ';'
+    :  (return_stmt | assign | declar | call_stmt) ';'
     | block
     ;
 
 return_stmt : RETURN expr ;
 assign : ID '=' expr ;
-declar : 'int' ID (',' ID)* ;
+declar : 'int' ID ('=' expr)? (',' ID ('=' expr)?)* ;
 block : '{' stmt* '}' ;
+call_stmt : ID '(' expr? ')' ;
 
-expr : '-' expr                            # exprUnaryMinus
-    | '!' expr                            # exprUnaryNot
-    | '(' expr ')'                        # exprParen
-    | CONST                               # exprConst
-    | CHAR_CONST                          # exprCharConst
-    | ID                                  # exprId
-    | expr ('*' | '/' | '%') expr         # exprMult
-    | expr ('+' | '-') expr               # exprAdd
-    | expr ('<' | '>') expr               # exprCmp
-    | expr ('==' | '!=') expr             # exprEq
-    | expr '&' expr                       # exprBitAnd
-    | expr '^' expr                       # exprBitXor
-    | expr '|' expr                       # exprBitOr
+expr : ID '(' expr? ')'                    # exprCall
+    | '-' expr                             # exprUnaryMinus
+    | '!' expr                             # exprUnaryNot
+    | '(' expr ')'                         # exprParen
+    | CONST                                # exprConst
+    | CHAR_CONST                           # exprCharConst
+    | ID                                   # exprId
+    | expr ('*' | '/' | '%') expr          # exprMult
+    | expr ('+' | '-') expr                # exprAdd
+    | expr ('<' | '>') expr                # exprCmp
+    | expr ('==' | '!=') expr              # exprEq
+    | expr '&' expr                        # exprBitAnd
+    | expr '^' expr                        # exprBitXor
+    | expr '|' expr                        # exprBitOr
     ;
 
 RETURN : 'return' ;

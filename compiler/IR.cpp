@@ -153,7 +153,8 @@ void IRInstr::gen_asm(ostream& o) {
                 string regs[] = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
                 o << "  movl " << bb->cfg->IR_reg_to_asm(params[i]) << ", " << regs[i-2] << "\n";
             }
-            o << "  call " << params[0] << "\n";
+            o << "  movl $0, %eax\n";
+            o << "  call " << params[0] << "@PLT\n";
             if (params[1] != "")
                 o << "  movl %eax, " << bb->cfg->IR_reg_to_asm(params[1]) << "\n";
             break;
