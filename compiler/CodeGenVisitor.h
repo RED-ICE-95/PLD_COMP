@@ -8,6 +8,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <string>
+#include "generated/ifccParser.h"
 
 class  CodeGenVisitor : public ifccBaseVisitor {
 	public:
@@ -18,6 +19,7 @@ class  CodeGenVisitor : public ifccBaseVisitor {
         virtual std::any visitDeclar(ifccParser::DeclarContext *ctx) override;
         virtual std::any visitAssign(ifccParser::AssignContext *ctx) override;
         virtual std::any visitBlock(ifccParser::BlockContext *ctx) override;
+        virtual std::any visitIfStmt(ifccParser::IfStmtContext *ctx) override;
 
         // pour les différentes formes d'expressions
         virtual std::any visitExprConst(ifccParser::ExprConstContext *ctx) override;
@@ -46,4 +48,3 @@ class  CodeGenVisitor : public ifccBaseVisitor {
                 return name; // !ret, !tmpN passent tels quels
         }
 };
-

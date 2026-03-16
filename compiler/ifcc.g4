@@ -2,19 +2,24 @@ grammar ifcc;
 
 axiom : prog EOF ;
 
-prog : 'int' 'main' '(' ')' block  ;
+prog : 'int' 'main' '(' ')' block ;
 
 stmt
     : (return_stmt | assign | declar) ';'
     | block
+    | ifStmt      
     ;
 
 return_stmt : RETURN expr ;
-assign : ID '=' expr ;
-declar : 'int' ID (',' ID)* ;
-block : '{' stmt* '}' ;
+assign      : ID '=' expr ;
+declar      : 'int' ID (',' ID)* ;
+block       : '{' stmt* '}' ;
 
-expr : '-' expr                            # exprUnaryMinus
+ifStmt
+    : 'if' '(' expr ')' stmt ('else' stmt)? ;
+
+expr
+    : '-' expr                            # exprUnaryMinus
     | '!' expr                            # exprUnaryNot
     | '(' expr ')'                        # exprParen
     | CONST                               # exprConst
@@ -29,11 +34,11 @@ expr : '-' expr                            # exprUnaryMinus
     | expr '|' expr                       # exprBitOr
     ;
 
-RETURN : 'return' ;
-CONST : [0-9]+ ;
-CHAR_CONST : '\'' (~['\\] | '\\' .) '\'' ;
-ID : [a-zA-Z_][a-zA-Z0-9_]* ;
-COMMENT : '/*' .*? '*/' -> skip ;
+RETURN    : 'return' ;
+CONST     : [0-9]+ ;
+CHAR_CONST: '\'' (~['\\] | '\\' .) '\'' ;
+ID        : [a-zA-Z_][a-zA-Z0-9_]* ;
+COMMENT   : '/*' .*? '*/' -> skip ;
 LINE_COMMENT : '//' ~[\r\n]* -> skip ;
 DIRECTIVE : '#' .*? '\n' -> skip ;
-WS    : [ \t\r\n] -> channel(HIDDEN);
+WS        : [ \t\r\n]+ -> channel(HIDDEN);

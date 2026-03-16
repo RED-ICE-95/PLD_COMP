@@ -220,3 +220,46 @@ std::any CodeGenVisitor::visitExprCmp(ifccParser::ExprCmpContext *ctx)
 }
 
 
+std::any CodeGenVisitor::visitIfStmt(ifccParser::IfStmtContext *ctx) { 
+    // 1 évaluer la condition
+    string condVar = any_cast<string>(visit(ctx->expr()));
+
+    // 2️ créer les blocs
+    BasicBlock* bb_if   = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* bb_else = nullptr;
+    BasicBlock* bb_end  = new BasicBlock(cfg, cfg->new_BB_name());
+
+    if (ctx->stmt().size() == 2) {
+        bb_else = new BasicBlock(cfg, cfg->new_BB_name());
+    }
+
+    // 3 configurer le bloc courant
+    cfg->current_bb->test_var_name = condVar;
+    cfg->current_bb->exit_true = bb_if;
+
+    if (bb_else)
+        cfg->current_bb->exit_false = bb_else;
+    else
+        cfg->current_bb->exit_false = bb_end;
+
+    // 4 bloc IF
+    cfg->add_bb(bb_if);
+    visit(ctx->stmt(0));
+
+    cfg->current_bb->exit_true = bb_end;
+    cfg->current_bb->exit_false = nullptr;
+
+    // 5 bloc ELSE
+    if (bb_else) {
+        cfg->add_bb(bb_else);
+        visit(ctx->stmt(1));
+
+        cfg->current_bb->exit_true = bb_end;
+        cfg->current_bb->exit_false = nullptr;
+    }
+
+    // 6 bloc END
+    cfg->add_bb(bb_end);
+
+    return 0;
+}
