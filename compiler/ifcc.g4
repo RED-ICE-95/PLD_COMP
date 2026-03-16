@@ -5,13 +5,19 @@ axiom : prog EOF ;
 prog : fonctDecl* 'int' 'main' '(' ')' block ;
 
 fonctDecl: ('void'|'int') ID '(' ')' block;
-stmt :(return_stmt | assign | declar) ';' | block ;
+stmt
+    : (return_stmt | assign | declar| call_stmt) ';'
+    | block
+    ;
+
 return_stmt : RETURN expr ;
 assign : ID '=' expr ;
-declar : 'int' ID (',' ID)* ;
+declar : 'int' ID ('=' expr)? (',' ID ('=' expr)?)* ;
 block : '{' stmt* '}' ;
+call_stmt : ID '(' expr? ')' ;
 
-expr : '-' expr                            # exprUnaryMinus
+expr : ID '(' expr? ')'                    # exprCall
+    | '-' expr                            # exprUnaryMinus
     | '!' expr                            # exprUnaryNot
     | '(' expr ')'                        # exprParen
     | CONST                               # exprConst
