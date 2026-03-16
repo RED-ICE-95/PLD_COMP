@@ -1,6 +1,8 @@
 #include "IR.h"
 using namespace std;
 
+int CFG::nextBBnumber = 0;
+
 void BasicBlock::add_IRInstr(IRInstr::Operation op, Type t, vector<string> params) {
     instrs.push_back(new IRInstr (this, op, t, params));
 }
@@ -73,7 +75,9 @@ void CFG::gen_asm_prologue(ostream& o) {
 }
 
 void CFG::gen_asm_epilogue(ostream& o) {
+    if (ast->returnType != VOID) {
     o << "  movl " << IR_reg_to_asm("!ret") << ", %eax\n";
+    }
     o << "  movq %rbp, %rsp\n";
     o << "  popq %rbp\n";
     o << "  ret\n";

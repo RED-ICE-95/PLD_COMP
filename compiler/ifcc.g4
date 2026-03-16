@@ -2,10 +2,11 @@ grammar ifcc;
 
 axiom : prog EOF ;
 
-prog : 'int' 'main' '(' ')' block  ;
+prog : fonctDecl* 'int' 'main' '(' ')' block ;
 
+fonctDecl: ('void'|'int') ID '(' ')' block;
 stmt
-    :  (return_stmt | assign | declar | call_stmt) ';'
+    : (return_stmt | assign | declar| call_stmt) ';'
     | block
     ;
 
@@ -16,19 +17,20 @@ block : '{' stmt* '}' ;
 call_stmt : ID '(' expr? ')' ;
 
 expr : ID '(' expr? ')'                    # exprCall
-    | '-' expr                             # exprUnaryMinus
-    | '!' expr                             # exprUnaryNot
-    | '(' expr ')'                         # exprParen
-    | CONST                                # exprConst
-    | CHAR_CONST                           # exprCharConst
-    | ID                                   # exprId
-    | expr ('*' | '/' | '%') expr          # exprMult
-    | expr ('+' | '-') expr                # exprAdd
-    | expr ('<' | '>') expr                # exprCmp
-    | expr ('==' | '!=') expr              # exprEq
-    | expr '&' expr                        # exprBitAnd
-    | expr '^' expr                        # exprBitXor
-    | expr '|' expr                        # exprBitOr
+    | '-' expr                            # exprUnaryMinus
+    | '!' expr                            # exprUnaryNot
+    | '(' expr ')'                        # exprParen
+    | CONST                               # exprConst
+    | CHAR_CONST                          # exprCharConst
+    | ID '(' ')'                          # exprFonctCall
+    | ID                                  # exprId
+    | expr ('*' | '/' | '%') expr         # exprMult
+    | expr ('+' | '-') expr               # exprAdd
+    | expr ('<' | '>') expr               # exprCmp
+    | expr ('==' | '!=') expr             # exprEq
+    | expr '&' expr                       # exprBitAnd
+    | expr '^' expr                       # exprBitXor
+    | expr '|' expr                       # exprBitOr
     ;
 
 RETURN : 'return' ;

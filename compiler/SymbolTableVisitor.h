@@ -2,6 +2,8 @@
 
 #include <string>
 #include <unordered_set>
+#include <map>
+#include "type.h"
 #include <vector>
 
 #include "antlr4-runtime.h"
@@ -15,13 +17,18 @@ public:
     virtual std::any visitExprId(ifccParser::ExprIdContext *ctx) override;
     virtual std::any visitProg(ifccParser::ProgContext *ctx) override;
     virtual std::any visitBlock(ifccParser::BlockContext *ctx) override;
-    
+    virtual std::any visitFonctDecl(ifccParser::FonctDeclContext *ctx) override;
+    virtual std::any visitExprCall(ifccParser::ExprCallContext *ctx) override;
+    virtual std::any visitExprFonctCall(ifccParser::ExprFonctCallContext *ctx) override;
     bool hasErrors() const { return errorFlag; }
 
 private:
     // pile de scopes
     std::vector<std::unordered_set<std::string>> scopeStack;
     std::unordered_set<std::string> usedVars;
+    std::unordered_set<std::string> declaredVars;     // variables déclarées
+    
+    std::map<std::string, Type> functionReturnTypes;     // variables assignées
     bool errorFlag = false;
 
     void pushScope() { scopeStack.push_back({}); }

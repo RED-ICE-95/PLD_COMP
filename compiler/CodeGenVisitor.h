@@ -35,6 +35,8 @@ class  CodeGenVisitor : public ifccBaseVisitor {
         virtual std::any visitExprCmp(ifccParser::ExprCmpContext *ctx) override;
         virtual std::any visitCall_stmt(ifccParser::Call_stmtContext *ctx) override;
         virtual std::any visitExprCall(ifccParser::ExprCallContext *ctx) override;
+        virtual std::any visitFonctDecl(ifccParser::FonctDeclContext *ctx) override;
+        virtual std::any visitExprFonctCall(ifccParser::ExprFonctCallContext *ctx) override;
 
 
         private:
