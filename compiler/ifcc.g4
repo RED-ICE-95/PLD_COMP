@@ -2,12 +2,17 @@ grammar ifcc;
 
 axiom : prog EOF ;
 
-prog : 'int' 'main' '(' ')' '{' stmt* '}' ;
+prog : 'int' 'main' '(' ')' block  ;
 
-stmt : (return_stmt | assign | declar | call_stmt) ';' ;
+stmt
+    :  (return_stmt | assign | declar | call_stmt) ';'
+    | block
+    ;
+
 return_stmt : RETURN expr ;
 assign : ID '=' expr ;
 declar : 'int' ID ('=' expr)? (',' ID ('=' expr)?)* ;
+block : '{' stmt* '}' ;
 call_stmt : ID '(' expr? ')' ;
 
 expr : ID '(' expr? ')'                    # exprCall

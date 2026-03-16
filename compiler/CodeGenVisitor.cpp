@@ -4,6 +4,11 @@
 
 CodeGenVisitor::CodeGenVisitor(DefFonction* ast) {
     cfg = new CFG(ast);
+    cfg->push_scope();
+    
+    // BB de sortie unique pour tous les return
+    cfg->exit_bb = new BasicBlock(cfg, cfg->new_BB_name() + "_exit");
+    
     BasicBlock* bb = new BasicBlock(cfg, cfg->new_BB_name());
     cfg->add_bb(bb);
     cfg->add_to_symbol_table("!ret", INT32);
@@ -11,10 +16,17 @@ CodeGenVisitor::CodeGenVisitor(DefFonction* ast) {
 
 std::any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
-    for (auto sctx : ctx->stmt()) {
-        this->visit(sctx);
-    }
+    this->visit(ctx->block());
     cfg->gen_asm(cout);
+    return 0;
+}
+
+std::any CodeGenVisitor::visitBlock(ifccParser::BlockContext *ctx)
+{
+    scopeRename.push_back({});
+    for (auto sctx : ctx->stmt())
+        this->visit(sctx);
+    scopeRename.pop_back();
     return 0;
 }
 
@@ -22,6 +34,15 @@ std::any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 {
     string exprVar = any_cast<string>(this->visit(ctx->expr()));
     cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {"!ret", exprVar});
+    
+    // sauter vers le BB de sortie
+    cfg->current_bb->exit_true = cfg->exit_bb;
+    cfg->current_bb->exit_false = nullptr;
+    
+    // créer un nouveau BB mort pour les instructions qui suivent éventuellement
+    BasicBlock* dead_bb = new BasicBlock(cfg, cfg->new_BB_name());
+    cfg->add_bb(dead_bb);
+    
     return 0;
 }
 
@@ -44,13 +65,6 @@ std::any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
     return 0;
 }
 
-std::any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx)
-{
-    string varName = ctx->ID()->getText();
-    string exprVar = any_cast<string>(this->visit(ctx->expr()));
-    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
-    return varName;
-}
 
 std::any CodeGenVisitor::visitExprConst(ifccParser::ExprConstContext *ctx)
 {
@@ -83,9 +97,17 @@ std::any CodeGenVisitor::visitExprCharConst(ifccParser::ExprCharConstContext *ct
     return destVar;
 }
 
+std::any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx)
+{
+    string varName = resolve(ctx->ID()->getText());
+    string exprVar = any_cast<string>(this->visit(ctx->expr()));
+    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
+    return varName;
+}
+
 std::any CodeGenVisitor::visitExprId(ifccParser::ExprIdContext *ctx)
 {
-    string varName = ctx->ID()->getText();
+    string varName = resolve(ctx->ID()->getText());
     string destVar = cfg->create_new_tempvar(INT32);
     cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {destVar, varName});
     return destVar;
