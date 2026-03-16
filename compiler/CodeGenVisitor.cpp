@@ -196,8 +196,12 @@ std::any CodeGenVisitor::visitExprCharConst(ifccParser::ExprCharConstContext *ct
 
 std::any CodeGenVisitor::visitExprId(ifccParser::ExprIdContext *ctx)
 {
-    return resolve(ctx->ID()->getText());
+    string varName = resolve(ctx->ID()->getText());
+    string destVar = cfg->create_new_tempvar(INT32);
+    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {destVar, varName});
+    return destVar;
 }
+
 
 std::any CodeGenVisitor::visitExprParen(ifccParser::ExprParenContext *ctx)
 {
@@ -380,6 +384,7 @@ std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
     vector<string> argVars;
     if (ctx->expr()) {
         string argVar = any_cast<string>(visit(ctx->expr()));
+        argVar = materialize(argVar);
         argVars.push_back(argVar);
     }
     
@@ -402,6 +407,7 @@ std::any CodeGenVisitor::visitExprCall(ifccParser::ExprCallContext *ctx)
     vector<string> argVars;
     if (ctx->expr()) {
         string argVar = any_cast<string>(visit(ctx->expr()));
+        argVar = materialize(argVar);
         argVars.push_back(argVar);
     }
     
@@ -415,6 +421,17 @@ std::any CodeGenVisitor::visitExprCall(ifccParser::ExprCallContext *ctx)
     cfg->current_bb->add_IRInstr(IRInstr::call, INT32, callParams);
     
     return retVar;  // Retourne la variable contenant le résultat
+}
+
+std::any CodeGenVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext *ctx)
+{
+    // appel fonction sans paramètres pour l'instant
+    string fctName = ctx->ID()->getText();
+    // Crée une variable temporaire pour stocker le résultat
+    string destVar = cfg->create_new_tempvar(INT32);
+    cfg->current_bb->add_IRInstr(IRInstr::call, INT32, {fctName, destVar});
+    
+    return destVar;
 }
 
 
