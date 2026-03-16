@@ -240,6 +240,10 @@ for inputfilename in inputfilenames:
         
     os.mkdir(pld_base_dir+'/ifcc-test-output/'+subdirname)
     shutil.copyfile(inputfilename,pld_base_dir+'/ifcc-test-output/'+subdirname+'/input.c')
+    # Also copy .in file if it exists (for stdin input)
+    inputdatafile = inputfilename[:-2] + '.in'
+    if os.path.exists(inputdatafile):
+        shutil.copyfile(inputdatafile,pld_base_dir+'/ifcc-test-output/'+subdirname+'/input.in')
     jobs.append(subdirname)
 
 ## eliminate duplicate paths from the 'jobs' list
@@ -278,7 +282,9 @@ for jobname in jobs:
         # test-case is a valid program. we should run it
         gccstatus=run_command("gcc -o exe-gcc asm-gcc.s", "gcc-link.txt")
     if gccstatus == 0: # then both compile and link stage went well
-        exegccstatus=run_command("./exe-gcc", "gcc-execute.txt")
+        # Check if there's an input file for stdin
+        input_redirect = "< input.in" if os.path.exists("input.in") else "< /dev/null"
+        exegccstatus=run_command(f"./exe-gcc {input_redirect}", "gcc-execute.txt")
         if args.verbose >=2:
             dumpfile("gcc-execute.txt")
             
@@ -319,8 +325,10 @@ for jobname in jobs:
 
     ## both compilers  did produce an  executable, so now we  run both
     ## these executables and compare the results.
-        
-    run_command("./exe-ifcc", "ifcc-execute.txt")
+    
+    # Check if there's an input file for stdin
+    input_redirect = "< input.in" if os.path.exists("input.in") else "< /dev/null"
+    run_command(f"./exe-ifcc {input_redirect}", "ifcc-execute.txt")
     if open("gcc-execute.txt").read() != open("ifcc-execute.txt").read() :
         print("TEST FAIL (different results at execution)")
         all_ok=False

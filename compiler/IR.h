@@ -56,6 +56,9 @@ class IRInstr {
 			cmp_gt,
 			cmp_ge
 		} Operation;
+		BasicBlock* bb; /**< The BB this instruction belongs to, which provides a pointer to the CFG this instruction belong to */
+		vector<string> params; /**< For 3-op instrs: d, x, y; for ldconst: d, c;  For call: label, d, params;  for wmem and rmem: choose yourself */
+
 
 
 		/**  constructor */
@@ -65,12 +68,11 @@ class IRInstr {
 		/** Actual code generation */
 		void gen_asm(ostream &o); /**< x86 assembly code generation for this IR instruction */
 		void gen_asm_msp430(ostream& o); /**< MSP430 assembly code generation for this IR instruction */
-
-		private:
+		
+	private:
 		BasicBlock* bb; /**< The BB this instruction belongs to, which provides a pointer to the CFG this instruction belong to */
 		Operation op;
 		Type t;
-		vector<string> params; /**< For 3-op instrs: d, x, y; for ldconst: d, c;  For call: label, d, params;  for wmem and rmem: choose yourself */
 		// if you subclass IRInstr, each IRInstr subclass has its parameters and the previous (very important) comment becomes useless: it would be a better design. 
 };
 
@@ -141,7 +143,7 @@ class BasicBlock {
  */
 class CFG {
  public:
-	CFG(DefFonction* ast) : ast(ast), nextFreeSymbolIndex(4), nextBBnumber(0) {};
+	CFG(DefFonction* ast) : ast(ast), nextFreeSymbolIndex(4) {};
 
 	DefFonction* ast; /**< The AST this CFG comes from */
 	
@@ -160,15 +162,24 @@ class CFG {
 	int get_var_index(string name);
 	Type get_var_type(string name);
 
+	
+	int getNextIndex() const { return nextFreeSymbolIndex; }
+
 	// basic block management
 	string new_BB_name();
 	BasicBlock* current_bb;
+	BasicBlock* exit_bb;
+
+	void push_scope();
+	void pop_scope();
+
 
  protected:
-	map <string, Type> SymbolType; /**< part of the symbol table  */
-	map <string, int> SymbolIndex; /**< part of the symbol table  */
+ 
+	vector<map<string, Type>> ScopeType;
+	vector<map<string, int>>  ScopeIndex;
 	int nextFreeSymbolIndex; /**< to allocate new symbols in the symbol table */
-	int nextBBnumber; /**< just for naming */
+	static int nextBBnumber; /**< just for naming */
 	
 	vector <BasicBlock*> bbs; /**< all the basic blocks of this CFG*/
 };
