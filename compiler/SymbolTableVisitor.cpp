@@ -1,38 +1,59 @@
 #include "SymbolTableVisitor.h"
 
+std::any SymbolTableVisitor::visitProg(ifccParser::ProgContext *ctx) {
+    //scope global de main géré par visitBlock
+    return visitChildren(ctx);
+}
+
+std::any SymbolTableVisitor::visitBlock(ifccParser::BlockContext *ctx) {
+    pushScope();
+    auto result = visitChildren(ctx);
+    
+    for (auto& varName : scopeStack.back()) {
+        if (!usedVars.count(varName)) {
+            std::cerr << "Avertissement : variable '" << varName 
+                      << "' déclarée mais jamais utilisée.\n";
+        }
+    }
+    
+    popScope();
+    return result;
+}
+
 std::any SymbolTableVisitor::visitDeclar(ifccParser::DeclarContext *ctx) {
     for (size_t i = 0; i < ctx->ID().size(); i++) {
         std::string varName = ctx->ID(i)->getText();
 
-        if (declaredVars.count(varName)) {
-            std::cerr << "Erreur : variable '" << varName << "' déjà déclarée.\n";
+        if (isDeclaredInCurrentScope(varName)) {
+            std::cerr << "Erreur : variable '" << varName 
+                      << "' déjà déclarée dans ce bloc.\n";
             errorFlag = true;
         } else {
-            declaredVars.insert(varName);
+            declare(varName);
         }
     }
-
     return visitChildren(ctx);
 }
 
 std::any SymbolTableVisitor::visitAssign(ifccParser::AssignContext *ctx) {
     std::string varName = ctx->ID()->getText();
 
-    if (!declaredVars.count(varName)) {
-        std::cerr << "Erreur : variable '" << varName << "' utilisée sans déclaration.\n";
+    if (!isDeclared(varName)) {
+        std::cerr << "Erreur : variable '" << varName 
+                  << "' utilisée sans déclaration.\n";
         errorFlag = true;
     } else {
         usedVars.insert(varName);
     }
-
     return visitChildren(ctx);
 }
 
 std::any SymbolTableVisitor::visitExprId(ifccParser::ExprIdContext *ctx) {
     if (ctx->ID() != nullptr) {
         std::string varName = ctx->ID()->getText();
-        if (!declaredVars.count(varName)) {
-            std::cerr << "Erreur : variable '" << varName << "' utilisée sans déclaration.\n";
+        if (!isDeclared(varName)) {
+            std::cerr << "Erreur : variable '" << varName 
+                      << "' utilisée sans déclaration.\n";
             errorFlag = true;
         } else {
             usedVars.insert(varName);
@@ -41,14 +62,3 @@ std::any SymbolTableVisitor::visitExprId(ifccParser::ExprIdContext *ctx) {
     return visitChildren(ctx);
 }
 
-std::any SymbolTableVisitor::visitProg(ifccParser::ProgContext *ctx) {
-    auto result = visitChildren(ctx);
-
-    for (auto &varName : declaredVars) {
-        if (!usedVars.count(varName)) {
-            std::cerr << "Avertissement : variable '" << varName << "' déclarée mais jamais utilisée.\n";
-        }
-    }
-
-    return result;
-}
