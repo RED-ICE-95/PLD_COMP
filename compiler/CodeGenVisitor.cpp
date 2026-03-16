@@ -25,15 +25,28 @@ std::any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 
 std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
 {
-    // on suppose que les fonctions n'ont pas de paramètres pour l'instant et ne retournent rien (void)
+    
+    // recurerer le type de retour preciser avant le nom de la fonction (void ou int)
+    // ctx->getStart() gives us the first token in the rule
+    string returnTypeText = ctx->getStart()->getText();
+    Type returnType = (returnTypeText == "void") ? VOID : INT32;   
+
+    // on suppose que les fonctions n'ont pas de paramètres pour l'instant et return soit void soit int
     string fctName = ctx->ID()->getText();
-    CFG* old_cfg = cfg;
-    DefFonction* fctAst = new DefFonction(fctName, vector<pair<string, Type>>{}, VOID);
+
+    CFG* old_cfg = cfg; 
+    DefFonction* fctAst = new DefFonction(fctName, vector<pair<string, Type>>{}, returnType);
     cfg = new CFG(fctAst);
 
     BasicBlock* bb = new BasicBlock(cfg, cfg->new_BB_name());
     cfg->add_bb(bb);
 
+    if (returnType != VOID) {
+        cfg->add_to_symbol_table("!ret", returnType);
+    }
+
+
+     // Générer un return implicite si la fonction n'en a pas ??
     for (auto stmt : ctx->stmt()) {
         this->visit(stmt);
     }

@@ -16,7 +16,9 @@ std::any SymbolTableVisitor::visitDeclar(ifccParser::DeclarContext *ctx) {
 }
 std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {
     std::string fctName = ctx->ID()->getText();
-    functionReturnTypes[fctName] = VOID; // void hardcodé pour l'instant
+    // recurerer le type de retour preciser avant le nom de la fonction (void ou int)
+    Type returnType = (ctx->getStart()->getText() == "void") ? VOID : INT32; 
+    functionReturnTypes[fctName] = returnType;
     return visitChildren(ctx);
 }
 
