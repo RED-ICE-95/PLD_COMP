@@ -2,8 +2,15 @@
 #include <unordered_map>
 #include <string>
 
-CodeGenVisitor::CodeGenVisitor(DefFonction* ast) {
-    cfg = new CFG(ast);
+CodeGenVisitor::CodeGenVisitor(DefFonction* ast, IRInstr::Target target) {
+    switch(target) {
+        case IRInstr::MSP430:
+            cfg = new CFG_MSP430(ast);
+            break;
+        default:
+            cfg = new CFG(ast);
+            break;
+    }
     BasicBlock* bb = new BasicBlock(cfg, cfg->new_BB_name());
     cfg->add_bb(bb);
     cfg->add_to_symbol_table("!ret", INT32);
