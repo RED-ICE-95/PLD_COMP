@@ -4,7 +4,7 @@ axiom : prog EOF ;
 
 prog : fonctDecl* 'int' 'main' '(' ')' block ;
 
-fonctDecl: ('void'|'int') ID '(' ')' '{' stmt* '}';
+fonctDecl: ('void'|'int') ID '(' ')' block;
 stmt :(return_stmt | assign | declar) ';' | block ;
 return_stmt : RETURN expr ;
 assign : ID '=' expr ;

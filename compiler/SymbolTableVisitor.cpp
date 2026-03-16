@@ -47,9 +47,7 @@ std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {
     // Ne PAS utiliser visitChildren : gérer le scope manuellement
     pushScope();
 
-    for (auto stmt : ctx->stmt()) {
-        this->visit(stmt);
-    }
+    this->visit(ctx->block());
 
     // Vérification des variables non utilisées dans la fonction
     for (auto& varName : scopeStack.back()) {

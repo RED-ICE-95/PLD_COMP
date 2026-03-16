@@ -52,9 +52,9 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
 
     scopeRename.push_back({}); // nouvelle table de renommage pour la fonction
      // Générer un return implicite si la fonction n'en a pas ??
-    for (auto stmt : ctx->stmt()) {
-        this->visit(stmt);
-    }
+    
+    this->visit(ctx->block());
+    
     scopeRename.pop_back();
     cfg->gen_asm(cout);
     cfg = old_cfg;
