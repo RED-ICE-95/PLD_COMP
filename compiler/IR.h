@@ -157,13 +157,22 @@ class CFG {
 	int get_var_index(string name);
 	Type get_var_type(string name);
 
+	
+	int getNextIndex() const { return nextFreeSymbolIndex; }
+
 	// basic block management
 	string new_BB_name();
 	BasicBlock* current_bb;
+	BasicBlock* exit_bb;
+
+	void push_scope();
+	void pop_scope();
+
 
  protected:
-	map <string, Type> SymbolType; /**< part of the symbol table  */
-	map <string, int> SymbolIndex; /**< part of the symbol table  */
+ 
+	vector<map<string, Type>> ScopeType;
+	vector<map<string, int>>  ScopeIndex;
 	int nextFreeSymbolIndex; /**< to allocate new symbols in the symbol table */
 	static int nextBBnumber; /**< just for naming */
 	
