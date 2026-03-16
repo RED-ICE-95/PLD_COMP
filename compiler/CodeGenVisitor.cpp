@@ -48,19 +48,11 @@ std::any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 
 std::any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
 {
-    // Parcourir tous les ID dans la déclaration
-    auto ids = ctx->ID();
-    auto exprs = ctx->expr();
-    
-    for (size_t i = 0; i < ids.size(); i++) {
-        string varName = ids[i]->getText();
-        cfg->add_to_symbol_table(varName, INT32);
-        
-        // Si cette variable a une initialisation
-        if (i < exprs.size() && exprs[i]) {
-            string exprVar = any_cast<string>(visit(exprs[i]));
-            cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
-        }
+    for (auto id : ctx->ID()) {
+        string originalName = id->getText();
+        string uniqueName = originalName + "_" + to_string(cfg->getNextIndex());
+        cfg->add_to_symbol_table(uniqueName, INT32);
+        scopeRename.back()[originalName] = uniqueName;
     }
     return 0;
 }
