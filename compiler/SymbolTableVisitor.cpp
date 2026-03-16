@@ -1,9 +1,13 @@
 #include "SymbolTableVisitor.h"
 
+
+
 std::any SymbolTableVisitor::visitProg(ifccParser::ProgContext *ctx) {
     //scope global de main géré par visitBlock
     return visitChildren(ctx);
 }
+
+
 
 std::any SymbolTableVisitor::visitBlock(ifccParser::BlockContext *ctx) {
     pushScope();
@@ -39,7 +43,24 @@ std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {
     // recurerer le type de retour preciser avant le nom de la fonction (void ou int)
     Type returnType = (ctx->getStart()->getText() == "void") ? VOID : INT32; 
     functionReturnTypes[fctName] = returnType;
-    return visitChildren(ctx);
+
+    // Ne PAS utiliser visitChildren : gérer le scope manuellement
+    pushScope();
+
+    for (auto stmt : ctx->stmt()) {
+        this->visit(stmt);
+    }
+
+    // Vérification des variables non utilisées dans la fonction
+    for (auto& varName : scopeStack.back()) {
+        if (!usedVars.count(varName)) {
+            std::cerr << "Avertissement : variable '" << varName
+                      << "' déclarée mais jamais utilisée.\n";
+        }
+    }
+
+    popScope();
+    return 0;
 }
 
 std::any SymbolTableVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext *ctx) {
@@ -53,7 +74,7 @@ std::any SymbolTableVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext
         errorFlag = true;
     }
 
-    return visitChildren(ctx);
+    return 0;
 }
 std::any SymbolTableVisitor::visitAssign(ifccParser::AssignContext *ctx) {
     std::string varName = ctx->ID()->getText();

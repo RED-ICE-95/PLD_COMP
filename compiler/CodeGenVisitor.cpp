@@ -18,6 +18,9 @@ CodeGenVisitor::CodeGenVisitor(DefFonction* ast) {
 
 std::any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
+    for (auto fctd : ctx->fonctDecl()) {
+        this->visit(fctd);
+    }
     this->visit(ctx->block());
     cfg->gen_asm(cout);
     return 0;
@@ -37,7 +40,8 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
     CFG* old_cfg = cfg; 
     DefFonction* fctAst = new DefFonction(fctName, vector<pair<string, Type>>{}, returnType);
     cfg = new CFG(fctAst);
-
+    cfg->push_scope();
+    cfg->exit_bb = new BasicBlock(cfg, cfg->new_BB_name() + "_exit");
     BasicBlock* bb = new BasicBlock(cfg, cfg->new_BB_name());
     cfg->add_bb(bb);
 
@@ -46,10 +50,12 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
     }
 
 
+    scopeRename.push_back({}); // nouvelle table de renommage pour la fonction
      // Générer un return implicite si la fonction n'en a pas ??
     for (auto stmt : ctx->stmt()) {
         this->visit(stmt);
     }
+    scopeRename.pop_back();
     cfg->gen_asm(cout);
     cfg = old_cfg;
         return 0;
@@ -58,9 +64,7 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
 std::any CodeGenVisitor::visitBlock(ifccParser::BlockContext *ctx)
 {
     scopeRename.push_back({});
-    for (auto fctd : ctx->fonctDecl()) {
-        this->visit(fctd);
-    }
+    
     for (auto sctx : ctx->stmt())
         this->visit(sctx);
     scopeRename.pop_back();
@@ -104,9 +108,10 @@ std::any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
     return 0;
 }
 
+
 std::any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx)
 {
-    string varName = ctx->ID()->getText();
+    string varName = resolve(ctx->ID()->getText());
     string exprVar = any_cast<string>(this->visit(ctx->expr()));
 
     // Si exprVar est un tempvar frais, on peut juste le réutiliser
@@ -167,13 +172,7 @@ std::any CodeGenVisitor::visitExprCharConst(ifccParser::ExprCharConstContext *ct
     return destVar;
 }
 
-std::any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx)
-{
-    string varName = resolve(ctx->ID()->getText());
-    string exprVar = any_cast<string>(this->visit(ctx->expr()));
-    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
-    return varName;
-}
+
 
 std::any CodeGenVisitor::visitExprId(ifccParser::ExprIdContext *ctx)
 {
