@@ -27,8 +27,19 @@ std::any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 
 std::any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
 {
-    for (auto id : ctx->ID()) {
-        cfg->add_to_symbol_table(id->getText(), INT32);
+    // Parcourir tous les ID dans la déclaration
+    auto ids = ctx->ID();
+    auto exprs = ctx->expr();
+    
+    for (size_t i = 0; i < ids.size(); i++) {
+        string varName = ids[i]->getText();
+        cfg->add_to_symbol_table(varName, INT32);
+        
+        // Si cette variable a une initialisation
+        if (i < exprs.size() && exprs[i]) {
+            string exprVar = any_cast<string>(visit(exprs[i]));
+            cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
+        }
     }
     return 0;
 }
@@ -192,6 +203,52 @@ std::any CodeGenVisitor::visitExprCmp(ifccParser::ExprCmpContext *ctx)
         cfg->current_bb->add_IRInstr(IRInstr::cmp_gt, INT32, {destVar, leftVar, rightVar});
     }
     return destVar;
+}
+
+// Appel de fonction en tant que statement (ex: putchar(x);)
+std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
+{
+    string functionName = ctx->ID()->getText();
+    
+    // Évaluer l'argument s'il existe
+    vector<string> argVars;
+    if (ctx->expr()) {
+        string argVar = any_cast<string>(visit(ctx->expr()));
+        argVars.push_back(argVar);
+    }
+    
+    // Construire les paramètres de l'instruction IR call
+    // Format: {nom_fonction, var_retour, arg1, arg2, ...}
+    vector<string> callParams = {functionName, ""};  // "" = pas de retour utilisé
+    callParams.insert(callParams.end(), argVars.begin(), argVars.end());
+    
+    cfg->current_bb->add_IRInstr(IRInstr::call, INT32, callParams);
+    
+    return 0;
+}
+
+// Appel de fonction en tant qu'expression (ex: x = getchar();)
+std::any CodeGenVisitor::visitExprCall(ifccParser::ExprCallContext *ctx)
+{
+    string functionName = ctx->ID()->getText();
+    
+    // Évaluer l'argument s'il existe
+    vector<string> argVars;
+    if (ctx->expr()) {
+        string argVar = any_cast<string>(visit(ctx->expr()));
+        argVars.push_back(argVar);
+    }
+    
+    // Créer une variable temporaire pour le retour
+    string retVar = cfg->create_new_tempvar(INT32);
+    
+    // Construire les paramètres de l'instruction IR call
+    vector<string> callParams = {functionName, retVar};
+    callParams.insert(callParams.end(), argVars.begin(), argVars.end());
+    
+    cfg->current_bb->add_IRInstr(IRInstr::call, INT32, callParams);
+    
+    return retVar;  // Retourne la variable contenant le résultat
 }
 
 
