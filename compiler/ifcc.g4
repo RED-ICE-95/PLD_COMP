@@ -7,6 +7,7 @@ prog : fonctDecl* 'int' 'main' '(' ')' block ;
 fonctDecl: ('void'|'int') ID '(' ')' block;
 stmt
     : (return_stmt | assign | declar| call_stmt) ';'
+    | if_stmt
     | block
     ;
 
@@ -16,8 +17,9 @@ declar : 'int' declItem (',' declItem)* ;
 declItem : ID ('=' expr)? ;
 block : '{' stmt* '}' ;
 call_stmt : ID '(' expr? ')' ;
+if_stmt : 'if' '(' expr ')' stmt ('else' stmt)? ;
 
-expr : ID '(' expr? ')'                    # exprCall
+expr : ID '(' expr? ')'                   # exprCall
     | '-' expr                            # exprUnaryMinus
     | '!' expr                            # exprUnaryNot
     | '(' expr ')'                        # exprParen

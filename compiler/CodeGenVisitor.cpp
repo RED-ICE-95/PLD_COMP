@@ -434,4 +434,39 @@ std::any CodeGenVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext *ct
     return destVar;
 }
 
+std::any CodeGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
+{
+    BasicBlock* testBB = cfg->current_bb;
+    string condVar = any_cast<string>(this->visit(ctx->expr()));
+    testBB->test_var_name = condVar;
+
+    BasicBlock* thenBB  = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* endIfBB = new BasicBlock(cfg, cfg->new_BB_name());
+    testBB->exit_true = thenBB;
+
+    // visiter le then — ctx->stmt(0)
+    cfg->add_bb(thenBB);
+    scopeRename.push_back({});
+    this->visit(ctx->stmt(0));   // ← un seul stmt, pas forcément un block
+    scopeRename.pop_back();
+    cfg->current_bb->exit_true  = endIfBB;
+    cfg->current_bb->exit_false = nullptr;
+
+    if (ctx->stmt().size() > 1) {
+        BasicBlock* elseBB = new BasicBlock(cfg, cfg->new_BB_name());
+        testBB->exit_false = elseBB;
+        cfg->add_bb(elseBB);
+        scopeRename.push_back({});
+        this->visit(ctx->stmt(1));   // ← le else stmt
+        scopeRename.pop_back();
+        cfg->current_bb->exit_true  = endIfBB;
+        cfg->current_bb->exit_false = nullptr;
+    } else {
+        testBB->exit_false = endIfBB;
+    }
+
+    cfg->add_bb(endIfBB);
+    return 0;
+}
+
 
