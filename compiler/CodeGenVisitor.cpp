@@ -472,6 +472,7 @@ std::any CodeGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 {
     BasicBlock* testBB = cfg->current_bb;
     string condVar = any_cast<string>(this->visit(ctx->expr()));
+    condVar = materialize(condVar);  
     testBB->test_var_name = condVar;
 
     BasicBlock* thenBB  = new BasicBlock(cfg, cfg->new_BB_name());
@@ -520,6 +521,7 @@ std::any CodeGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
 
     cfg->add_bb(testBB);
     string condVar = any_cast<string>(this->visit(ctx->expr()));
+    condVar = materialize(condVar);  
     testBB->test_var_name = condVar;
 
     cfg->add_bb(bodyBB);
