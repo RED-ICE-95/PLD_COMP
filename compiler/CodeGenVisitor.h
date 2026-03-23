@@ -4,6 +4,7 @@
 #include "antlr4-runtime.h"
 #include "generated/ifccBaseVisitor.h"
 #include "IR.h"
+#include "CFG_MSP430.h"
 
 #include <iostream>
 #include <unordered_map>
@@ -11,7 +12,7 @@
 
 class  CodeGenVisitor : public ifccBaseVisitor {
 	public:
-        explicit CodeGenVisitor(DefFonction* ast);
+        explicit CodeGenVisitor(DefFonction* ast, IRInstr::Target target);
 
         virtual std::any visitProg(ifccParser::ProgContext *ctx) override ;
         virtual std::any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
@@ -40,6 +41,7 @@ class  CodeGenVisitor : public ifccBaseVisitor {
 
         private:
         CFG* cfg;
+        IRInstr::Target target;
         vector<map<string, string>> scopeRename;
 
         string resolve(const string& name) {
