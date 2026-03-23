@@ -1,0 +1,425 @@
+#!/usr/bin/env python3
+import subprocess
+import sys
+import os
+import re
+import argparse
+import textwrap
+import shutil
+
+# Chemins
+PLD_BASE_DIR = os.path.normpath(os.path.dirname(__file__))
+COMPILER = f"{PLD_BASE_DIR}/compiler/ifcc"
+MSP430_AS = "msp430-elf-as"
+MSP430_LD = "msp430-elf-ld"
+LINKER_SCRIPT = "/mnt/c/msp430_emul/mspsim/msp430-gcc-9.3.1.11_linux64/msp430-elf/lib/430/exceptions/msp430xl-sim.ld"
+CRT0 = "/mnt/c/msp430_emul/mspsim/msp430-gcc-9.3.1.11_linux64/msp430-elf/lib/430/crt0.o"
+WORK_DIR = "/tmp/ifcc-msp430-test"
+MSP430_TOOLCHAIN = "/mnt/c/msp430_emul/mspsim/msp430-gcc-9.3.1.11_linux64/bin"
+
+def run_command(string, logfile=None, toscreen=False):
+    if args.debug:
+        print("ifcc-test-msp430.py: " + string)
+
+    process = subprocess.Popen(string, shell=True,
+                               stderr=subprocess.STDOUT, stdout=subprocess.PIPE,
+                               text=True, bufsize=0)
+    if logfile:
+        logfile = open(logfile, 'w')
+
+    while True:
+        output = process.stdout.readline()
+        if len(output) == 0:
+            break
+        if logfile: logfile.write(output)
+        if toscreen: sys.stdout.write(output)
+    process.wait()
+    assert process.returncode != None
+    if logfile:
+        logfile.write(f'\nexit status: {process.returncode}\n')
+    return process.returncode
+
+def run_subprocess(cmd):
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    return result.returncode, result.stdout, result.stderr
+
+def dumpfile(name, quiet=False):
+    try:
+        data = open(name, "rb").read().decode('utf-8', errors='ignore')
+        if not quiet:
+            print(data, end='')
+        return data
+    except:
+        return ""
+
+def assemble_and_link(asm_file, elf_file, logfile=None):
+    obj_file = elf_file.replace(".elf", ".o")
+    rc = run_command(f"{MSP430_AS} -mmcu=msp430f1611 {asm_file} -o {obj_file}", logfile)
+    if rc != 0:
+        return rc
+
+    # Compile putchar/getchar stubs for MSP430
+    stub_asm = f"{WORK_DIR}/putchar_stub.s"
+    stub_obj = f"{WORK_DIR}/putchar_stub.o"
+    with open(stub_asm, 'w') as f:
+        f.write("""    .text
+    .globl putchar
+    .globl getchar
+putchar:
+    mov R12, R15
+    ret
+getchar:
+    mov #65, R15
+    ret
+""")
+    rc = run_command(f"{MSP430_AS} -mmcu=msp430f1611 {stub_asm} -o {stub_obj}", logfile)
+    if rc != 0:
+        return rc
+
+    rc = run_command(f"{MSP430_LD} -T {LINKER_SCRIPT} {CRT0} {obj_file} {stub_obj} -o {elf_file}", logfile)
+    return rc
+
+def get_ret_address(elf_file):
+    """Trouve l'adresse du ret de main en utilisant objdump"""
+    rc, stdout, _ = run_subprocess(f"msp430-elf-objdump -d {elf_file}")
+    
+    if args.debug >= 3:
+        print(f"  [debug] Full objdump:\n{stdout}")
+    elif args.debug >= 2:
+        print(f"  [debug] First 1000 chars of objdump:\n{stdout[:1000]}")
+    
+    # Parse line-by-line: objdump format is "00000504 <main>:"
+    lines = stdout.split('\n')
+    in_main = False
+    last_ret_addr = None
+    
+    for line in lines:
+        # Detect start of <main>:
+        if '<main>:' in line:
+            in_main = True
+            continue
+        
+        if in_main:
+            # Detect next function (not a BB label like <BB0>)
+            # Function lines look like: "00000530 <funcname>:"
+            func_match = re.match(r'^[0-9a-fA-F]+\s+<([^>]+)>:', line)
+            if func_match:
+                name = func_match.group(1)
+                # BB labels start with BB or . — skip them
+                if not name.startswith('BB') and not name.startswith('.'):
+                    break  # Reached next real function
+            
+            # Look for ret instruction
+            ret_match = re.match(r'^\s+([0-9a-fA-F]+):\s+.*\bret\b', line)
+            if ret_match:
+                last_ret_addr = int(ret_match.group(1), 16)
+    
+    if last_ret_addr is not None:
+        if args.debug >= 1:
+            print(f"  [debug] found ret at 0x{last_ret_addr:04x}")
+        return last_ret_addr
+    
+    if args.debug >= 1:
+        print("  [debug] no ret found in main")
+    
+    return None
+
+def get_main_address(elf_file):
+    """Trouve l'adresse de main dans le .elf"""
+    rc, stdout, _ = run_subprocess(f"msp430-elf-nm {elf_file}")
+    match = re.search(r'^([0-9a-fA-F]+)\s+T\s+main$', stdout, re.MULTILINE)
+    if match:
+        addr = int(match.group(1), 16)
+        low  = addr & 0xFF
+        high = (addr >> 8) & 0xFF
+        return low, high
+    return 0x00, 0x05  # fallback
+
+def run_in_mspdebug(elf_file):
+    """Lance le programme en simulation et retourne la valeur de R15"""
+    # Chercher l'adresse de ret pour placer un breakpoint
+    ret_addr = get_ret_address(elf_file)
+    if ret_addr is None:
+        if args.debug:
+            print("  [debug] impossible de trouver ret, allant sans breakpoint")
+        ret_addr = 0  # Utiliser adresse 0 comme fallback
+    
+    low, high = get_main_address(elf_file)
+
+    if args.debug >= 1:
+        print(f"  [debug] main=0x{high:02x}{low:02x}, ret at 0x{ret_addr:04x}")
+
+    # Script mspdebug avec breakpoint sur ret
+    script = (
+        f"prog {elf_file}\n"
+        f"mw 0xfffe 0x{low:02x}\n"
+        f"mw 0xffff 0x{high:02x}\n"
+        f"reset\n"
+    )
+    
+    if ret_addr > 0:
+        script += f"setbreak 0x{ret_addr:04x}\n"
+    
+    script += (
+        f"run\n"
+        f"printreg\n"
+        f"quit\n"
+    )
+    
+    process = subprocess.Popen(
+        ["mspdebug", "sim"],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True
+    )
+    try:
+        stdout, _ = process.communicate(input=script, timeout=3)
+    except subprocess.TimeoutExpired:
+        if args.debug >= 1:
+            print(f"  [debug] mspdebug timeout after 3 seconds")
+        process.kill()
+        stdout, _ = process.communicate()
+        if args.debug >= 2:
+            print(f"  [debug] mspdebug output before timeout:\n{stdout[-500:]}")
+        return None
+
+    if args.debug >= 2:
+        print(f"  [debug] mspdebug stdout:\n{stdout}")
+
+    # Chercher R15 dans plusieurs formats possibles
+    patterns = [
+        r'\(?\s*R15\s*:\s*([0-9a-fA-F]+)',     # "(R15: 1234" ou "R15: 1234"
+        r'R15\s*:\s*([0-9a-fA-F]+)',            # "R15: 1234"
+        r'R15\s*=\s*0x([0-9a-fA-F]+)',          # "R15 = 0x1234"
+        r'R15\s+0x([0-9a-fA-F]+)',              # "R15 0x1234"
+        r'R15\s*:\s*0x([0-9a-fA-F]+)',          # "R15: 0x1234"
+        r'\(R15:\s*0x?([0-9a-fA-F]+)',          # "(R15: 0002a" or "(R15: 0x0002a"
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, stdout, re.IGNORECASE)
+        if match:
+            hex_str = match.group(1)
+            if args.debug >= 1:
+                print(f"  [debug] found R15 = 0x{hex_str}")
+            return int(hex_str, 16)
+    
+    if args.debug >= 1:
+        print(f"  [debug] Could not find R15 in mspdebug output")
+        print(f"  [debug] Last 500 chars of output: {stdout[-500:]}")
+    
+    return None
+
+######################################################################################
+## ARGPARSE
+
+orig_cwd = os.getcwd()
+
+width = shutil.get_terminal_size().columns - 2
+twf = lambda text: textwrap.fill(text, width, initial_indent='    ', subsequent_indent='      ')
+
+argparser = argparse.ArgumentParser(
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    description="Testing script for the ifcc MSP430 backend.\n\n"
+        + twf("Compile each test-case with ifcc --msp430, assemble with msp430-elf-as, "
+              "run in mspdebug sim, and compare R15 with the gcc x86 exit code."),
+    epilog="examples:\n\n"
+        + twf("python3 ifcc-test-msp430.py testfiles/") + '\n'
+        + twf("python3 ifcc-test-msp430.py testfiles/ -v") + '\n'
+        + twf("python3 ifcc-test-msp430.py testfiles/1_return42.c -vv"),
+)
+
+argparser.add_argument('input', metavar='PATH', nargs='+',
+                       help="For each path given: if it's a file, use this file; "
+                            "if it's a directory, use all *.c files under this subtree")
+argparser.add_argument('-v', '--verbose', action='count', default=0,
+                       help='increase verbosity level. You can use this option multiple times.')
+argparser.add_argument('-d', '--debug', action='count', default=0,
+                       help='increase quantity of debugging messages')
+argparser.add_argument('--keep', action='store_true',
+                       help='keep temporary files after tests')
+
+args = argparser.parse_args()
+
+if args.debug >= 2:
+    print('debug: command-line arguments ' + str(args))
+
+######################################################################################
+## PREPARE step
+
+os.environ["PATH"] = f"{MSP430_TOOLCHAIN}:" + os.environ["PATH"]
+
+# Skip make on Windows if ifcc already exists
+if os.path.exists(os.path.join(PLD_BASE_DIR, "compiler", "ifcc")):
+    if args.debug >= 1:
+        print("ifcc-test-msp430.py: using existing ifcc binary")
+else:
+    makestatus = run_command(f'cd {PLD_BASE_DIR}/compiler; make --question ifcc')
+    if makestatus:
+        makestatus = run_command(f'cd {PLD_BASE_DIR}/compiler; make ifcc', toscreen=True)
+        if makestatus:
+            if os.path.exists("ifcc"):
+                os.unlink("ifcc")
+            exit(makestatus)
+
+os.chdir(orig_cwd)
+inputfilenames = []
+for path in args.input:
+    path = os.path.normpath(path)
+    if os.path.isfile(path):
+        if path[-2:] == '.c':
+            inputfilenames.append(path)
+        else:
+            print("error: incorrect filename suffix (should be '.c'): " + path)
+            exit(1)
+    elif os.path.isdir(path):
+        for dirpath, dirnames, filenames in os.walk(path):
+            inputfilenames += [dirpath + '/' + name for name in filenames if name[-2:] == '.c']
+    else:
+        print("error: cannot read input path `" + path + "'")
+        sys.exit(1)
+
+inputfilenames = sorted(inputfilenames)
+
+if args.debug:
+    print("debug: list of files after tree walk:", " ".join(inputfilenames))
+
+if len(inputfilenames) == 0:
+    print("error: found no test-case in: " + " ".join(args.input))
+    sys.exit(1)
+
+if os.path.isdir(WORK_DIR):
+    shutil.rmtree(WORK_DIR)
+os.makedirs(WORK_DIR)
+
+######################################################################################
+## TEST step
+
+all_ok = True
+nb_ok = 0
+nb_fail = 0
+nb_skip = 0
+
+for c_file in inputfilenames:
+    print('TEST-CASE: ' + c_file)
+    os.chdir(WORK_DIR)
+
+    c_file_abs = os.path.abspath(os.path.join(orig_cwd, c_file))
+    basename = os.path.basename(c_file).replace(".c", "")
+
+    asm_ifcc = f"{WORK_DIR}/{basename}_ifcc.s"
+    elf_ifcc = f"{WORK_DIR}/{basename}_ifcc.elf"
+    ref_exe  = f"{WORK_DIR}/{basename}_ref"
+
+    # Check for .in file (stdin input for getchar tests)
+    in_file = c_file_abs[:-2] + '.in'
+    if os.path.exists(in_file):
+        input_redirect = f"< {in_file}"
+    else:
+        input_redirect = "< /dev/null"
+
+    # Reference compiler = GCC x86
+    gccstatus = run_command(f"gcc -o {ref_exe} {c_file_abs}",
+                            f"{WORK_DIR}/{basename}_gcc-compile.txt")
+    if gccstatus == 0:
+        exegccstatus = run_command(f"{ref_exe} {input_redirect}",
+                                   f"{WORK_DIR}/{basename}_gcc-execute.txt")
+        ref_value = exegccstatus & 0xFF
+        if args.verbose >= 2:
+            dumpfile(f"{WORK_DIR}/{basename}_gcc-execute.txt")
+
+    # IFCC compiler --msp430
+    ifccstatus = run_command(
+        f"{COMPILER} --msp430 {c_file_abs} > {asm_ifcc}",
+        f"{WORK_DIR}/{basename}_ifcc-compile.txt"
+    )
+
+    # cas : mul/div non supporté → SKIP
+    if ifccstatus != 0:
+        compile_log = dumpfile(f"{WORK_DIR}/{basename}_ifcc-compile.txt", quiet=True)
+        if "multiplication non supportée" in compile_log or "division non supportée" in compile_log:
+            print("  SKIP (mul/div non supporté sur MSP430)")
+            nb_skip += 1
+            continue
+
+    # cas : les deux rejettent → OK
+    if gccstatus != 0 and ifccstatus != 0:
+        print("TEST OK")
+        nb_ok += 1
+        continue
+
+    # cas : gcc rejette, ifcc accepte → FAIL
+    elif gccstatus != 0 and ifccstatus == 0:
+        print("TEST FAIL (your compiler accepts an invalid program)")
+        all_ok = False
+        nb_fail += 1
+        if args.verbose:
+            dumpfile(asm_ifcc)
+            dumpfile(f"{WORK_DIR}/{basename}_ifcc-compile.txt")
+        continue
+
+    # cas : gcc accepte, ifcc rejette → FAIL
+    elif gccstatus == 0 and ifccstatus != 0:
+        print("TEST FAIL (your compiler rejects a valid program)")
+        all_ok = False
+        nb_fail += 1
+        if args.verbose:
+            dumpfile(asm_ifcc)
+            dumpfile(f"{WORK_DIR}/{basename}_ifcc-compile.txt")
+        continue
+
+    # cas : les deux acceptent → assembler, linker, simuler
+    ldstatus = assemble_and_link(asm_ifcc, elf_ifcc,
+                                  f"{WORK_DIR}/{basename}_ifcc-link.txt")
+    if ldstatus:
+        print("TEST FAIL (your compiler produces incorrect assembly)")
+        all_ok = False
+        nb_fail += 1
+        if args.verbose:
+            dumpfile(asm_ifcc)
+            dumpfile(f"{WORK_DIR}/{basename}_ifcc-link.txt")
+        continue
+
+    # simuler avec mspdebug
+    r15 = run_in_mspdebug(elf_ifcc)
+    if r15 is None:
+        print("TEST FAIL (cannot read R15 from mspdebug)")
+        all_ok = False
+        nb_fail += 1
+        if args.verbose:
+            dumpfile(asm_ifcc)
+        continue
+
+    r15_masked = r15 & 0xFF
+    if r15_masked != ref_value:
+        print("TEST FAIL (different results at execution)")
+        all_ok = False
+        nb_fail += 1
+        if args.verbose:
+            print(f"GCC: {ref_value}")
+            print(f"you: {r15_masked} (R15=0x{r15:04x})")
+        continue
+
+    print("TEST OK")
+    nb_ok += 1
+
+# Nettoyage
+if not args.keep and os.path.isdir(WORK_DIR):
+    shutil.rmtree(WORK_DIR)
+
+######################################################################################
+## RÉSULTATS
+
+nb_total = nb_ok + nb_fail
+print(f"\n{'='*40}")
+print(f"RÉSULTATS : {nb_ok}/{nb_total} tests validés ({nb_skip} skippés)", end="")
+if nb_fail > 0:
+    print(f" ({nb_fail} échec(s))")
+else:
+    print(" -- Tous les tests sont OK !")
+print('='*40)
+
+if not (all_ok or args.verbose):
+    print("Some test-cases failed. Run ifcc-test-msp430.py with option '--verbose' for more detailed feedback.")
+
+sys.exit(0 if all_ok else 1)

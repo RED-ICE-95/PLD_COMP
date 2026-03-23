@@ -235,3 +235,153 @@ void IRInstr::gen_asm(ostream& o) {
     }
 }
 
+void BasicBlock::gen_asm_msp430(ostream& o) {
+    o << label << ":\n";
+    for (IRInstr* instr : instrs)
+        instr->gen_asm_msp430(o);
+
+    if (exit_true == nullptr) {
+        cfg->gen_asm_epilogue(o);
+    } else if (exit_false == nullptr) {
+        o << "  jmp " << exit_true->label << "\n";
+    } else {
+        o << "  cmp #0, " << cfg->IR_reg_to_asm(test_var_name) << "\n";
+        o << "  jeq " << exit_false->label << "\n";
+        o << "  jmp " << exit_true->label << "\n";
+    }
+}
+
+void IRInstr::gen_asm_msp430(ostream& o) {
+    switch(op) {
+        case ldconst:
+            o << "  mov #" << params[1] << ", " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case copy:
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case add:
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  add " << bb->cfg->IR_reg_to_asm(params[2]) << ", R15\n";
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case sub:
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  sub " << bb->cfg->IR_reg_to_asm(params[2]) << ", R15\n";
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case mul:
+            cerr << "Erreur : multiplication non supportée sur MSP430\n";
+            exit(1);
+            break;
+        case div:
+            cerr << "Erreur : division non supportée sur MSP430\n";
+            exit(1);
+            break;
+        case mod:
+            cerr << "Erreur : modulo non supporté sur MSP430\n";
+            exit(1);
+            break;
+        case cmp_eq:
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  cmp " << bb->cfg->IR_reg_to_asm(params[2]) << ", R15\n";
+            o << "  mov #1, R15\n";   // 1 par défaut
+            o << "  jeq $+4\n";       // saute si égal → R15 reste 1
+            o << "  mov #0, R15\n";   // R15=0 si pas égal
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case cmp_ne:
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  cmp " << bb->cfg->IR_reg_to_asm(params[2]) << ", R15\n";
+            o << "  mov #1, R15\n";
+            o << "  jne $+4\n";
+            o << "  mov #0, R15\n";
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case cmp_lt:
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  cmp " << bb->cfg->IR_reg_to_asm(params[2]) << ", R15\n";
+            o << "  mov #0, R15\n";
+            o << "  jge $+4\n";
+            o << "  mov #1, R15\n";
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case cmp_le:
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  cmp " << bb->cfg->IR_reg_to_asm(params[2]) << ", R15\n";
+            o << "  mov #0, R15\n";
+            o << "  jl $+4\n";       // jl = jump if less (signé)
+            o << "  mov #1, R15\n";
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case cmp_gt:
+            // a > b  devient  b < a, on inverse les opérandes
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[2]) << ", R15\n";
+            o << "  cmp " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  mov #0, R15\n";
+            o << "  jge $+4\n";
+            o << "  mov #1, R15\n";
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case cmp_ge:
+            // idem, a >= b  devient  b <= a
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[2]) << ", R15\n";
+            o << "  cmp " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  mov #0, R15\n";
+            o << "  jl $+4\n";
+            o << "  mov #1, R15\n";
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case bit_or:
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  bis " << bb->cfg->IR_reg_to_asm(params[2]) << ", R15\n";
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case bit_and:
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  and " << bb->cfg->IR_reg_to_asm(params[2]) << ", R15\n";
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case bit_xor:
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  xor " << bb->cfg->IR_reg_to_asm(params[2]) << ", R15\n";
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case unary_minus:
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  inv R15\n";  // inversion bit à bit
+            o << "  inc R15\n";  // +1 = complément à 2
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case unary_not:
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n";
+            o << "  cmp #0, R15\n";
+            o << "  mov #0, R15\n";
+            o << "  jeq $+4\n";
+            o << "  mov #1, R15\n";
+            o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case call:
+            // convention d'appel MSP430 : args dans R12, R13, R14 (R15 pour le retour)
+            for (int i = 2; i < (int)params.size(); i++) {
+                if (i - 2 >= 3) {
+                    cerr << "Erreur : MSP430 supporte max 3 arguments en registres\n";
+                    exit(1);
+                }
+                string regs[] = {"R12", "R13", "R14"};
+                o << "  mov " << bb->cfg->IR_reg_to_asm(params[i]) << ", " << regs[i-2] << "\n";
+            }
+            o << "  call #" << params[0] << "\n";
+            if (params[1] != "")
+                o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[1]) << "\n";
+            break;
+        case copy_from_reg:
+            // params[0] = variable destination sur la pile
+            // params[1] = registre source (R12, R13, R14)
+            o << "  mov " << params[1] << ", " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        default:
+            cerr << "Erreur : opération non supportée sur MSP430\n";
+            exit(1);
+    }
+}
