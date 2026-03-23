@@ -10,6 +10,7 @@ stmt
     | if_stmt
     | while_stmt
     | block
+    | switch_stmt
     ;
 
 return_stmt : RETURN expr ;
@@ -20,6 +21,10 @@ block : '{' stmt* '}' ;
 call_stmt : ID '(' expr? ')' ;
 if_stmt : 'if' '(' expr ')' stmt ('else' stmt)? ;
 while_stmt : 'while' '(' expr ')' stmt ;
+
+switch_stmt : 'switch' '(' expr ')' '{' case_stmt* default_stmt? '}';
+case_stmt : 'case' CONST ':' stmt*;
+default_stmt : 'default' ':' stmt*;
 
 expr : ID '(' expr? ')'                   # exprCall
     | '-' expr                            # exprUnaryMinus

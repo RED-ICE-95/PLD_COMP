@@ -511,3 +511,70 @@ std::any CodeGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
 }
 
 
+std::any CodeGenVisitor::visitSwitch_stmt(ifccParser::Switch_stmtContext *ctx)
+{
+    // valeur du switch
+    string switchVar = any_cast<string>(visit(ctx->expr()));
+    switchVar = materialize(switchVar);
+
+    // bloc de fin
+    BasicBlock* endBB = new BasicBlock(cfg, cfg->new_BB_name());
+
+    // bloc courant pour les tests
+    BasicBlock* currentBB = cfg->current_bb;
+
+    // parcourir les case
+    for (auto caseCtx : ctx->case_stmt()) {
+
+        // blocs
+        BasicBlock* caseBB = new BasicBlock(cfg, cfg->new_BB_name());
+        BasicBlock* nextBB = new BasicBlock(cfg, cfg->new_BB_name());
+
+        // constante du case
+        string caseVal = caseCtx->CONST()->getText();
+
+        // tmp = (switchVar == caseVal)
+        string tmp = cfg->create_new_tempvar(INT32);
+        cfg->current_bb->add_IRInstr(IRInstr::cmp_eq, INT32, {tmp, switchVar, caseVal});
+
+        // branchement
+        currentBB->test_var_name = tmp;
+        currentBB->exit_true  = caseBB;
+        currentBB->exit_false = nextBB;
+
+        // --- CASE ---
+        cfg->add_bb(caseBB);
+        for (auto stmt : caseCtx->stmt())
+            visit(stmt);
+
+        cfg->current_bb->exit_true = endBB;
+
+        // --- NEXT TEST ---
+        cfg->add_bb(nextBB);
+        currentBB = nextBB;
+    }
+
+    // default
+    if (ctx->default_stmt()) {
+        BasicBlock* defaultBB = new BasicBlock(cfg, cfg->new_BB_name());
+
+        currentBB->exit_true  = defaultBB;
+        currentBB->exit_false = defaultBB;
+
+        cfg->add_bb(defaultBB);
+        for (auto stmt : ctx->default_stmt()->stmt())
+            visit(stmt);
+
+        cfg->current_bb->exit_true = endBB;
+    }
+    else {
+        currentBB->exit_true  = endBB;
+        currentBB->exit_false = endBB;
+    }
+
+    // fin du switch
+    cfg->add_bb(endBB);
+
+    return 0;
+}
+
