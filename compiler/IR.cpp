@@ -354,9 +354,13 @@ void IRInstr::gen_asm_msp430(ostream& o) {
             o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
             break;
         case call:
-            // convention d'appel MSP430 : args dans R15, R14, R13, R12
+            // convention d'appel MSP430 : args dans R12, R13, R14 (R15 pour le retour)
             for (int i = 2; i < (int)params.size(); i++) {
-                string regs[] = {"R15", "R14", "R13", "R12"};
+                if (i - 2 >= 3) {
+                    cerr << "Erreur : MSP430 supporte max 3 arguments en registres\n";
+                    exit(1);
+                }
+                string regs[] = {"R12", "R13", "R14"};
                 o << "  mov " << bb->cfg->IR_reg_to_asm(params[i]) << ", " << regs[i-2] << "\n";
             }
             o << "  call #" << params[0] << "\n";

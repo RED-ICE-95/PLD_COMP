@@ -70,7 +70,6 @@ class IRInstr {
 		void gen_asm_msp430(ostream& o); /**< MSP430 assembly code generation for this IR instruction */
 		
 	private:
-		BasicBlock* bb; /**< The BB this instruction belongs to, which provides a pointer to the CFG this instruction belong to */
 		Operation op;
 		Type t;
 		// if you subclass IRInstr, each IRInstr subclass has its parameters and the previous (very important) comment becomes useless: it would be a better design. 

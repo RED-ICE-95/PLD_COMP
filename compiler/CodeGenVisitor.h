@@ -42,6 +42,7 @@ class  CodeGenVisitor : public ifccBaseVisitor {
 
         private:
         CFG* cfg;
+        IRInstr::Target target;  // Sauvegarde du target (x86 ou MSP430)
         vector<map<string, string>> scopeRename;
 
         string resolve(const string& name) {

@@ -2,8 +2,8 @@
 using namespace std;
 
 void CFG_MSP430::add_to_symbol_table(string name, Type t) {
-    SymbolType[name] = t;
-    SymbolIndex[name] = nextFreeSymbolIndex;
+    ScopeType.back()[name] = t;
+    ScopeIndex.back()[name] = nextFreeSymbolIndex;
     nextFreeSymbolIndex += 2; // 16 bits = 2 octets au lieu de 4
 }
 
@@ -22,7 +22,9 @@ void CFG_MSP430::gen_asm_prologue(ostream& o) {
 }
 
 void CFG_MSP430::gen_asm_epilogue(ostream& o) {
+    if (ast->returnType != VOID) {
     o << "  mov " << IR_reg_to_asm("!ret") << ", R15\n"; // R15 = valeur de retour
+    }
     o << "  mov R4, R1\n";
     o << "  pop R4\n";
     o << "  ret\n";
@@ -33,4 +35,5 @@ void CFG_MSP430::gen_asm(ostream& o) {
     gen_asm_prologue(o);
     for (BasicBlock* bb : bbs)
         bb->gen_asm_msp430(o);
+    exit_bb->gen_asm_msp430(o);    
 }

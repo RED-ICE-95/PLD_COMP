@@ -57,15 +57,72 @@ def assemble_and_link(asm_file, elf_file, logfile=None):
     rc = run_command(f"{MSP430_AS} -mmcu=msp430f1611 {asm_file} -o {obj_file}", logfile)
     if rc != 0:
         return rc
-    rc = run_command(f"{MSP430_LD} -T {LINKER_SCRIPT} {CRT0} {obj_file} -o {elf_file}", logfile)
+    
+    # Compile putchar stub for MSP430
+    stub_asm = f"{WORK_DIR}/putchar_stub.s"
+    stub_obj = f"{WORK_DIR}/putchar_stub.o"
+    with open(stub_asm, 'w') as f:
+        f.write("""    .text
+    .globl putchar
+    .globl getchar
+putchar:
+    mov R12, R15
+    ret
+getchar:
+    mov #65, R15
+    ret
+""")
+    
+    rc = run_command(f"{MSP430_AS} -mmcu=msp430f1611 {stub_asm} -o {stub_obj}", logfile)
+    if rc != 0:
+        return rc
+    
+    rc = run_command(f"{MSP430_LD} -T {LINKER_SCRIPT} {CRT0} {obj_file} {stub_obj} -o {elf_file}", logfile)
     return rc
 
 def get_ret_address(elf_file):
-    """Trouve l'adresse de pop r4 juste avant ret dans main"""
+    """Trouve l'adresse du ret de main en utilisant objdump"""
     rc, stdout, _ = run_subprocess(f"msp430-elf-objdump -d {elf_file}")
-    match = re.search(r'^\s+([0-9a-fA-F]+):\s+34 41\s+pop\s+r4', stdout, re.MULTILINE)
-    if match:
-        return int(match.group(1), 16)
+    
+    if args.debug >= 3:
+        print(f"  [debug] Full objdump:\n{stdout}")
+    elif args.debug >= 2:
+        print(f"  [debug] First 1000 chars of objdump:\n{stdout[:1000]}")
+    
+    # Parse line-by-line: objdump format is "00000504 <main>:"
+    lines = stdout.split('\n')
+    in_main = False
+    last_ret_addr = None
+    
+    for line in lines:
+        # Detect start of <main>:
+        if '<main>:' in line:
+            in_main = True
+            continue
+        
+        if in_main:
+            # Detect next function (not a BB label like <BB0>)
+            # Function lines look like: "00000530 <funcname>:"
+            func_match = re.match(r'^[0-9a-fA-F]+\s+<([^>]+)>:', line)
+            if func_match:
+                name = func_match.group(1)
+                # BB labels start with BB or . — skip them
+                if not name.startswith('BB') and not name.startswith('.'):
+                    break  # Reached next real function
+            
+            # Look for ret instruction
+            ret_match = re.match(r'^\s+([0-9a-fA-F]+):\s+.*\bret\b', line)
+            if ret_match:
+                last_ret_addr = int(ret_match.group(1), 16)
+    
+    if last_ret_addr is not None:
+        if args.debug >= 1:
+            print(f"  [debug] found ret at 0x{last_ret_addr:04x}")
+        return last_ret_addr
+    
+    if args.debug >= 1:
+        print("  [debug] no ret found in main")
+    
     return None
 
 def get_main_address(elf_file):
@@ -80,45 +137,78 @@ def get_main_address(elf_file):
     return 0x00, 0x05  # fallback
 
 def run_in_mspdebug(elf_file):
+    """Lance le programme en simulation et retourne la valeur de R15"""
+    # Chercher l'adresse de ret pour placer un breakpoint
     ret_addr = get_ret_address(elf_file)
     if ret_addr is None:
         if args.debug:
-            print("  [debug] impossible de trouver pop r4")
-        return None
-
+            print("  [debug] impossible de trouver ret, allant sans breakpoint")
+        ret_addr = 0  # Utiliser adresse 0 comme fallback
+    
     low, high = get_main_address(elf_file)
 
     if args.debug >= 1:
-        print(f"  [debug] main=0x{high:02x}{low:02x}, breakpoint pop r4 à 0x{ret_addr:04x}")
+        print(f"  [debug] main=0x{high:02x}{low:02x}, ret at 0x{ret_addr:04x}")
 
+    # Script mspdebug avec breakpoint sur ret
     script = (
         f"prog {elf_file}\n"
         f"mw 0xfffe 0x{low:02x}\n"
         f"mw 0xffff 0x{high:02x}\n"
         f"reset\n"
-        f"setbreak 0x{ret_addr:04x}\n"
+    )
+    
+    if ret_addr > 0:
+        script += f"setbreak 0x{ret_addr:04x}\n"
+    
+    script += (
         f"run\n"
         f"printreg\n"
         f"quit\n"
     )
+    
     process = subprocess.Popen(
-        "mspdebug sim 2>/dev/null", shell=True,
+        ["mspdebug", "sim"],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
         text=True
     )
     try:
-        stdout, _ = process.communicate(input=script, timeout=15)
+        stdout, _ = process.communicate(input=script, timeout=3)
     except subprocess.TimeoutExpired:
+        if args.debug >= 1:
+            print(f"  [debug] mspdebug timeout after 3 seconds")
         process.kill()
-        process.communicate()
+        stdout, _ = process.communicate()
+        if args.debug >= 2:
+            print(f"  [debug] mspdebug output before timeout:\n{stdout[-500:]}")
         return None
 
     if args.debug >= 2:
-        print(f"  [debug] mspdebug stdout: {stdout}")
+        print(f"  [debug] mspdebug stdout:\n{stdout}")
 
-    match = re.search(r'R15:\s*([0-9a-fA-F]+)', stdout)
-    if match:
-        return int(match.group(1), 16)
+    # Chercher R15 dans plusieurs formats possibles
+    patterns = [
+        r'\(?\s*R15\s*:\s*([0-9a-fA-F]+)',     # "(R15: 1234" ou "R15: 1234"
+        r'R15\s*:\s*([0-9a-fA-F]+)',            # "R15: 1234"
+        r'R15\s*=\s*0x([0-9a-fA-F]+)',          # "R15 = 0x1234"
+        r'R15\s+0x([0-9a-fA-F]+)',              # "R15 0x1234"
+        r'R15\s*:\s*0x([0-9a-fA-F]+)',          # "R15: 0x1234"
+        r'\(R15:\s*0x?([0-9a-fA-F]+)',          # "(R15: 0002a" or "(R15: 0x0002a"
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, stdout, re.IGNORECASE)
+        if match:
+            hex_str = match.group(1)
+            if args.debug >= 1:
+                print(f"  [debug] found R15 = 0x{hex_str}")
+            return int(hex_str, 16)
+    
+    if args.debug >= 1:
+        print(f"  [debug] Could not find R15 in mspdebug output")
+        print(f"  [debug] Last 500 chars of output: {stdout[-500:]}")
+    
     return None
 
 ######################################################################################
@@ -160,13 +250,18 @@ if args.debug >= 2:
 
 os.environ["PATH"] = f"{MSP430_TOOLCHAIN}:" + os.environ["PATH"]
 
-makestatus = run_command(f'cd {PLD_BASE_DIR}/compiler; make --question ifcc')
-if makestatus:
-    makestatus = run_command(f'cd {PLD_BASE_DIR}/compiler; make ifcc', toscreen=True)
+# Skip make on Windows if ifcc already exists
+if os.path.exists(os.path.join(PLD_BASE_DIR, "compiler", "ifcc")):
+    if args.debug >= 1:
+        print("ifcc-test-msp430.py: using existing ifcc binary")
+else:
+    makestatus = run_command(f'cd {PLD_BASE_DIR}/compiler; make --question ifcc')
     if makestatus:
-        if os.path.exists("ifcc"):
-            os.unlink("ifcc")
-        exit(makestatus)
+        makestatus = run_command(f'cd {PLD_BASE_DIR}/compiler; make ifcc', toscreen=True)
+        if makestatus:
+            if os.path.exists("ifcc"):
+                os.unlink("ifcc")
+            exit(makestatus)
 
 os.chdir(orig_cwd)
 inputfilenames = []
@@ -217,11 +312,18 @@ for c_file in inputfilenames:
     elf_ifcc = f"{WORK_DIR}/{basename}_ifcc.elf"
     ref_exe  = f"{WORK_DIR}/{basename}_ref"
 
+    # Check for .in file (stdin input for getchar tests)
+    in_file = c_file_abs[:-2] + '.in'
+    if os.path.exists(in_file):
+        input_redirect = f"< {in_file}"
+    else:
+        input_redirect = "< /dev/null"
+
     # Reference compiler = GCC x86
     gccstatus = run_command(f"gcc -o {ref_exe} {c_file_abs}",
                             f"{WORK_DIR}/{basename}_gcc-compile.txt")
     if gccstatus == 0:
-        exegccstatus = run_command(f"{ref_exe}",
+        exegccstatus = run_command(f"{ref_exe} {input_redirect}",
                                    f"{WORK_DIR}/{basename}_gcc-execute.txt")
         ref_value = exegccstatus & 0xFF
         if args.verbose >= 2:

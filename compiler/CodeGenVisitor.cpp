@@ -11,6 +11,7 @@ static string makeConst(int v)          { return "$" + to_string(v); }
 // ────────────────────────────────────────────────────────────────────────
 
 CodeGenVisitor::CodeGenVisitor(DefFonction* ast, IRInstr::Target target) {
+    this->target = target;
     switch(target) {
         case IRInstr::MSP430:
             cfg = new CFG_MSP430(ast);
@@ -19,7 +20,6 @@ CodeGenVisitor::CodeGenVisitor(DefFonction* ast, IRInstr::Target target) {
             cfg = new CFG(ast);
             break;
     }
-        cfg = new CFG(ast);
     cfg->push_scope();
     
     // BB de sortie unique pour tous les return
@@ -66,7 +66,14 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
 
     CFG* old_cfg = cfg; 
     DefFonction* fctAst = new DefFonction(fctName, vector<pair<string, Type>>{}, returnType);
-    cfg = new CFG(fctAst);
+    switch(this->target) {
+        case IRInstr::MSP430:
+            cfg = new CFG_MSP430(fctAst);
+            break;
+        default:
+            cfg = new CFG(fctAst);
+            break;
+    }
     cfg->push_scope();
     cfg->exit_bb = new BasicBlock(cfg, cfg->new_BB_name() + "_exit");
     BasicBlock* bb = new BasicBlock(cfg, cfg->new_BB_name());
@@ -85,7 +92,7 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
     scopeRename.pop_back();
     cfg->gen_asm(cout);
     cfg = old_cfg;
-        return 0;
+    return 0;
 }
 
 std::any CodeGenVisitor::visitBlock(ifccParser::BlockContext *ctx)
@@ -119,9 +126,20 @@ std::any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
     cfg->current_bb->exit_true = cfg->exit_bb;
     cfg->current_bb->exit_false = nullptr;
     
-    // créer un nouveau BB mort pour les instructions qui suivent éventuellement
+    // Créer un BB mort pour capturer les instructions théoriques après return
+    // (du code qui ne sera jamais atteint, comme: if (cond) { return x; ... })
+    //
+    // AVANT: On faisait cfg->add_bb(dead_bb) pour x86 → générait le code mort en asm
+    //        x86 s'en fichait (processeur ignore le code après ret)
+    //        MSP430 bugguait → mspdebug échouait à lire R15
+    //
+    // MAINTENANT: On change juste current_bb, on n'ajoute PAS à cfg->bbs
+    //             → Le code mort n'est JAMAIS généré en asm
+    //             → Marche à la fois pour x86 (pas besoin du code mort) et MSP430
     BasicBlock* dead_bb = new BasicBlock(cfg, cfg->new_BB_name());
-    cfg->add_bb(dead_bb);
+    dead_bb->exit_true = cfg->exit_bb;
+    dead_bb->exit_false = nullptr;
+    cfg->current_bb = dead_bb;  // Changer current_bb, mais NE PAS ajouter à la liste
     
     return 0;
 }
