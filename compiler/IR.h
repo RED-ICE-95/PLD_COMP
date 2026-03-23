@@ -52,7 +52,9 @@ class IRInstr {
 			unary_not,
 			cmp_ne,
 			cmp_gt,
-			cmp_ge
+			cmp_ge,
+			copy_from_reg,   // params: {destVar, regName}  e.g. {"x_0", "%edi"}
+			copy_to_reg     // params: {regName, srcVar}   e.g. {"%edi", "x_0"}
 		} Operation;
 		BasicBlock* bb; /**< The BB this instruction belongs to, which provides a pointer to the CFG this instruction belong to */
 		vector<string> params; /**< For 3-op instrs: d, x, y; for ldconst: d, c;  For call: label, d, params;  for wmem and rmem: choose yourself */
