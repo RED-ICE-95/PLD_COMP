@@ -18,8 +18,7 @@ call_stmt : ID '(' expr? ')' ;
 list_decl_param : ('int' ID (',' 'int' ID)*)?;
 list_param : (expr (',' expr)*)?;
 
-expr : ID '(' expr? ')'                    # exprCall
-    | '-' expr                            # exprUnaryMinus
+expr :  '-' expr                            # exprUnaryMinus
     | '!' expr                            # exprUnaryNot
     | '(' expr ')'                        # exprParen
     | CONST                               # exprConst

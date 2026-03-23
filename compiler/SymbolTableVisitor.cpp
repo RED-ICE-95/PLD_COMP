@@ -5,8 +5,8 @@
 std::any SymbolTableVisitor::visitProg(ifccParser::ProgContext *ctx) {
     //scope global de main géré par visitBlock
     // Fonctions builtin de la bibliothèque standard
-    functionReturnTypes["getchar"] = INT32;
-    functionReturnTypes["putchar"] = INT32; // putchar retourne int en C
+    functions["getchar"] = {INT32, 0};
+    functions["putchar"] = {INT32, 1}; // putchar retourne int en C
     return visitChildren(ctx);
 }
 
@@ -42,13 +42,24 @@ std::any SymbolTableVisitor::visitDeclar(ifccParser::DeclarContext *ctx) {
     return visitChildren(ctx);
 }
 std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {
+    
     std::string fctName = ctx->ID()->getText();
     // recurerer le type de retour preciser avant le nom de la fonction (void ou int)
     Type returnType = (ctx->getStart()->getText() == "void") ? VOID : INT32; 
-    functionReturnTypes[fctName] = returnType;
+    int paramCount = ctx->list_decl_param() ? ctx->list_decl_param()->ID().size() : 0;
 
+    if (paramCount > 6) {
+        std::cerr << "Erreur : fonction '" << fctName 
+                  << "' a plus de 6 paramètres, ce qui n'est pas supporté.\n";
+        errorFlag = true;
+    }
+    functions[fctName] = {returnType, paramCount};
     // Ne PAS utiliser visitChildren : gérer le scope manuellement
     pushScope();
+
+    for (auto id : ctx->list_decl_param()->ID()) {
+        declare(id->getText());
+    }
 
     this->visit(ctx->block());
 
@@ -64,34 +75,38 @@ std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {
     return 0;
 }
 
-std::any SymbolTableVisitor::visitExprCall(ifccParser::ExprCallContext *ctx) {
-    std::string fctName = ctx->ID()->getText();
 
-    if (functionReturnTypes.count(fctName) && functionReturnTypes[fctName] == VOID) {
-        std::cerr << "Erreur : la fonction void '" << fctName
-                  << "' ne peut pas être utilisée dans une expression.\n";
-        errorFlag = true;
-    } else if (!functionReturnTypes.count(fctName)) {
+
+void SymbolTableVisitor::checkFunctionCall(const std::string& fctName, 
+                                            int argCount, bool usedInExpr) {
+    if (!functions.count(fctName)) {
         std::cerr << "Erreur : fonction '" << fctName << "' appelée mais non déclarée.\n";
         errorFlag = true;
+        return;
     }
-
-    // Visiter les arguments éventuels (pas le ID qui est un nom de fonction)
-    if (ctx->expr()) {
-        this->visit(ctx->expr());
+    if (usedInExpr && functions[fctName].returnType == VOID) {
+        std::cerr << "Erreur : la fonction void '" << fctName 
+                  << "' ne peut pas être utilisée dans une expression.\n";
+        errorFlag = true;
     }
-    return 0;
+    if (argCount != functions[fctName].paramCount) {
+        std::cerr << "Erreur : fonction '" << fctName << "' appelée avec " 
+                  << argCount << " argument(s), attendu " 
+                  << functions[fctName].paramCount << ".\n";
+        errorFlag = true;
+    }
 }
 
 std::any SymbolTableVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext *ctx) {
     std::string fctName = ctx->ID()->getText();
+    int argCount = ctx->list_param() ? ctx->list_param()->expr().size() : 0;
+    checkFunctionCall(fctName, argCount, true);
 
-    if (functionReturnTypes.count(fctName) && functionReturnTypes[fctName] == VOID) {
-        std::cerr << "Erreur : la fonction void '" << fctName << "' ne peut pas être utilisée dans une expression.\n";
-        errorFlag = true;
-    } else if (!functionReturnTypes.count(fctName)) {
-        std::cerr << "Erreur : fonction '" << fctName << "' appelée mais non déclarée.\n";
-        errorFlag = true;
+    //visiter les arguments éventuels pour detecter var non déclarées
+    if (ctx->list_param()) {
+        for (auto expr : ctx->list_param()->expr()) {
+            this->visit(expr);
+        }
     }
 
     return 0;

@@ -18,8 +18,8 @@ public:
     virtual std::any visitProg(ifccParser::ProgContext *ctx) override;
     virtual std::any visitBlock(ifccParser::BlockContext *ctx) override;
     virtual std::any visitFonctDecl(ifccParser::FonctDeclContext *ctx) override;
-    virtual std::any visitExprCall(ifccParser::ExprCallContext *ctx) override;
     virtual std::any visitExprFonctCall(ifccParser::ExprFonctCallContext *ctx) override;
+    void checkFunctionCall(const std::string& fctName, int argCount, bool usedInExpr);
     bool hasErrors() const { return errorFlag; }
 
 private:
@@ -28,7 +28,12 @@ private:
     std::unordered_set<std::string> usedVars;
     std::unordered_set<std::string> declaredVars;     // variables déclarées
     
-    std::map<std::string, Type> functionReturnTypes;     // variables assignées
+    struct FunctionInfo {
+        Type returnType;
+        int paramCount;
+    };
+    std::map<std::string, FunctionInfo> functions;
+   
     bool errorFlag = false;
 
     void pushScope() { scopeStack.push_back({}); }
