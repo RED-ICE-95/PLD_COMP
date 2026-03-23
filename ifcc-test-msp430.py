@@ -57,8 +57,8 @@ def assemble_and_link(asm_file, elf_file, logfile=None):
     rc = run_command(f"{MSP430_AS} -mmcu=msp430f1611 {asm_file} -o {obj_file}", logfile)
     if rc != 0:
         return rc
-    
-    # Compile putchar stub for MSP430
+
+    # Compile putchar/getchar stubs for MSP430
     stub_asm = f"{WORK_DIR}/putchar_stub.s"
     stub_obj = f"{WORK_DIR}/putchar_stub.o"
     with open(stub_asm, 'w') as f:
@@ -72,11 +72,10 @@ getchar:
     mov #65, R15
     ret
 """)
-    
     rc = run_command(f"{MSP430_AS} -mmcu=msp430f1611 {stub_asm} -o {stub_obj}", logfile)
     if rc != 0:
         return rc
-    
+
     rc = run_command(f"{MSP430_LD} -T {LINKER_SCRIPT} {CRT0} {obj_file} {stub_obj} -o {elf_file}", logfile)
     return rc
 

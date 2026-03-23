@@ -222,6 +222,14 @@ void IRInstr::gen_asm(ostream& o) {
             o << "  movzbl %al, %eax\n";
             o << "  movl %eax, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
             break;
+        case copy_from_reg:
+            // params[0] = dest var on stack, params[1] = source register
+            o << "  movl " << params[1] << ", " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case copy_to_reg:
+            // params[0] = dest register, params[1] = source var on stack
+            o << "  movl " << bb->cfg->IR_reg_to_asm(params[1]) << ", " << params[0] << "\n";
+            break;
         default:
             break;
     }
@@ -366,6 +374,11 @@ void IRInstr::gen_asm_msp430(ostream& o) {
             o << "  call #" << params[0] << "\n";
             if (params[1] != "")
                 o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[1]) << "\n";
+            break;
+        case copy_from_reg:
+            // params[0] est la variable destination sur la pile
+            // params[1] correspond au registre source (R12, R13, R14)
+            o << "  mov " << params[1] << ", " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
             break;
         default:
             cerr << "Erreur : opération non supportée sur MSP430\n";
