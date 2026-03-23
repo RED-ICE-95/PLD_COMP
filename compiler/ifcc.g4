@@ -1,25 +1,29 @@
 grammar ifcc;
+
 axiom : prog EOF ;
+
 prog : fonctDecl* 'int' 'main' '(' ')' block ;
-fonctDecl: ('void'|'int') ID '(' list_decl_param ')' block;
+
+fonctDecl: ('void'|'int') ID '('list_decl_param')' block;
 stmt
-    : (return_stmt | assign | declar | call_stmt) ';'
+    : (return_stmt | assign | declar| call_stmt) ';'
     | if_stmt
     | while_stmt
     | block
     ;
+
 return_stmt : RETURN expr ;
 assign : ID '=' expr ;
 declar : 'int' declItem (',' declItem)* ;
 declItem : ID ('=' expr)? ;
 block : '{' stmt* '}' ;
-call_stmt : ID '(' list_param ')' ;
+call_stmt : ID '(' expr? ')' ;
+list_decl_param : ('int' ID (',' 'int' ID)*)?;
+list_param : (expr (',' expr)*)?;
 if_stmt : 'if' '(' expr ')' stmt ('else' stmt)? ;
 while_stmt : 'while' '(' expr ')' stmt ;
-list_decl_param : ('int' ID (',' 'int' ID)*)? ;
-list_param : (expr (',' expr)*)? ;
-expr
-    : '-' expr                            # exprUnaryMinus
+
+expr :  '-' expr                          # exprUnaryMinus
     | '!' expr                            # exprUnaryNot
     | '(' expr ')'                        # exprParen
     | CONST                               # exprConst
@@ -34,6 +38,7 @@ expr
     | expr '^' expr                       # exprBitXor
     | expr '|' expr                       # exprBitOr
     ;
+
 RETURN : 'return' ;
 WHILE  : 'while' ;
 IF     : 'if' ;
@@ -44,4 +49,4 @@ ID : [a-zA-Z_][a-zA-Z0-9_]* ;
 COMMENT : '/*' .*? '*/' -> skip ;
 LINE_COMMENT : '//' ~[\r\n]* -> skip ;
 DIRECTIVE : '#' .*? '\n' -> skip ;
-WS    : [ \t\r\n] -> channel(HIDDEN) ;
+WS    : [ \t\r\n] -> channel(HIDDEN);
