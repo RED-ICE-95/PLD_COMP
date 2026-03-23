@@ -62,3 +62,17 @@ std::any SymbolTableVisitor::visitExprId(ifccParser::ExprIdContext *ctx) {
     return visitChildren(ctx);
 }
 
+std::any SymbolTableVisitor::visitIncdec(ifccParser::IncdecContext *ctx)
+{
+    std::string varName = ctx->ID()->getText();
+
+    if (!isDeclared(varName)) {
+        std::cerr << "Erreur : variable '" << varName 
+                  << "' utilisée sans déclaration.\n";
+        errorFlag = true;
+    } else {
+        usedVars.insert(varName);
+    }
+
+    return nullptr;
+}

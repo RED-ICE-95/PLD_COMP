@@ -93,9 +93,35 @@ std::any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx)
 {
     string varName = resolve(ctx->ID()->getText());
     string exprVar = any_cast<string>(this->visit(ctx->expr()));
-    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
+
+    string op = ctx->children[1]->getText();
+
+    if (op == "=") {
+        cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
+    }
+    else {
+        string tmp = cfg->create_new_tempvar(INT32);
+
+        if (op == "+=")
+            cfg->current_bb->add_IRInstr(IRInstr::add, INT32, {tmp, varName, exprVar});
+        else if (op == "-=")
+            cfg->current_bb->add_IRInstr(IRInstr::sub, INT32, {tmp, varName, exprVar});
+        else if (op == "*=")
+            cfg->current_bb->add_IRInstr(IRInstr::mul, INT32, {tmp, varName, exprVar});
+        else if (op == "/=")
+            cfg->current_bb->add_IRInstr(IRInstr::div, INT32, {tmp, varName, exprVar});
+        else if (op == "%=")
+            cfg->current_bb->add_IRInstr(IRInstr::mod, INT32, {tmp, varName, exprVar});
+
+        // store result back
+        cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, tmp});
+    }
+
     return varName;
 }
+
+
+
 
 std::any CodeGenVisitor::visitExprId(ifccParser::ExprIdContext *ctx)
 {
@@ -297,6 +323,28 @@ std::any CodeGenVisitor::visitWhileStmt(ifccParser::WhileStmtContext *ctx) {
 
     // END
     cfg->add_bb(bb_end);
+
+    return 0;
+}
+
+std::any CodeGenVisitor::visitIncdec(ifccParser::IncdecContext *ctx)
+{
+    string varName = resolve(ctx->ID()->getText());
+
+    string one = cfg->create_new_tempvar(INT32);
+    cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {one, "1"});
+
+    string tmp = cfg->create_new_tempvar(INT32);
+
+    string op = ctx->op->getText();
+
+    if (op == "++") {
+        cfg->current_bb->add_IRInstr(IRInstr::add, INT32, {tmp, varName, one});
+    } else {
+        cfg->current_bb->add_IRInstr(IRInstr::sub, INT32, {tmp, varName, one});
+    }
+
+    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, tmp});
 
     return 0;
 }

@@ -6,13 +6,28 @@ prog : 'int' 'main' '(' ')' block ;
 
 stmt
     : (return_stmt | assign | declar) ';'
+    | incdec ';'
     | block
     | ifStmt  
     | whileStmt    
     ;
 
+incdec
+    : ID op=('++' | '--')
+    ;
+
 return_stmt : RETURN expr ;
-assign      : ID '=' expr ;
+
+assign    
+    : ID '=' expr
+    | ID '+=' expr
+    | ID '-=' expr
+    | ID '*=' expr
+    | ID '/=' expr
+    | ID '%=' expr
+    ;
+
+
 declar      : 'int' ID (',' ID)* ;
 block       : '{' stmt* '}' ;
 

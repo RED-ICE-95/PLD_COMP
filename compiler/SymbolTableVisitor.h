@@ -15,7 +15,7 @@ public:
     virtual std::any visitExprId(ifccParser::ExprIdContext *ctx) override;
     virtual std::any visitProg(ifccParser::ProgContext *ctx) override;
     virtual std::any visitBlock(ifccParser::BlockContext *ctx) override;
-    
+    virtual std::any visitIncdec(ifccParser::IncdecContext *ctx) override;
     bool hasErrors() const { return errorFlag; }
 
 private:
