@@ -447,7 +447,7 @@ std::any CodeGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
     // visiter le then — ctx->stmt(0)
     cfg->add_bb(thenBB);
     scopeRename.push_back({});
-    this->visit(ctx->stmt(0));   // ← un seul stmt, pas forcément un block
+    this->visit(ctx->stmt(0));   
     scopeRename.pop_back();
     cfg->current_bb->exit_true  = endIfBB;
     cfg->current_bb->exit_false = nullptr;
@@ -457,7 +457,7 @@ std::any CodeGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
         testBB->exit_false = elseBB;
         cfg->add_bb(elseBB);
         scopeRename.push_back({});
-        this->visit(ctx->stmt(1));   // ← le else stmt
+        this->visit(ctx->stmt(1));   
         scopeRename.pop_back();
         cfg->current_bb->exit_true  = endIfBB;
         cfg->current_bb->exit_false = nullptr;
@@ -471,41 +471,32 @@ std::any CodeGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 
 std::any CodeGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
 {
-    // beforeWhileBB = cfg->current_bb (déjà en cours)
     BasicBlock* beforeWhileBB = cfg->current_bb;
 
-    // testBB : BB où on évalue la condition
     BasicBlock* testBB = new BasicBlock(cfg, cfg->new_BB_name());
     beforeWhileBB->exit_true  = testBB;
     beforeWhileBB->exit_false = nullptr;
 
-    // bodyBB : BB du corps de la boucle
     BasicBlock* bodyBB = new BasicBlock(cfg, cfg->new_BB_name());
 
-    // afterWhileBB : BB après la boucle
     BasicBlock* afterWhileBB = new BasicBlock(cfg, cfg->new_BB_name());
 
-    // câblage du testBB
     testBB->exit_true  = bodyBB;
     testBB->exit_false = afterWhileBB;
 
-    // remplir testBB avec la condition
     cfg->add_bb(testBB);
     string condVar = any_cast<string>(this->visit(ctx->expr()));
     testBB->test_var_name = condVar;
 
-    // remplir bodyBB avec le corps
     cfg->add_bb(bodyBB);
     scopeRename.push_back({});
     this->visit(ctx->stmt());
     scopeRename.pop_back();
     BasicBlock* bodyLastBB = cfg->current_bb;
 
-    // à la fin du corps on retourne au testBB → boucle
     bodyLastBB->exit_true  = testBB;
     bodyLastBB->exit_false = nullptr;
 
-    // continuer après la boucle
     cfg->add_bb(afterWhileBB);
     return 0;
 }
