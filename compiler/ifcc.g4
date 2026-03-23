@@ -7,6 +7,8 @@ prog : fonctDecl* 'int' 'main' '(' ')' block ;
 fonctDecl: ('void'|'int') ID '('list_decl_param')' block;
 stmt
     : (return_stmt | assign | declar| call_stmt) ';'
+    | if_stmt
+    | while_stmt
     | block
     ;
 
@@ -18,8 +20,10 @@ block : '{' stmt* '}' ;
 call_stmt : ID '(' expr? ')' ;
 list_decl_param : ('int' ID (',' 'int' ID)*)?;
 list_param : (expr (',' expr)*)?;
+if_stmt : 'if' '(' expr ')' stmt ('else' stmt)? ;
+while_stmt : 'while' '(' expr ')' stmt ;
 
-expr :  '-' expr                            # exprUnaryMinus
+expr :  '-' expr                          # exprUnaryMinus
     | '!' expr                            # exprUnaryNot
     | '(' expr ')'                        # exprParen
     | CONST                               # exprConst
@@ -36,6 +40,9 @@ expr :  '-' expr                            # exprUnaryMinus
     ;
 
 RETURN : 'return' ;
+WHILE  : 'while' ;
+IF     : 'if' ;
+ELSE   : 'else' ;
 CONST : [0-9]+ ;
 CHAR_CONST : '\'' (~['\\] | '\\' .) '\'' ;
 ID : [a-zA-Z_][a-zA-Z0-9_]* ;

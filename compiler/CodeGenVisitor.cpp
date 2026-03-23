@@ -512,4 +512,73 @@ std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
 }
 
 
+std::any CodeGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
+{
+    BasicBlock* testBB = cfg->current_bb;
+    string condVar = any_cast<string>(this->visit(ctx->expr()));
+    condVar = materialize(condVar);  
+    testBB->test_var_name = condVar;
+
+    BasicBlock* thenBB  = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* endIfBB = new BasicBlock(cfg, cfg->new_BB_name());
+    testBB->exit_true = thenBB;
+
+    // visiter le then — ctx->stmt(0)
+    cfg->add_bb(thenBB);
+    scopeRename.push_back({});
+    this->visit(ctx->stmt(0));   
+    scopeRename.pop_back();
+    cfg->current_bb->exit_true  = endIfBB;
+    cfg->current_bb->exit_false = nullptr;
+
+    if (ctx->stmt().size() > 1) {
+        BasicBlock* elseBB = new BasicBlock(cfg, cfg->new_BB_name());
+        testBB->exit_false = elseBB;
+        cfg->add_bb(elseBB);
+        scopeRename.push_back({});
+        this->visit(ctx->stmt(1));   
+        scopeRename.pop_back();
+        cfg->current_bb->exit_true  = endIfBB;
+        cfg->current_bb->exit_false = nullptr;
+    } else {
+        testBB->exit_false = endIfBB;
+    }
+
+    cfg->add_bb(endIfBB);
+    return 0;
+}
+
+std::any CodeGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
+{
+    BasicBlock* beforeWhileBB = cfg->current_bb;
+
+    BasicBlock* testBB = new BasicBlock(cfg, cfg->new_BB_name());
+    beforeWhileBB->exit_true  = testBB;
+    beforeWhileBB->exit_false = nullptr;
+
+    BasicBlock* bodyBB = new BasicBlock(cfg, cfg->new_BB_name());
+
+    BasicBlock* afterWhileBB = new BasicBlock(cfg, cfg->new_BB_name());
+
+    testBB->exit_true  = bodyBB;
+    testBB->exit_false = afterWhileBB;
+
+    cfg->add_bb(testBB);
+    string condVar = any_cast<string>(this->visit(ctx->expr()));
+    condVar = materialize(condVar);  
+    testBB->test_var_name = condVar;
+
+    cfg->add_bb(bodyBB);
+    scopeRename.push_back({});
+    this->visit(ctx->stmt());
+    scopeRename.pop_back();
+    BasicBlock* bodyLastBB = cfg->current_bb;
+
+    bodyLastBB->exit_true  = testBB;
+    bodyLastBB->exit_false = nullptr;
+
+    cfg->add_bb(afterWhileBB);
+    return 0;
+}
+
 
