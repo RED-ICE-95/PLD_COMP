@@ -263,3 +263,40 @@ std::any CodeGenVisitor::visitIfStmt(ifccParser::IfStmtContext *ctx) {
 
     return 0;
 }
+
+std::any CodeGenVisitor::visitWhileStmt(ifccParser::WhileStmtContext *ctx) {
+
+    // condition block
+    BasicBlock* bb_cond = new BasicBlock(cfg, cfg->new_BB_name());
+
+    // body block
+    BasicBlock* bb_body = new BasicBlock(cfg, cfg->new_BB_name());
+
+    // end block
+    BasicBlock* bb_end = new BasicBlock(cfg, cfg->new_BB_name());
+
+    // jump from current block to condition
+    cfg->current_bb->exit_true = bb_cond;
+    cfg->current_bb->exit_false = nullptr;
+
+    // CONDITION
+    cfg->add_bb(bb_cond);
+    string condVar = any_cast<string>(visit(ctx->expr()));
+
+    cfg->current_bb->test_var_name = condVar;
+    cfg->current_bb->exit_true = bb_body;
+    cfg->current_bb->exit_false = bb_end;
+
+    // BODY
+    cfg->add_bb(bb_body);
+    visit(ctx->stmt());
+
+    // after body go back to condition
+    cfg->current_bb->exit_true = bb_cond;
+    cfg->current_bb->exit_false = nullptr;
+
+    // END
+    cfg->add_bb(bb_end);
+
+    return 0;
+}

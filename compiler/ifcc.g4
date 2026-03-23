@@ -7,7 +7,8 @@ prog : 'int' 'main' '(' ')' block ;
 stmt
     : (return_stmt | assign | declar) ';'
     | block
-    | ifStmt      
+    | ifStmt  
+    | whileStmt    
     ;
 
 return_stmt : RETURN expr ;
@@ -17,6 +18,8 @@ block       : '{' stmt* '}' ;
 
 ifStmt
     : 'if' '(' expr ')' stmt ('else' stmt)? ;
+whileStmt
+    : 'while' '('expr')' stmt ;
 
 expr
     : '-' expr                            # exprUnaryMinus

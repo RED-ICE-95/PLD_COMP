@@ -20,7 +20,7 @@ class  CodeGenVisitor : public ifccBaseVisitor {
         virtual std::any visitAssign(ifccParser::AssignContext *ctx) override;
         virtual std::any visitBlock(ifccParser::BlockContext *ctx) override;
         virtual std::any visitIfStmt(ifccParser::IfStmtContext *ctx) override;
-
+        virtual std::any visitWhileStmt(ifccParser::WhileStmtContext *ctx) override;
         // pour les différentes formes d'expressions
         virtual std::any visitExprConst(ifccParser::ExprConstContext *ctx) override;
         virtual std::any visitExprCharConst(ifccParser::ExprCharConstContext *ctx) override;
