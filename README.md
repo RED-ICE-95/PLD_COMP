@@ -1,4 +1,4 @@
-# Compilateur IFCC — Livrable intermédiaire (tâches 4.1 à 4.7)
+# Compilateur IFCC — Compilateur C
 
 > **INSA de Lyon — 4IF — PLD-Comp — Année 2025-2026**  
 > **Etudiants** : Ines Souibgui, Yassine Taharaste, Bilal Kaya, Hiba Ben Amor, Ikram Iqdari, Nour El Ouardighi, Malak Bahda
@@ -10,7 +10,8 @@
 
 - ANTLR4 et son runtime C++ installés (voir section 4.1 du sujet)
 - GCC (g++) pour la compilation du compilateur et de l'assembleur produit
-- Python 3 pour le script de tests
+- Python 3 pour les scripts de tests
+- *(MSP430 uniquement)* Toolchain MSP430 : `msp430-elf-as`, `msp430-elf-ld`, `mspdebug`
 
 ### Construire le compilateur
 
@@ -23,6 +24,7 @@ L'exécutable `compiler/ifcc` est produit.
 
 ### Utilisation
 
+**Cible x86-64 (par défaut) :**
 ```bash
 ./compiler/ifcc monprogramme.c > monprogramme.s
 gcc monprogramme.s -o monprogramme
@@ -30,10 +32,21 @@ gcc monprogramme.s -o monprogramme
 echo $?
 ```
 
+**Cible MSP430 :**
+```bash
+./compiler/ifcc --msp430 monprogramme.c > monprogramme.s
+```
+
 ### Lancer les tests
 
+**Tests x86-64 :**
 ```bash
 python3 ifcc-test.py testfiles/
+```
+
+**Tests MSP430 :**
+```bash
+python3 ifcc-test-msp430.py testfiles/ --verbose
 ```
 
 L'option `--help` affiche toutes les options disponibles.
@@ -47,12 +60,12 @@ L'option `--help` affiche toutes les options disponibles.
 Le compilateur suit un pipeline classique en trois étapes :
 
 ```
-Source C  →  [ANTLR4 Lexer/Parser]  →  [SymbolTableVisitor]  →  [CodeGenVisitor]  →  Assembleur x86-64
+Source C  →  [ANTLR4 Lexer/Parser]  →  [SymbolTableVisitor]  →  [CodeGenVisitor → IR → CFG]  →  Assembleur (x86-64 ou MSP430)
 ```
 
 1. **Analyse lexicale et syntaxique** : assurée par ANTLR4 à partir de la grammaire [compiler/ifcc.g4](compiler/ifcc.g4).
 2. **Analyse sémantique** : effectuée par [SymbolTableVisitor](compiler/SymbolTableVisitor.cpp) (premier passage sur l'AST).
-3. **Génération de code** : effectuée par [CodeGenVisitor](compiler/CodeGenVisitor.cpp) (deuxième passage).
+3. **Génération de code** : effectuée par [CodeGenVisitor](compiler/CodeGenVisitor.cpp) qui construit une IR (BasicBlocks + CFG), puis traduit en assembleur pour la cible choisie.
 
 ---
 
@@ -61,7 +74,8 @@ Source C  →  [ANTLR4 Lexer/Parser]  →  [SymbolTableVisitor]  →  [CodeGenVi
 #### Types
 | Type | Support |
 |------|---------|
-| `int` (32 bits) | ok |
+| `int` (32 bits x86 / 16 bits MSP430) | ok |
+| Constante `char` (valeur ASCII) | ok |
 
 #### Instructions
 | Construction | Exemple | Fichier de test |
@@ -69,8 +83,15 @@ Source C  →  [ANTLR4 Lexer/Parser]  →  [SymbolTableVisitor]  →  [CodeGenVi
 | Entier littéral | `return 42;` | [1_return42.c](testfiles/1_return42.c) |
 | Déclaration de variable | `int a;` | [3_return_var.c](testfiles/3_return_var.c) |
 | Déclaration multiple | `int a, b, c;` | [21_multi_var_chain.c](testfiles/21_multi_var_chain.c) |
+| Initialisation à la déclaration | `int a = expr;` | [71_init_simple.c](testfiles/tests_declaration_affectation_combine/71_init_simple.c) |
 | Affectation | `a = expr;` | [3_return_var.c](testfiles/3_return_var.c) |
-| Instruction `return` | `return expr;` | [1_return42.c](testfiles/1_return42.c) |
+| Instruction `return` (n'importe où) | `return expr;` | [1_return42.c](testfiles/1_return42.c) |
+| Bloc `{ }` avec portée lexicale | `{ int x = 1; }` | [tests_bloc/](testfiles/tests_bloc/) |
+| `if` / `else` | `if (a > 0) { ... }` | [tests_conditionnelles/](testfiles/tests_conditionnelles/) |
+| `while` | `while (i > 0) { ... }` | [tests_conditionnelles/](testfiles/tests_conditionnelles/) |
+| Appel de fonction | `f(a, b)` | [tests_function/](testfiles/tests_function/) |
+| `putchar` | `putchar('A');` | [tests_putchar_getchar/](testfiles/tests_putchar_getchar/) |
+| `getchar` | `int c = getchar();` | [tests_putchar_getchar/](testfiles/tests_putchar_getchar/) |
 
 #### Opérateurs arithmétiques
 | Opérateur | Description | Fichier de test |
@@ -84,7 +105,7 @@ Source C  →  [ANTLR4 Lexer/Parser]  →  [SymbolTableVisitor]  →  [CodeGenVi
 
 #### Constantes caractère
 
-Les constantes de type `char` sont supportées comme des entiers 32 bits (valeur ASCII). Elles peuvent être utilisées dans n'importe quelle expression à la place d'un entier.
+Les constantes de type `char` sont supportées comme des entiers (valeur ASCII). Elles peuvent être utilisées dans n'importe quelle expression à la place d'un entier.
 
 | Forme | Exemple | Valeur | Fichier de test |
 |---|---|---|---|
@@ -95,8 +116,6 @@ Les constantes de type `char` sont supportées comme des entiers 32 bits (valeur
 | Arithmétique entre chars | `'Z' - 'A'` | 25 | [12_char_const.c](testfiles/12_char_const.c) |
 
 Les séquences d'échappement reconnues sont : `\n`, `\t`, `\r`, `\0`, `\\`, `\'`, `\"`.
-
-Le lexer ANTLR4 capture la règle `CHAR_CONST : '\'' (~['\\] | '\\' .) '\''` et `visitExprCharConst` dans [CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) convertit la valeur en entier avant d'émettre un `movl $valeur, %eax`.
 
 ---
 
@@ -124,6 +143,23 @@ Les tests [5_mul_priority.c](testfiles/5_mul_priority.c), [7_parens_priority.c](
 
 ---
 
+### Optimisations (propagation de constantes)
+
+Le compilateur évalue les expressions constantes **à la compilation**, sans émettre d'instructions inutiles :
+
+| Expression | Résultat produit |
+|---|---|
+| `3 + 4` | `$7` (calculé à la compilation) |
+| `x + 0`, `0 + x` | `x` (addition neutre) |
+| `x - 0` | `x` |
+| `x * 1`, `1 * x` | `x` (multiplication neutre) |
+| `x * 0`, `0 * x` | `$0` |
+| `x / 1` | `x` |
+| `x % 1` | `$0` |
+| `x ^ x`, `x - x` | `$0` |
+
+---
+
 ### Analyse sémantique (table des symboles)
 
 Le [`SymbolTableVisitor`](compiler/SymbolTableVisitor.cpp) effectue, en un seul passage, les vérifications suivantes :
@@ -134,7 +170,27 @@ Le [`SymbolTableVisitor`](compiler/SymbolTableVisitor.cpp) effectue, en un seul 
 | Variable non déclarée à droite d'une expression | `Erreur : variable 'x' utilisée sans déclaration.` | [24_invalid_undecl_rhs.c](testfiles/24_invalid_undecl_rhs.c) |
 | Variable non déclarée à gauche d'une affectation | `Erreur : variable 'x' utilisée sans déclaration.` | [25_invalid_undecl_lhs.c](testfiles/25_invalid_undecl_lhs.c) |
 | Variable déclarée mais jamais utilisée | `Avertissement : variable 'x' déclarée mais jamais utilisée.` | [26_unused_var_warning.c](testfiles/26_unused_var_warning.c) |
+| Appel de fonction non déclarée | `Erreur : appel à la fonction 'foo' non déclarée.` | [tests_function/](testfiles/tests_function/) |
+| Nombre d'arguments incorrect | `Erreur : nombre incorrect d'arguments` | [tests_function/](testfiles/tests_function/) |
+| Utilisation de `void` dans une expression | `Erreur : impossible d'utiliser void dans une expression` | [tests_function/](testfiles/tests_function/) |
 | Erreur de syntaxe | `error: syntax error during parsing` | [2_invalid_program.c](testfiles/2_invalid_program.c) |
+
+---
+
+### Backend MSP430
+
+Le compilateur supporte une deuxième cible : le microcontrôleur **MSP430** (16 bits).
+
+| Aspect | x86-64 | MSP430 |
+|---|---|---|
+| Registres | `%rbp`, `%rsp`, `%eax` | R4 (FP), R1 (SP), R15 (retour) |
+| Variables sur pile | `-offset(%rbp)` | `-offset(R4)` |
+| Taille variable | 4 octets | 2 octets |
+| Passage de paramètres | `%edi`, `%esi`, `%edx`, ... | R12, R13, R14 |
+| Appel de fonction | `call f@PLT` | `call #f` |
+| Limitations | — | Pas de `*`, `/`, `%` matériel |
+
+Le script `ifcc-test-msp430.py` compile, assemble, linke et exécute dans le simulateur `mspdebug` en comparant R15 avec le code de retour GCC x86.
 
 ---
 
@@ -142,10 +198,10 @@ Le [`SymbolTableVisitor`](compiler/SymbolTableVisitor.cpp) effectue, en un seul 
 
 Le [`CodeGenVisitor`](compiler/CodeGenVisitor.cpp) produit de l'assembleur x86-64 en syntaxe AT&T, compatible Linux (et macOS via `#ifdef __APPLE__`).
 
-- **Gestion des variables** : chaque variable `int` est allouée sur la pile par `sub $4, %rsp`. L'offset de chaque variable par rapport à `%rbp` est pré-calculé par `SymbolTableVisitor` puis inversé dans le constructeur de `CodeGenVisitor`.
-- **Variables temporaires** : la méthode `allocTemp()` alloue dynamiquement un slot sur la pile pour stocker les résultats intermédiaires lors de l'évaluation des opérations binaires, puis le libère immédiatement après usage (`add $4, %rsp`).
-- **Convention d'appel** : prologue/épilogue standard (`push %rbp` / `mov %rsp, %rbp` / `pop %rbp`).
-- **Résultat** : toute expression laisse son résultat dans `%eax`.
+- **Représentation intermédiaire (IR)** : le CodeGenVisitor construit un graphe de BasicBlocks (CFG). Chaque BasicBlock contient une liste d'instructions IR simples (`ldconst`, `copy`, `add`, `sub`, etc.). La traduction en assembleur est faite en un second temps par les méthodes `gen_asm()` de l'IR.
+- **Gestion des variables** : chaque variable est allouée sur la pile. L'offset de chaque variable par rapport à `%rbp` est calculé par le CFG et traduit en `-offset(%rbp)`.
+- **Convention d'appel** : prologue/épilogue standard (`push %rbp` / `mov %rsp, %rbp` / `leave` / `ret`).
+- **Résultat** : la valeur de retour est placée dans `%eax` (registre de retour x86-64).
 
 ---
 
@@ -154,14 +210,19 @@ Le [`CodeGenVisitor`](compiler/CodeGenVisitor.cpp) produit de l'assembleur x86-6
 ### Structure des fichiers
 
 ```
-c:\PLD-COMP\
+c:\PLD_COMP\
 ├── compiler/
 │   ├── ifcc.g4                  # Grammaire ANTLR4 du langage
 │   ├── main.cpp                 # Point d'entrée : parsing, STV puis CGV
+│   ├── type.h                   # Enum des types (INT32, CHAR, VOID)
+│   ├── IR.h                     # Classes IRInstr, BasicBlock, CFG
+│   ├── IR.cpp                   # Implémentation IR + gen_asm x86 et MSP430
+│   ├── CFG_MSP430.h             # Sous-classe CFG pour MSP430
+│   ├── CFG_MSP430.cpp           # Prologue/épilogue/codegen MSP430
 │   ├── SymbolTableVisitor.h     # Interface de l'analyse sémantique
 │   ├── SymbolTableVisitor.cpp   # Vérification des déclarations / usages
 │   ├── CodeGenVisitor.h         # Interface de la génération de code
-│   ├── CodeGenVisitor.cpp       # Génération assembleur x86-64
+│   ├── CodeGenVisitor.cpp       # Construction de l'IR + gestion des CFG
 │   ├── Makefile                 # Build du compilateur
 │   ├── generated/               # Code C++ généré par ANTLR4 (ne pas modifier)
 │   │   ├── ifccLexer.{h,cpp}
@@ -169,51 +230,37 @@ c:\PLD-COMP\
 │   │   ├── ifccBaseVisitor.{h,cpp}
 │   │   └── ifccVisitor.{h,cpp}
 │   └── build/                   # Fichiers de dépendances (.d)
-├── testfiles/                   # Programmes de test C
-│   ├── 1_return42.c             # Retour d'une constante
-│   ├── 2_invalid_program.c      # Syntaxe invalide
-│   ├── 3_return_var.c           # Variable et retour
-│   ├── 4_invalid_undecl_var.c   # Variable non déclarée
-│   ├── 5_mul_priority.c         # Priorité * sur +
-│   ├── 6_left_assoc_sub.c       # Associativité gauche de -
-│   ├── 7_parens_priority.c      # Parenthèses
-│   ├── 8_div_mod.c              # Division et modulo
-│   ├── 9_unary.c                # Opérateurs unaires
-│   ├── 10_bitwise.c             # Opérateurs bit-à-bit
-│   ├── 11_comparisons.c         # < et >
-│   ├── 12_char_const.c          # Constante char ('Z' - 'A')
-│   ├── 13_char_escape.c         # Char escape ('\n')
-│   ├── 14_equality.c            # == et !=
-│   ├── 15_combined_expr.c       # Expression complexe combinée
-│   ├── 16_left_assoc_div.c      # Associativité gauche de /
-│   ├── 17_unary_minus_var.c     # Négation d'une variable
-│   ├── 18_unary_on_expr.c       # Unaire sur expression
-│   ├── 19_nested_parens.c       # Parenthèses imbriquées
-│   ├── 20_char_plus_int.c       # Char + int
-│   ├── 21_multi_var_chain.c     # Déclarations multiples
-│   ├── 22_cmp_in_arith.c        # Comparaison dans une expression
-│   ├── 23_invalid_double_decl.c # Erreur : double déclaration
-│   ├── 24_invalid_undecl_rhs.c  # Erreur : non déclarée en lecture
-│   ├── 25_invalid_undecl_lhs.c  # Erreur : non déclarée en écriture
-│   └── 26_unused_var_warning.c  # Avertissement : variable déclarée non utilisée
-└── ifcc-test.py                 # Script de test automatisé
+├── testfiles/
+│   ├── tests_expressions/       # 70 tests d'opérateurs et expressions
+│   ├── tests_return/            # return depuis divers contextes
+│   ├── tests_bloc/              # Portées imbriquées
+│   ├── tests_conditionnelles/   # if/else et while
+│   ├── tests_function/          # Fonctions, paramètres, void
+│   ├── tests_putchar_getchar/   # putchar, getchar
+│   └── tests_declaration_affectation_combine/  # Init, folding, portées
+├── ifcc-test.py                 # Script de test automatisé x86-64
+├── ifcc-test-msp430.py          # Script de test automatisé MSP430
+└── README.md
 ```
 
 ### Points d'entrée clés dans le code
 
 | Fonctionnalité | Fichier | Emplacement |
 |---|---|---|
-| Grammaire complète | [compiler/ifcc.g4](compiler/ifcc.g4) | L.1–32 |
-| Main / pipeline complet | [compiler/main.cpp](compiler/main.cpp) | L.1–62 |
-| Construction de la table des symboles | [compiler/SymbolTableVisitor.cpp](compiler/SymbolTableVisitor.cpp) | `visitDeclar` L.3 |
-| Vérification des usages | [compiler/SymbolTableVisitor.cpp](compiler/SymbolTableVisitor.cpp) | `visitExprId` L.33 |
-| Avertissement variables inutilisées | [compiler/SymbolTableVisitor.cpp](compiler/SymbolTableVisitor.cpp) | `visitProg` L.46 |
-| Prologue/épilogue assembleur | [compiler/CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) | `visitProg` L.33 |
-| Allocation de temporaires | [compiler/CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) | `allocTemp` L.26 |
-| Opérations binaires (+, -) | [compiler/CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) | `visitExprAdd` L.114 |
-| Multiplication, division, modulo | [compiler/CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) | `visitExprMult` L.134 |
-| Opérateurs bit-à-bit | [compiler/CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) | `visitExprBitOr/Xor/And` L.157 |
-| Comparaisons (`<`, `>`, `==`, `!=`) | [compiler/CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) | `visitExprCmp/Eq` L.207 |
+| Grammaire complète | [compiler/ifcc.g4](compiler/ifcc.g4) | L.1–55 |
+| Main / pipeline complet | [compiler/main.cpp](compiler/main.cpp) | L.1–70 |
+| Construction de la table des symboles | [compiler/SymbolTableVisitor.cpp](compiler/SymbolTableVisitor.cpp) | `visitDeclar` |
+| Vérification des usages | [compiler/SymbolTableVisitor.cpp](compiler/SymbolTableVisitor.cpp) | `visitExprId` |
+| Avertissement variables inutilisées | [compiler/SymbolTableVisitor.cpp](compiler/SymbolTableVisitor.cpp) | `visitProg` |
+| Génération IR + prologue/épilogue | [compiler/CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) | `visitProg` |
+| Déclaration de fonction | [compiler/CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) | `visitFonctDecl` |
+| if/else (BasicBlocks) | [compiler/CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) | `visitIf_stmt` |
+| while (BasicBlocks + boucle) | [compiler/CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) | `visitWhile_stmt` |
+| Appel de fonction | [compiler/CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) | `visitExprFonctCall` |
+| Propagation de constantes | [compiler/CodeGenVisitor.cpp](compiler/CodeGenVisitor.cpp) | `visitExprAdd`, `visitExprMult` |
+| Instructions IR (x86) | [compiler/IR.cpp](compiler/IR.cpp) | `IRInstr::gen_asm` |
+| Instructions IR (MSP430) | [compiler/IR.cpp](compiler/IR.cpp) | `IRInstr::gen_asm_msp430` |
+| Prologue/épilogue MSP430 | [compiler/CFG_MSP430.cpp](compiler/CFG_MSP430.cpp) | `CFG_MSP430::gen_asm` |
 
 ---
 
@@ -223,38 +270,30 @@ c:\PLD-COMP\
 
 Le projet est développé en sprints courts, chacun produisant un compilateur fonctionnel de bout en bout sur un sous-ensemble bien défini du C. Chaque sprint est précédé par l'écriture de tests (approche TDD) qui vérifient les nouvelles fonctionnalités.
 
-### Sprints réalisés (tâches 4.1 à 4.7)
+### Sprints réalisés
 
-| Sprint | Tâche TP | Fonctionnalités ajoutées | Tests associés |
-|---|---|---|---|
-| 1 | 4.1 — Prise en main | Installation ANTLR4, build Makefile, grammaire minimale, pipeline complet | — |
-| 2 | 4.2 — Compilateur v0 | `return CONST` ; prologue/épilogue x86-64 ; génération assembleur AT&T | [1_return42.c](testfiles/1_return42.c) |
-| 3 | 4.3 — Tests | Prise en main de `ifcc-test.py` ; ajout de programmes invalides ; validation flux gcc vs ifcc | [2_invalid_program.c](testfiles/2_invalid_program.c), [4_invalid_undecl_var.c](testfiles/4_invalid_undecl_var.c) |
-| 4 | 4.4 — Variables | Déclaration `int` (simple et multiple) ; allocation sur la pile via `%rbp` ; affectation et lecture | [3_return_var.c](testfiles/3_return_var.c), [21_multi_var_chain.c](testfiles/21_multi_var_chain.c) |
-| 5 | 4.5 — Table des symboles | `SymbolTableVisitor` : double déclaration, variable non déclarée, variable inutilisée | [23_invalid_double_decl.c](testfiles/23_invalid_double_decl.c), [24_invalid_undecl_rhs.c](testfiles/24_invalid_undecl_rhs.c), [25_invalid_undecl_lhs.c](testfiles/25_invalid_undecl_lhs.c), [26_unused_var_warning.c](testfiles/26_unused_var_warning.c) |
-| 6 | 4.6 — Bout en bout | `CodeGenVisitor` complet : variables sur la pile, temporaires dynamiques, `return expr` | [3_return_var.c](testfiles/3_return_var.c) et suivants |
-| 7 | 4.7 — Expressions | Opérations `+`, `-`, `*`, `/`, `%` ; unaires `-`, `!` ; bit-à-bit `&`, `^`, `|` ; comparaisons `<`, `>`, `==`, `!=` ; priorités et parenthèses ; constantes char | [5](testfiles/5_mul_priority.c) à [22](testfiles/22_cmp_in_arith.c) |
-
-### État des tests à ce stade
-
-Sur les 25 fichiers de test présents dans `testfiles/` :
-
-- **Programmes valides (tests 1, 3, 5–22)** : tous passent (sortie gcc = sortie ifcc).
-- **Programmes invalides (tests 2, 4, 23, 24, 25)** : ifcc et gcc échouent tous les deux à compiler → tests considérés comme réussis.
-
-### Sprints à venir (tâches 4.8 et suivantes)
-
-| Priorité | Tâche TP | Fonctionnalité |
+| Sprint | Fonctionnalités ajoutées | Tests associés |
 |---|---|---|
-| Haute | 4.10 | Appels de fonctions standard : `putchar`, `getchar` (ABI x86-64, passages de paramètres dans `%rdi`) |
-| Haute | 4.11 | Programmes à plusieurs fonctions : prologue/épilogue par fonction, enregistrement d'activation, passage de paramètres |
-| Haute | 4.12 | Structure de contrôle `if`/`else` (blocs de base, branchements conditionnels) |
-| Haute | 4.14 | Boucles `while` |
-| Haute | 4.13 | `return` n'importe où dans une fonction (saut vers épilogue unique) |
-| Moyenne | 4.15 | Vérifications statiques sur les fonctions (cohérence des appels, nombre de paramètres) |
-| Moyenne | 4.8 | Représentation intermédiaire (IR) pour préparer multi-cible et optimisations |
-| Basse | 4.9 | Propagation de constantes dans les expressions |
-| Basse | 4.16 | Propagation de variables constantes (analyse data-flow) |
+| 1 | Installation ANTLR4, build Makefile, grammaire minimale, pipeline complet | — |
+| 2 | `return CONST` ; prologue/épilogue x86-64 ; génération assembleur AT&T | [1_return42.c](testfiles/1_return42.c) |
+| 3 | Prise en main de `ifcc-test.py` ; ajout de programmes invalides | [2_invalid_program.c](testfiles/2_invalid_program.c), [4_invalid_undecl_var.c](testfiles/4_invalid_undecl_var.c) |
+| 4 | Déclaration `int` (simple et multiple) ; affectation ; allocation sur la pile | [3_return_var.c](testfiles/3_return_var.c), [21_multi_var_chain.c](testfiles/21_multi_var_chain.c) |
+| 5 | `SymbolTableVisitor` : double déclaration, variable non déclarée, variable inutilisée | [23](testfiles/23_invalid_double_decl.c), [24](testfiles/24_invalid_undecl_rhs.c), [25](testfiles/25_invalid_undecl_lhs.c), [26](testfiles/26_unused_var_warning.c) |
+| 6 | Opérations `+`, `-`, `*`, `/`, `%` ; unaires `-`, `!` ; bit-à-bit ; comparaisons ; priorités ; constantes char | [5](testfiles/5_mul_priority.c) à [22](testfiles/22_cmp_in_arith.c) |
+| 7 | Représentation intermédiaire (IR) : BasicBlocks, CFG, instructions IR, gen_asm | [tests_expressions/](testfiles/tests_expressions/) |
+| 8 | `if` / `else` (y compris imbriqués et chaînés) ; `while` | [tests_conditionnelles/](testfiles/tests_conditionnelles/) |
+| 9 | `return` depuis n'importe où ; blocs `{ }` avec portée lexicale | [tests_return/](testfiles/tests_return/), [tests_bloc/](testfiles/tests_bloc/) |
+| 10 | Fonctions (`int f(int a, int b)`, `void f()`) ; passage de paramètres ; `putchar` ; `getchar` | [tests_function/](testfiles/tests_function/), [tests_putchar_getchar/](testfiles/tests_putchar_getchar/) |
+| 11 | Initialisation à la déclaration ; propagation de constantes ; élimination des neutres | [tests_declaration_affectation_combine/](testfiles/tests_declaration_affectation_combine/) |
+| 12 | Backend MSP430 : `CFG_MSP430`, prologue/épilogue, `call #f`, R12/R13/R14, R15, mspdebug | [ifcc-test-msp430.py](ifcc-test-msp430.py) |
 
-### Source  
-Ce fichier README.md a été rédigé à l'aide d'une IA (Claude Sonnet 4.6).
+### État des tests
+
+Sur les fichiers de test présents dans `testfiles/` :
+
+- **Programmes valides** : la sortie de ifcc (code de retour ou affichage) correspond à celle de gcc.
+- **Programmes invalides** : ifcc et gcc échouent tous les deux à compiler → tests considérés comme réussis.
+- **Tests MSP430** : exécutés dans le simulateur `mspdebug` ; R15 comparé au code de retour GCC x86.
+
+### Source
+Ce fichier README.md a été rédigé à l'aide d'une IA (Claude Claude 4.6).
