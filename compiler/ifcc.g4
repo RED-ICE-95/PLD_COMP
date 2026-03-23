@@ -50,6 +50,8 @@ expr
     | expr '&' expr                       # exprBitAnd
     | expr '^' expr                       # exprBitXor
     | expr '|' expr                       # exprBitOr
+    | expr '&&' expr                      # exprAnd
+    | expr '||' expr                      # exprOr
     ;
 
 RETURN    : 'return' ;

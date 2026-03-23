@@ -348,3 +348,72 @@ std::any CodeGenVisitor::visitIncdec(ifccParser::IncdecContext *ctx)
 
     return 0;
 }
+
+std::any CodeGenVisitor::visitExprAnd(ifccParser::ExprAndContext *ctx)
+{
+    string leftVar = any_cast<string>(visit(ctx->expr(0)));
+    string destVar = cfg->create_new_tempvar(INT32);
+
+    BasicBlock* bb_right = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* bb_false = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* bb_end   = new BasicBlock(cfg, cfg->new_BB_name());
+
+    cfg->current_bb->test_var_name = leftVar;
+    cfg->current_bb->exit_true = bb_right;
+    cfg->current_bb->exit_false = bb_false;
+
+    // FALSE → 0
+    cfg->add_bb(bb_false);
+    cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {destVar, "0"});
+    cfg->current_bb->exit_true = bb_end;
+
+    // RIGHT
+    cfg->add_bb(bb_right);
+    string rightVar = any_cast<string>(visit(ctx->expr(1)));
+
+    string zero = cfg->create_new_tempvar(INT32);
+    cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {zero, "0"});
+
+    cfg->current_bb->add_IRInstr(IRInstr::cmp_ne, INT32, {destVar, rightVar, zero});
+    cfg->current_bb->exit_true = bb_end;
+
+    cfg->add_bb(bb_end);
+
+    return destVar;
+}
+
+std::any CodeGenVisitor::visitExprOr(ifccParser::ExprOrContext *ctx)
+{
+    string leftVar = any_cast<string>(visit(ctx->expr(0)));
+    string destVar = cfg->create_new_tempvar(INT32);
+
+    BasicBlock* bb_true  = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* bb_right = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* bb_end   = new BasicBlock(cfg, cfg->new_BB_name());
+
+    // TEST left
+    cfg->current_bb->test_var_name = leftVar;
+    cfg->current_bb->exit_true = bb_true;    // si left != 0 → TRUE
+    cfg->current_bb->exit_false = bb_right;  // sinon → évaluer right
+
+    // TRUE → résultat = 1
+    cfg->add_bb(bb_true);
+    cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {destVar, "1"});
+    cfg->current_bb->exit_true = bb_end;
+
+    // RIGHT → évaluer et convertir en bool
+    cfg->add_bb(bb_right);
+    string rightVar = any_cast<string>(visit(ctx->expr(1)));
+
+    string zero = cfg->create_new_tempvar(INT32);
+    cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {zero, "0"});
+
+    // destVar = (rightVar != 0)
+    cfg->current_bb->add_IRInstr(IRInstr::cmp_ne, INT32, {destVar, rightVar, zero});
+    cfg->current_bb->exit_true = bb_end;
+
+    // END
+    cfg->add_bb(bb_end);
+
+    return destVar;
+}
