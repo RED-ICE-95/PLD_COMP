@@ -28,8 +28,9 @@ std::any SymbolTableVisitor::visitBlock(ifccParser::BlockContext *ctx) {
 }
 
 std::any SymbolTableVisitor::visitDeclar(ifccParser::DeclarContext *ctx) {
-    for (size_t i = 0; i < ctx->ID().size(); i++) {
-        std::string varName = ctx->ID(i)->getText();
+    // On itère sur les declItem (chaque ID avec son éventuelle initialisation)
+    for (auto item : ctx->declItem()) {
+        std::string varName = item->ID()->getText();
 
         if (isDeclaredInCurrentScope(varName)) {
             std::cerr << "Erreur : variable '" << varName 
@@ -39,6 +40,8 @@ std::any SymbolTableVisitor::visitDeclar(ifccParser::DeclarContext *ctx) {
             declare(varName);
         }
     }
+
+    // visitChildren visite aussi les expr d'initialisation → visitExprId détecte les variables utilisées
     return visitChildren(ctx);
 }
 std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {

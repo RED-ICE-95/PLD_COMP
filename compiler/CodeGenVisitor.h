@@ -48,5 +48,11 @@ class  CodeGenVisitor : public ifccBaseVisitor {
                         return scopeRename[i][name];
                 return name; // !ret, !tmpN passent tels quels
         }
+
+        // ── Propagation de constantes ─────────────────────────────────────────
+        // Convention : un visit* peut retourner "$n" (ex: "$42") pour signifier
+        // une constante connue à la compilation. Aucune IRInstr n'est alors émise.
+        // materialize() convertit une telle valeur en vrai registre IR si besoin.
+        std::string materialize(const std::string& val);
 };
 
