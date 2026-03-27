@@ -51,11 +51,7 @@ std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {
     Type returnType = (ctx->getStart()->getText() == "void") ? VOID : INT32; 
     int paramCount = ctx->list_decl_param() ? ctx->list_decl_param()->ID().size() : 0;
 
-    if (paramCount > 6) {
-        std::cerr << "Erreur : fonction '" << fctName 
-                  << "' a plus de 6 paramètres, ce qui n'est pas supporté.\n";
-        errorFlag = true;
-    }
+    
     functions[fctName] = {returnType, paramCount};
     // Ne PAS utiliser visitChildren : gérer le scope manuellement
     pushScope();
