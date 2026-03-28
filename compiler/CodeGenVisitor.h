@@ -20,8 +20,14 @@ class  CodeGenVisitor : public ifccBaseVisitor {
         virtual std::any visitBlock(ifccParser::BlockContext *ctx) override;
 
         virtual std::any visitAssignSimple(ifccParser::AssignSimpleContext *ctx) override;
+        virtual std::any visitAssignAdd(ifccParser::AssignAddContext *ctx) override;    
+        virtual std::any visitAssignSub(ifccParser::AssignSubContext *ctx) override;
+        virtual std::any visitAssignMul(ifccParser::AssignMulContext *ctx) override;
+        virtual std::any visitAssignDiv(ifccParser::AssignDivContext *ctx) override;
+        virtual std::any visitAssignMod(ifccParser::AssignModContext *ctx) override;
         virtual std::any visitAssignArray(ifccParser::AssignArrayContext *ctx) override;
         virtual std::any visitExprArrayAccess(ifccParser::ExprArrayAccessContext *ctx) override;
+        
 
         // pour les différentes formes d'expressions
         virtual std::any visitExprConst(ifccParser::ExprConstContext *ctx) override;
@@ -40,6 +46,10 @@ class  CodeGenVisitor : public ifccBaseVisitor {
         virtual std::any visitCall_stmt(ifccParser::Call_stmtContext *ctx) override;
         virtual std::any visitFonctDecl(ifccParser::FonctDeclContext *ctx) override;
         virtual std::any visitExprFonctCall(ifccParser::ExprFonctCallContext *ctx) override;
+
+        virtual std::any visitIncdec(ifccParser::IncdecContext *ctx) override;
+        virtual std::any visitExprAnd(ifccParser::ExprAndContext *ctx) override;
+        virtual std::any visitExprOr(ifccParser::ExprOrContext *ctx) override;
 
         virtual std::any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
         virtual std::any visitWhile_stmt(ifccParser::While_stmtContext *ctx) override;
