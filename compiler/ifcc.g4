@@ -52,7 +52,7 @@ expr
     | '(' expr ')'                         # exprParen
     | CONST                                # exprConst
     | CHAR_CONST                           # exprCharConst
-    | ID '(' list_param ')'               # exprFonctCall
+    | ID '(' list_param ')'                # exprFonctCall
     | ID '[' expr ']'                      # exprArrayAccess
     | ID                                   # exprId
     | expr ('*' | '/' | '%') expr          # exprMult

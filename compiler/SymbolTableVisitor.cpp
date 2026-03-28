@@ -194,7 +194,7 @@ std::any SymbolTableVisitor::visitExprId(ifccParser::ExprIdContext *ctx) {
     return visitChildren(ctx);
 }
 
-    // helper commun pour tous les assign et incdec
+// helper commun pour tous les assign et incdec
 std::any SymbolTableVisitor::checkVarUsed(const std::string& varName) {
     if (!isDeclared(varName)) {
         std::cerr << "Erreur : variable '" << varName 
