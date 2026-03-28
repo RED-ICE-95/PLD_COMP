@@ -1,19 +1,27 @@
-#include <stdio.h>
+int main() {
+    int x;
+    int y;
+    int z;
+    int secret; 
 
-int alphabet(int n)
-{
-    int a = 'A';
-    while (a < 'A' + n)
-    {
-        putchar(a);
-        a = a + 1;
+    x = 10;
+    y = 5;
+    secret = 'A'; 
+
+    z = !((x > y) & 1); 
+
+    if (z != 1) {
+        int i;
+        i = 0;
+        while (i < 3) {
+            int secret; 
+            secret = 'A';
+            putchar(secret);
+            i = i + 1;
+        }
     }
-    return a;
-}
 
-int main()
-{
-    int c;
-    c = alphabet(15);
-    return c;
+    putchar(secret ^ 4); 
+
+    return 0;
 }
