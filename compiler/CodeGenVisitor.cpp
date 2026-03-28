@@ -568,43 +568,42 @@ std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
     return 0;
 }
 
-std::any CodeGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx){
+std::any CodeGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
+{
+    string condVar = any_cast<string>(this->visit(ctx->expr()));
+    condVar = materialize(condVar); 
 
-    string condVar = any_cast<string>(visit(ctx->expr()));
-    condVar = materialize(condVar);  
+    BasicBlock* testBB = cfg->current_bb; 
+    testBB->test_var_name = condVar;
 
-    BasicBlock* bb_if   = new BasicBlock(cfg, cfg->new_BB_name());
-    BasicBlock* bb_else = nullptr;
-    BasicBlock* bb_end  = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* thenBB  = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* endIfBB = new BasicBlock(cfg, cfg->new_BB_name());
+    
+    testBB->exit_true = thenBB;
 
-    if (ctx->stmt().size() == 2) {
-        bb_else = new BasicBlock(cfg, cfg->new_BB_name());
+    // Bloc THEN 
+    cfg->add_bb(thenBB);
+    scopeRename.push_back({});
+    this->visit(ctx->stmt(0));
+    scopeRename.pop_back();
+    
+    cfg->current_bb->exit_true = endIfBB;
+
+    // Bloc ELSE
+    if (ctx->stmt().size() > 1) {
+        BasicBlock* elseBB = new BasicBlock(cfg, cfg->new_BB_name());
+        testBB->exit_false = elseBB;
+        cfg->add_bb(elseBB);
+        scopeRename.push_back({});
+        this->visit(ctx->stmt(1));
+        scopeRename.pop_back();
+        cfg->current_bb->exit_true = endIfBB;
+    } else {
+        testBB->exit_false = endIfBB;
     }
 
-    cfg->current_bb->test_var_name = condVar;
-    cfg->current_bb->exit_true = bb_if;
-
-    if (bb_else)
-        cfg->current_bb->exit_false = bb_else;
-    else
-        cfg->current_bb->exit_false = bb_end;
-
-    cfg->add_bb(bb_if);
-    visit(ctx->stmt(0));
-
-    cfg->current_bb->exit_true = bb_end;
-    cfg->current_bb->exit_false = nullptr;
-
-    if (bb_else) {
-        cfg->add_bb(bb_else);
-        visit(ctx->stmt(1));
-
-        cfg->current_bb->exit_true = bb_end;
-        cfg->current_bb->exit_false = nullptr;
-    }
-
-    cfg->add_bb(bb_end);
-
+    // Sortie
+    cfg->add_bb(endIfBB);
     return 0;
 }
 
@@ -613,24 +612,32 @@ std::any CodeGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx) {
     
     BasicBlock* bb_cond = new BasicBlock(cfg, cfg->new_BB_name());
     BasicBlock* bb_body = new BasicBlock(cfg, cfg->new_BB_name());
-    BasicBlock* bb_end = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* bb_end  = new BasicBlock(cfg, cfg->new_BB_name());
 
+    // Branchement depuis le bloc précédent vers la condition
     cfg->current_bb->exit_true = bb_cond;
     cfg->current_bb->exit_false = nullptr;
 
+    // Bloc CONDITION
     cfg->add_bb(bb_cond);
-    string condVar = any_cast<string>(visit(ctx->expr()));
 
+    string condVar = any_cast<string>(visit(ctx->expr()));
+    
     cfg->current_bb->test_var_name = materialize(condVar);
     cfg->current_bb->exit_true = bb_body;
     cfg->current_bb->exit_false = bb_end;
 
+    // Bloc BODY
     cfg->add_bb(bb_body);
-    visit(ctx->stmt());
 
+    scopeRename.push_back({}); 
+    visit(ctx->stmt());
+    scopeRename.pop_back();    
+    
     cfg->current_bb->exit_true = bb_cond;
     cfg->current_bb->exit_false = nullptr;
 
+    // Bloc END
     cfg->add_bb(bb_end);
 
     return 0;
