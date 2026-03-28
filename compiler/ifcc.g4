@@ -13,9 +13,16 @@ stmt
     ;
 
 return_stmt : RETURN expr ;
-assign : ID '=' expr ;
+assign : ID '=' expr                  # assignSimple         
+       | ID '[' expr ']' '=' expr     # assignArray  
+       ;
 declar : 'int' declItem (',' declItem)* ;
-declItem : ID ('=' expr)? ;
+declItem : ID ('=' expr)?               
+         | ID '[' CONST ']' ('=' '{' exprList? '}')?  
+         ;
+
+exprList : expr (',' expr)* ;
+
 block : '{' stmt* '}' ;
 call_stmt : ID '(' expr? ')' ;
 list_decl_param : ('int' ID (',' 'int' ID)*)?;
@@ -29,6 +36,7 @@ expr :  '-' expr                          # exprUnaryMinus
     | CONST                               # exprConst
     | CHAR_CONST                          # exprCharConst
     | ID '(' list_param ')'               # exprFonctCall
+    | ID '[' expr ']'                     # exprArrayAccess
     | ID                                  # exprId
     | expr ('*' | '/' | '%') expr         # exprMult
     | expr ('+' | '-') expr               # exprAdd

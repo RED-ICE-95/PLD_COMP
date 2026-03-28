@@ -1,5 +1,5 @@
 #include "SymbolTableVisitor.h"
-
+using namespace std;
 
 
 std::any SymbolTableVisitor::visitProg(ifccParser::ProgContext *ctx) {
@@ -32,6 +32,10 @@ std::any SymbolTableVisitor::visitDeclar(ifccParser::DeclarContext *ctx) {
     for (auto item : ctx->declItem()) {
         std::string varName = item->ID()->getText();
 
+        //tableau ou variable simple ? (ex: int a; vs int a[10];)
+        bool isArray = (item->CONST() != nullptr && item->getText().find('[') != string::npos);
+        isArrayVar[varName] = isArray;
+
         if (isDeclaredInCurrentScope(varName)) {
             std::cerr << "Erreur : variable '" << varName 
                       << "' déjà déclarée dans ce bloc.\n";
@@ -44,10 +48,11 @@ std::any SymbolTableVisitor::visitDeclar(ifccParser::DeclarContext *ctx) {
     // visitChildren visite aussi les expr d'initialisation → visitExprId détecte les variables utilisées
     return visitChildren(ctx);
 }
+
 std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {
     
     std::string fctName = ctx->ID()->getText();
-    // recurerer le type de retour preciser avant le nom de la fonction (void ou int)
+    // recuperer le type de retour preciser avant le nom de la fonction (void ou int)
     Type returnType = (ctx->getStart()->getText() == "void") ? VOID : INT32; 
     int paramCount = ctx->list_decl_param() ? ctx->list_decl_param()->ID().size() : 0;
 
@@ -57,12 +62,17 @@ std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {
         errorFlag = true;
     }
     functions[fctName] = {returnType, paramCount};
+    
     // Ne PAS utiliser visitChildren : gérer le scope manuellement
     pushScope();
 
-    for (auto id : ctx->list_decl_param()->ID()) {
-        declare(id->getText());
+    // --- CORRECTION ICI : on vérifie que la liste des paramètres existe ---
+    if (ctx->list_decl_param() != nullptr) {
+        for (auto id : ctx->list_decl_param()->ID()) {
+            declare(id->getText());
+        }
     }
+    // ----------------------------------------------------------------------
 
     this->visit(ctx->block());
 
@@ -105,21 +115,33 @@ std::any SymbolTableVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext
     int argCount = ctx->list_param() ? ctx->list_param()->expr().size() : 0;
     checkFunctionCall(fctName, argCount, true);
 
-    //visiter les arguments éventuels pour detecter var non déclarées
+    // visiter les arguments éventuels pour detecter var non déclarées
     if (ctx->list_param()) {
         for (auto expr : ctx->list_param()->expr()) {
+            // Si l'expression est juste un ID (ex: putchar(arr))
+            if (auto idCtx = dynamic_cast<ifccParser::ExprIdContext*>(expr)) {
+                std::string argName = idCtx->ID()->getText();
+                if (isArrayVar[argName]) {
+                    std::cerr << "Erreur sémantique : le tableau '" << argName 
+                              << "' ne peut pas être passé en argument simple à la fonction '" 
+                              << fctName << "'.\n";
+                    errorFlag = true;
+                }
+            }
             this->visit(expr);
         }
     }
 
     return 0;
 }
-std::any SymbolTableVisitor::visitAssign(ifccParser::AssignContext *ctx) {
-    std::string varName = ctx->ID()->getText();
 
+std::any SymbolTableVisitor::visitAssignSimple(ifccParser::AssignSimpleContext *ctx) {
+    string varName = ctx->ID()->getText();
     if (!isDeclared(varName)) {
-        std::cerr << "Erreur : variable '" << varName 
-                  << "' utilisée sans déclaration.\n";
+        cerr << "Erreur : variable '" << varName << "' utilisée sans déclaration.\n";
+        errorFlag = true;
+    } else if (isArrayVar[varName]) {
+        cerr << "Erreur sémantique : le tableau '" << varName << "' ne peut pas être affecté comme une variable simple.\n";
         errorFlag = true;
     } else {
         usedVars.insert(varName);
@@ -127,6 +149,33 @@ std::any SymbolTableVisitor::visitAssign(ifccParser::AssignContext *ctx) {
     return visitChildren(ctx);
 }
 
+std::any SymbolTableVisitor::visitAssignArray(ifccParser::AssignArrayContext *ctx) {
+    string varName = ctx->ID()->getText();
+    if (!isDeclared(varName)) {
+        cerr << "Erreur : tableau '" << varName << "' utilisé sans déclaration.\n";
+        errorFlag = true;
+    } else if (!isArrayVar[varName]) {
+        cerr << "Erreur sémantique : '" << varName << "' n'est pas un tableau.\n";
+        errorFlag = true;
+    } else {
+        usedVars.insert(varName);
+    }
+    return visitChildren(ctx);
+}
+
+std::any SymbolTableVisitor::visitExprArrayAccess(ifccParser::ExprArrayAccessContext *ctx) {
+    string varName = ctx->ID()->getText();
+    if (!isDeclared(varName)) {
+        cerr << "Erreur : tableau '" << varName << "' utilisé sans déclaration.\n";
+        errorFlag = true;
+    } else if (!isArrayVar[varName]) {
+        cerr << "Erreur sémantique : '" << varName << "' n'est pas un tableau.\n";
+        errorFlag = true;
+    } else {
+        usedVars.insert(varName);
+    }
+    return visitChildren(ctx);
+}
 std::any SymbolTableVisitor::visitExprId(ifccParser::ExprIdContext *ctx) {
     if (ctx->ID() != nullptr) {
         std::string varName = ctx->ID()->getText();
@@ -134,10 +183,13 @@ std::any SymbolTableVisitor::visitExprId(ifccParser::ExprIdContext *ctx) {
             std::cerr << "Erreur : variable '" << varName 
                       << "' utilisée sans déclaration.\n";
             errorFlag = true;
+        } else if (isArrayVar[varName]) { // si c'est un tableau, on ne peut pas l'utiliser comme une variable simple (ex: a au lieu de a[0])
+            std::cerr << "Erreur sémantique : le tableau '" << varName 
+                      << "' ne peut pas être lu comme une variable simple (manque []).\n";
+            errorFlag = true;
         } else {
             usedVars.insert(varName);
         }
     }
     return visitChildren(ctx);
 }
-

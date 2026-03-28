@@ -337,7 +337,8 @@ for c_file in inputfilenames:
     # cas : mul/div non supporté → SKIP
     if ifccstatus != 0:
         compile_log = dumpfile(f"{WORK_DIR}/{basename}_ifcc-compile.txt", quiet=True)
-        if "multiplication non supportée" in compile_log or "division non supportée" in compile_log:
+        if ("multiplication non supportée" in compile_log or "division non supportée" in compile_log
+            or "modulo non supporté" in compile_log):
             print("  SKIP (mul/div non supporté sur MSP430)")
             nb_skip += 1
             continue

@@ -158,7 +158,7 @@ class CFG {
 	virtual void gen_asm_epilogue(ostream& o);
 
 	// symbol table methods
-	virtual void add_to_symbol_table(string name, Type t);
+	virtual void add_to_symbol_table(string name, Type t, int arraySize = 0);
 	string create_new_tempvar(Type t);
 	int get_var_index(string name);
 	Type get_var_type(string name);
@@ -177,12 +177,12 @@ class CFG {
 
  protected:
  
-	vector<map<string, Type>> ScopeType;
-	vector<map<string, int>>  ScopeIndex;
+ 	vector<map<string, Type>> ScopeType;
+ 	vector<map<string, int>>  ScopeIndex;
 	int nextFreeSymbolIndex; /**< to allocate new symbols in the symbol table */
-	static int nextBBnumber; /**< just for naming */
-	
-	vector <BasicBlock*> bbs; /**< all the basic blocks of this CFG*/
+ 	static int nextBBnumber; /**< just for naming */
+ 	
+ 	vector <BasicBlock*> bbs; /**< all the basic blocks of this CFG*/
 };
 
 

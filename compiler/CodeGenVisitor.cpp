@@ -198,47 +198,79 @@ std::any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
     for (auto item : ctx->declItem()) {
         string originalName = item->ID()->getText();
         string uniqueName = originalName + "_" + to_string(cfg->getNextIndex());
-        cfg->add_to_symbol_table(uniqueName, INT32);
         scopeRename.back()[originalName] = uniqueName;
-        // Si le declItem a une expression d'initialisation, on la compile
-        // et on copie le résultat dans la variable nouvellement déclarée
-        if (item->expr()) {
-            string exprVar = any_cast<string>(this->visit(item->expr()));
-            if (isConst(exprVar))
-                cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {uniqueName, exprVar.substr(1)});
-            else
-                cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {uniqueName, exprVar});
+
+        if (item->CONST()) {
+            // Tableau
+            int arraySize = stoi(item->CONST()->getText());
+            cfg->add_to_symbol_table(uniqueName, INT32, arraySize);
+            int idx = 0;
+            int nbInit = 0;
+            if (item->exprList()) {
+                for (auto e : item->exprList()->expr()) {
+                    string val    = any_cast<string>(this->visit(e));
+                    string idxMat = materialize(makeConst(idx));
+                    string valMat = materialize(val);
+                    cfg->current_bb->add_IRInstr(IRInstr::wmem, INT32, {uniqueName, idxMat, valMat});
+                    idx++;
+                }
+                nbInit = idx;
+            }
+            // Initialiser le reste à 0
+            for (int i = nbInit; i < arraySize; ++i) {
+                string idxMat = materialize(makeConst(i));
+                cfg->current_bb->add_IRInstr(IRInstr::wmem, INT32, {uniqueName, idxMat, "0"});
+            }
+        } else {
+            // Variable simple
+            cfg->add_to_symbol_table(uniqueName, INT32);
+            if (item->expr()) {
+                string exprVar = any_cast<string>(this->visit(item->expr()));
+                if (isConst(exprVar))
+                    cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {uniqueName, exprVar.substr(1)});
+                else
+                    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {uniqueName, exprVar});
+            }
         }
     }
     return 0;
 }
 
-std::any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx)
-{
+std::any CodeGenVisitor::visitAssignSimple(ifccParser::AssignSimpleContext *ctx) {
     string varName = resolve(ctx->ID()->getText());
     string exprVar = any_cast<string>(this->visit(ctx->expr()));
     if (isConst(exprVar)) {
         cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {varName, exprVar.substr(1)});
-    }
-    else {
-        // Si exprVar est un tempvar frais, on peut juste le réutiliser
-        // via un copy — mais pour éviter la redondance, on patche
-        // directement la dernière instruction générée
-        auto& instrs = cfg->current_bb->instrs; // si instrs est public
-        if (!instrs.empty()) {
-            IRInstr* last = instrs.back();
-            if (last->params[0] == exprVar) {
-                // Redirige la destination directement vers varName
-                last->params[0] = varName;
-                return varName;
-            }
+    } else {
+        auto& instrs = cfg->current_bb->instrs;
+        if (!instrs.empty() && instrs.back()->params[0] == exprVar) {
+            instrs.back()->params[0] = varName;
+            return varName;
         }
         cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
     }
-
     return varName;
 }
 
+std::any CodeGenVisitor::visitAssignArray(ifccParser::AssignArrayContext *ctx) {
+    string arrayName = resolve(ctx->ID()->getText());
+    string indexVar  = any_cast<string>(this->visit(ctx->expr(0)));
+    string valueVar  = any_cast<string>(this->visit(ctx->expr(1)));
+    string idxMat    = materialize(indexVar);
+    string valMat    = materialize(valueVar);
+    cfg->current_bb->add_IRInstr(IRInstr::wmem, INT32, {arrayName, idxMat, valMat});
+    
+    return valueVar;
+}
+
+std::any CodeGenVisitor::visitExprArrayAccess(ifccParser::ExprArrayAccessContext *ctx) {
+    string arrayName = resolve(ctx->ID()->getText());
+    string indexVar  = any_cast<string>(this->visit(ctx->expr()));
+    string idxMat    = materialize(indexVar);
+    string destVar   = cfg->create_new_tempvar(INT32);
+    cfg->current_bb->add_IRInstr(IRInstr::rmem, INT32, {destVar, arrayName, idxMat});
+    return destVar;
+}
 
 
 
@@ -580,5 +612,3 @@ std::any CodeGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
     cfg->add_bb(afterWhileBB);
     return 0;
 }
-
-

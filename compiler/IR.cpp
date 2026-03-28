@@ -1,4 +1,5 @@
 #include "IR.h"
+#include <algorithm>
 using namespace std;
 
 int CFG::nextBBnumber = 0;
@@ -23,10 +24,26 @@ void CFG::add_bb(BasicBlock* bb) {
     current_bb = bb;
 }
 
-void CFG::add_to_symbol_table(string name, Type t) {
+void CFG::add_to_symbol_table(string name, Type t, int arraySize) {
     ScopeType.back()[name] = t;
-    ScopeIndex.back()[name] = nextFreeSymbolIndex;
-    nextFreeSymbolIndex += 4;
+    
+    if (arraySize > 0) {
+        // 1. Pare-chocs "Haut" pour absorber les débordements positifs (ex: a[10])
+        nextFreeSymbolIndex += 32; 
+        
+        // 2. On réserve la vraie taille du tableau
+        nextFreeSymbolIndex += (arraySize * 4);
+        
+        // 3. On fixe l'adresse de base a[0] (tout en bas du tableau)
+        ScopeIndex.back()[name] = nextFreeSymbolIndex;
+        
+        // 4. Pare-chocs "Bas" pour absorber les potentiels débordements négatifs (ex: a[-1])
+        nextFreeSymbolIndex += 32;
+    } else {
+        // Variable simple (on ne change rien)
+        nextFreeSymbolIndex += 4;
+        ScopeIndex.back()[name] = nextFreeSymbolIndex;
+    }
 }
 
 
@@ -230,9 +247,31 @@ void IRInstr::gen_asm(ostream& o) {
             // params[0] = dest register, params[1] = source var on stack
             o << "  movl " << bb->cfg->IR_reg_to_asm(params[1]) << ", " << params[0] << "\n";
             break;
-        default:
+        case rmem:
+            // params: destVar, baseVar, indexVar
+            o << "  movl " << bb->cfg->IR_reg_to_asm(params[2]) << ", %ecx\n";
+            o << "  leaq " << bb->cfg->IR_reg_to_asm(params[1]) << ", %rax\n";
+            o << "  movl (%rax,%rcx,4), %edx\n";
+            o << "  movl %edx, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
             break;
-    }
+        case wmem:
+            // params: baseVar, indexVar, srcVar
+            {
+                o << "  movl " << bb->cfg->IR_reg_to_asm(params[1]) << ", %ecx\n";
+                o << "  leaq " << bb->cfg->IR_reg_to_asm(params[0]) << ", %rax\n";
+                // Si params[2] est un nombre, on met un $ devant
+                bool is_const = !params[2].empty() && std::all_of(params[2].begin(), params[2].end(), [](char c){ return (c == '-' || isdigit(c)); });
+                if (is_const) {
+                    o << "  movl $" << params[2] << ", %edx\n";
+                } else {
+                    o << "  movl " << bb->cfg->IR_reg_to_asm(params[2]) << ", %edx\n";
+                }
+                o << "  movl %edx, (%rax,%rcx,4)\n";
+            }
+            break;
+                default:
+                    break;
+            }
 }
 
 void BasicBlock::gen_asm_msp430(ostream& o) {
@@ -379,6 +418,33 @@ void IRInstr::gen_asm_msp430(ostream& o) {
             // params[0] = variable destination sur la pile
             // params[1] = registre source (R12, R13, R14)
             o << "  mov " << params[1] << ", " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case rmem:
+            // params: destVar, baseVar, indexVar
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[2]) << ", R15\n"; // Charge l'index
+            o << "  rla R15\n";                                              // Multiplie par 2 (Rotate Left Arithmetically)
+            o << "  mov R4, R14\n";                                          // Récupère le Frame Pointer
+            o << "  sub #" << bb->cfg->get_var_index(params[1]) << ", R14\n";// Recule jusqu'à l'adresse de base du tableau
+            o << "  add R15, R14\n";                                         // Ajoute l'offset de l'index
+            o << "  mov 0(R14), " << bb->cfg->IR_reg_to_asm(params[0]) << "\n"; // Lit la mémoire vers la variable dest
+            break;
+
+        case wmem:
+            // params: baseVar, indexVar, srcVar
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n"; // Charge l'index
+            o << "  rla R15\n";                                              // Multiplie par 2
+            o << "  mov R4, R14\n";                                          // Récupère le Frame Pointer
+            o << "  sub #" << bb->cfg->get_var_index(params[0]) << ", R14\n";// Recule jusqu'à l'adresse de base
+            o << "  add R15, R14\n";                                         // Ajoute l'offset de l'index
+            {
+                // Vérifie si la source est une constante (ex: $5) ou une variable
+                bool is_const = !params[2].empty() && std::all_of(params[2].begin(), params[2].end(), [](char c){ return (c == '-' || isdigit(c)); });
+                if (is_const) {
+                    o << "  mov #" << params[2] << ", 0(R14)\n";
+                } else {
+                    o << "  mov " << bb->cfg->IR_reg_to_asm(params[2]) << ", 0(R14)\n";
+                }
+            }
             break;
         default:
             cerr << "Erreur : opération non supportée sur MSP430\n";
