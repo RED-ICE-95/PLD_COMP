@@ -46,7 +46,7 @@ std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {
     Type returnType = (ctx->getStart()->getText() == "void") ? VOID : INT32;
     std::vector<Type> paramTypes;
     if (ctx->list_decl_param()) {
-        for (auto id : ctx->list_decl_param()->ID()) {
+        for (auto p : ctx->list_decl_param()->param()) {
             paramTypes.push_back(INT32);
         }
     }
@@ -56,8 +56,13 @@ std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {
     pushScope();
 
     if (ctx->list_decl_param() != nullptr) {
-        for (auto id : ctx->list_decl_param()->ID()) {
-            string pName = id->getText();
+        for (auto p : ctx->list_decl_param()->param()) { // On boucle sur param()
+            string pName = p->ID()->getText(); // On extrait l'ID
+            
+            // On enregistre si le paramètre est un tableau (ex: int t[])
+            bool isArray = p->getText().find('[') != string::npos;
+            isArrayVar[pName] = isArray;
+
             declare(pName);
             markAsUsed(pName); // paramètres considérés comme utilisés
         }
@@ -123,19 +128,15 @@ std::any SymbolTableVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext
         }
     }
 
-     // Vérification du type des arguments
+    // Marquage des arguments comme utilisés (sans lever d'erreur si c'est un tableau)
     if (ctx->list_param()) {
         for (auto expr : ctx->list_param()->expr()) {
             if (auto idCtx = dynamic_cast<ifccParser::ExprIdContext*>(expr)) {
                 std::string argName = idCtx->ID()->getText();
-                if (isArrayVar[argName]) {
-                    std::cerr << "Erreur sémantique : le tableau '" << argName
-                              << "' ne peut pas être passé en argument simple à '"
-                              << fctName << "'.\n";
-                    errorFlag = true;
-                }
+                markAsUsed(argName); // On le marque comme utilisé, c'est tout.
+            } else {
+                this->visit(expr); // On visite les autres expressions normales (calculs, etc.)
             }
-            this->visit(expr);
         }
     }
     return 0;
@@ -190,10 +191,6 @@ std::any SymbolTableVisitor::visitExprId(ifccParser::ExprIdContext *ctx) {
         if (!isDeclared(varName)) {
             std::cerr << "Erreur : variable '" << varName
                       << "' utilisée sans déclaration.\n";
-            errorFlag = true;
-        } else if (isArrayVar[varName]) {
-            std::cerr << "Erreur sémantique : le tableau '" << varName
-                      << "' ne peut pas être lu comme une variable simple (manque []).\n";
             errorFlag = true;
         } else {
             markAsUsed(varName);

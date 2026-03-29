@@ -6,6 +6,7 @@
 #include <map>
 #include <iostream>
 #include <initializer_list>
+#include <unordered_map>
 
 // Declarations from the parser -- replace with your own
 #include "type.h"
@@ -36,6 +37,9 @@ class IRInstr {
 		typedef enum {
 			ldconst, // charger une constante dans une variable
 			copy,    // copier la valeur d'une variable dans une autre
+			copy_ptr,          
+            copy_ptr_from_reg,
+            copy_ptr_to_reg,
 			add,     // addition de deux valeurs
 			sub,     // soustraction de deux valeurs
 			mul,     // multiplication de deux valeurs
@@ -59,7 +63,8 @@ class IRInstr {
 			copy_to_reg,     // params: {regName, srcVar}   e.g. {"%edi", "x_0"}
 			stack_cleanup,      // params: {bytes}            e.g. {"16"} pour nettoyer 16 octets de la pile après un call
 			push_arg,          // params: {argVar}           e.g. {"x_7"} pour pousser x_7 en argument au-delà du 6ème
-			load_param
+			load_param,
+			address_of
 		} Operation;
 		BasicBlock* bb; /**< The BB this instruction belongs to, which provides a pointer to the CFG this instruction belong to */
 		vector<string> params; /**< For 3-op instrs: d, x, y; for ldconst: d, c;  For call: label, d, params;  for wmem and rmem: choose yourself */
@@ -161,8 +166,8 @@ class CFG {
 	virtual void gen_asm_epilogue(ostream& o);
 
 	// symbol table methods
-	virtual void add_to_symbol_table(string name, Type t, int arraySize = 0);
-	string create_new_tempvar(Type t);
+	virtual void add_to_symbol_table(string name, Type t, int arraySize = 0, bool isPointer = false);
+    string create_new_tempvar(Type t, bool isPointer = false);
 	int get_var_index(string name);
 	Type get_var_type(string name);
 
@@ -176,6 +181,12 @@ class CFG {
 
 	void push_scope();
 	void pop_scope();
+
+	std::unordered_map<std::string, bool> isArrayMap;
+    bool is_array(std::string name) { return isArrayMap[name]; }
+
+	std::unordered_map<std::string, bool> isPointerMap;
+    bool is_pointer(std::string name) { return isPointerMap[name]; }
 
 
  protected:

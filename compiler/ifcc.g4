@@ -38,23 +38,24 @@ exprList : expr (',' expr)* ;
 
 block : '{' stmt* '}' ;
 
-call_stmt : ID '(' expr? ')' ;
+call_stmt : ID '(' list_param ')' ;
 
-list_decl_param : ('int' ID (',' 'int' ID)*)? ;
+list_decl_param : (param (',' param)*)? ;
+param : 'int' ID ('[' CONST? ']')? ; 
 list_param : (expr (',' expr)*)? ;
 
 if_stmt    : 'if' '(' expr ')' stmt ('else' stmt)? ;
 while_stmt : 'while' '(' expr ')' stmt ;
 
 expr
-    : '-' expr                             # exprUnaryMinus
-    | '!' expr                             # exprUnaryNot
-    | '(' expr ')'                         # exprParen
+    : '(' expr ')'                         # exprParen
     | CONST                                # exprConst
     | CHAR_CONST                           # exprCharConst
     | ID '(' list_param ')'                # exprFonctCall
     | ID '[' expr ']'                      # exprArrayAccess
     | ID                                   # exprId
+    | '-' expr                             # exprUnaryMinus
+    | '!' expr                             # exprUnaryNot
     | expr ('*' | '/' | '%') expr          # exprMult
     | expr ('+' | '-') expr                # exprAdd
     | expr ('<' | '>') expr                # exprCmp

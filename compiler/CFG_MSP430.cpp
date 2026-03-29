@@ -1,8 +1,10 @@
 #include "CFG_MSP430.h"
 using namespace std;
 
-void CFG_MSP430::add_to_symbol_table(string name, Type t, int arraySize) {
+void CFG_MSP430::add_to_symbol_table(string name, Type t, int arraySize, bool isPointer) {
     ScopeType.back()[name] = t;
+    isArrayMap[name] = (arraySize > 0);
+    isPointerMap[name] = isPointer; // Enregistre si c'est un pointeur (ex: paramètre de tableau)
     
     if (arraySize > 0) {
         // 1. Pare-chocs Haut (16 octets suffisent sur microcontrôleur)
@@ -16,6 +18,10 @@ void CFG_MSP430::add_to_symbol_table(string name, Type t, int arraySize) {
         
         // 4. Pare-chocs Bas
         nextFreeSymbolIndex += 16;
+    } else if (isPointer) {
+        // Variable Pointeur sur MSP430 (adresse 16-bit = 2 octets)
+        nextFreeSymbolIndex += 2;
+        ScopeIndex.back()[name] = nextFreeSymbolIndex;
     } else {
         // Variable simple (2 octets)
         nextFreeSymbolIndex += 2;
