@@ -30,6 +30,8 @@ public:
 class IRInstr {
  
 	public:
+		typedef enum { X86, MSP430, ARM } Target;
+
 		/** The instructions themselves -- feel free to subclass instead */
 		typedef enum {
 			ldconst, // charger une constante dans une variable
@@ -54,7 +56,10 @@ class IRInstr {
 			cmp_gt,
 			cmp_ge,
 			copy_from_reg,   // params: {destVar, regName}  e.g. {"x_0", "%edi"}
-			copy_to_reg     // params: {regName, srcVar}   e.g. {"%edi", "x_0"}
+			copy_to_reg,     // params: {regName, srcVar}   e.g. {"%edi", "x_0"}
+			stack_cleanup,      // params: {bytes}            e.g. {"16"} pour nettoyer 16 octets de la pile après un call
+			push_arg,          // params: {argVar}           e.g. {"x_7"} pour pousser x_7 en argument au-delà du 6ème
+			load_param
 		} Operation;
 		BasicBlock* bb; /**< The BB this instruction belongs to, which provides a pointer to the CFG this instruction belong to */
 		vector<string> params; /**< For 3-op instrs: d, x, y; for ldconst: d, c;  For call: label, d, params;  for wmem and rmem: choose yourself */
@@ -67,6 +72,7 @@ class IRInstr {
 		
 		/** Actual code generation */
 		void gen_asm(ostream &o); /**< x86 assembly code generation for this IR instruction */
+		void gen_asm_msp430(ostream& o); /**< MSP430 assembly code generation for this IR instruction */
 		
 	private:
 		Operation op;
@@ -110,6 +116,7 @@ class BasicBlock {
 	BasicBlock(CFG* cfg, string entry_label) : cfg(cfg), label(entry_label), exit_true(nullptr), exit_false(nullptr) {};
 	
 	void gen_asm(ostream &o); /**< x86 assembly code generation for this basic block (very simple) */
+	void gen_asm_msp430(ostream &o); /**< MSP430 assembly code generation for this basic block (very simple) */
 
 	void add_IRInstr(IRInstr::Operation op, Type t, vector<string> params);
 
@@ -147,14 +154,14 @@ class CFG {
 	void add_bb(BasicBlock* bb); 
 
 	// x86 code generation: could be encapsulated in a processor class in a retargetable compiler
-	void gen_asm(ostream& o);
-	string IR_reg_to_asm(string reg); /**< helper method: inputs a IR reg or input variable, returns e.g. "-24(%rbp)" for the proper value of 24 */
-	void gen_asm_header(ostream& o); /**< generates the assembly header for this function, including the label and the prologue */
-	void gen_asm_prologue(ostream& o);
-	void gen_asm_epilogue(ostream& o);
+	virtual void gen_asm(ostream& o);
+	virtual string IR_reg_to_asm(string reg); /**< helper method: inputs a IR reg or input variable, returns e.g. "-24(%rbp)" for the proper value of 24 */
+	virtual void gen_asm_header(ostream& o); /**< generates the assembly header for this function, including the label and the prologue */
+	virtual void gen_asm_prologue(ostream& o);
+	virtual void gen_asm_epilogue(ostream& o);
 
 	// symbol table methods
-	void add_to_symbol_table(string name, Type t);
+	virtual void add_to_symbol_table(string name, Type t, int arraySize = 0);
 	string create_new_tempvar(Type t);
 	int get_var_index(string name);
 	Type get_var_type(string name);
@@ -173,12 +180,12 @@ class CFG {
 
  protected:
  
-	vector<map<string, Type>> ScopeType;
-	vector<map<string, int>>  ScopeIndex;
+ 	vector<map<string, Type>> ScopeType;
+ 	vector<map<string, int>>  ScopeIndex;
 	int nextFreeSymbolIndex; /**< to allocate new symbols in the symbol table */
-	static int nextBBnumber; /**< just for naming */
-	
-	vector <BasicBlock*> bbs; /**< all the basic blocks of this CFG*/
+ 	static int nextBBnumber; /**< just for naming */
+ 	
+ 	vector <BasicBlock*> bbs; /**< all the basic blocks of this CFG*/
 };
 
 

@@ -9,6 +9,7 @@
 #include "generated/ifccBaseVisitor.h"
 
 #include "CodeGenVisitor.h"
+#include "IR.h"
 #include "SymbolTableVisitor.h"
 
 using namespace antlr4;
@@ -17,21 +18,25 @@ using namespace std;
 int main(int argn, const char **argv)
 {
   stringstream in;
-  if (argn==2)
-  {
-     ifstream lecture(argv[1]);
-     if( !lecture.good() )
-     {
-         cerr<<"error: cannot read file: " << argv[1] << endl ;
-         exit(1);
-     }
-     in << lecture.rdbuf();
-  }
-  else
-  {
-      cerr << "usage: ifcc path/to/file.c" << endl ;
+  string filename;
+  IRInstr::Target target = IRInstr::X86;
+
+  if (argn == 3 && string(argv[1]) == "--msp430") {
+      target = IRInstr::MSP430;
+      filename = argv[2];
+  } else if (argn == 2) {
+      filename = argv[1];
+  } else {
+      cerr << "usage: ifcc [--msp430] path/to/file.c" << endl;
       exit(1);
   }
+
+  ifstream lecture(filename);
+  if (!lecture.good()) {
+      cerr << "error: cannot read file: " << filename << endl;
+      exit(1);
+  }
+  in << lecture.rdbuf();
   
   ANTLRInputStream input(in.str());
 
@@ -56,7 +61,9 @@ int main(int argn, const char **argv)
     return 1; // on arrête la compilation s'il y a des erreurs de déclaration ou d'utilisation
   }
 
-  CodeGenVisitor cgv(new DefFonction("main", vector<pair<string,Type>>{}, INT32));
+  DefFonction* def = new DefFonction("main", vector<pair<string,Type>>{}, INT32);
+
+  CodeGenVisitor cgv(def, target);
   cgv.visit(tree);
 
   return 0;
