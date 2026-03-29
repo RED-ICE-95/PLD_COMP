@@ -31,24 +31,27 @@ public:
     void checkFunctionCall(const std::string& fctName, int argCount, bool usedInExpr);
     bool hasErrors() const { return errorFlag; }
 
-
 private:
-    // pile de scopes
     std::vector<std::unordered_set<std::string>> scopeStack;
-    std::unordered_set<std::string> usedVars;
-    std::unordered_set<std::string> declaredVars;     // variables déclarées
-    std::map<std::string, bool> isArrayVar;       // pour différencier les variables simples des tableaux (pour la vérification d'accès)    
-    
+    std::vector<std::unordered_set<std::string>> usedVarsStack;
+    std::map<std::string, bool> isArrayVar; // pour différencier les variables simples des tableaux (pour la vérification d'accès)  
+
     struct FunctionInfo {
         Type returnType;
         std::vector<Type> paramTypes;
     };
     std::map<std::string, FunctionInfo> functions;
-   
+
     bool errorFlag = false;
 
-    void pushScope() { scopeStack.push_back({}); }
-    void popScope()  { scopeStack.pop_back(); }
+    void pushScope() {
+        scopeStack.push_back({});
+        usedVarsStack.push_back({});
+    }
+    void popScope() {
+        scopeStack.pop_back();
+        usedVarsStack.pop_back();
+    }
 
     bool isDeclared(const std::string& name) {
         for (int i = scopeStack.size() - 1; i >= 0; i--)
@@ -63,6 +66,15 @@ private:
 
     void declare(const std::string& name) {
         scopeStack.back().insert(name);
+    }
+
+    void markAsUsed(const std::string& name) {
+        for (int i = scopeStack.size() - 1; i >= 0; i--) {
+            if (scopeStack[i].count(name)) {
+                usedVarsStack[i].insert(name);
+                return;
+            }
+        }
     }
 
     std::any checkVarUsed(const std::string& varName);
