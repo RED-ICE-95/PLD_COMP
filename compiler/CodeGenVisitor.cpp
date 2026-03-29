@@ -236,6 +236,7 @@ std::any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
     return 0;
 }
 
+
 std::any CodeGenVisitor::visitAssignSimple(ifccParser::AssignSimpleContext *ctx) {
     string varName = resolve(ctx->ID()->getText());
     string exprVar = any_cast<string>(this->visit(ctx->expr()));
@@ -243,14 +244,38 @@ std::any CodeGenVisitor::visitAssignSimple(ifccParser::AssignSimpleContext *ctx)
         cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {varName, exprVar.substr(1)});
     } else {
         auto& instrs = cfg->current_bb->instrs;
-        if (!instrs.empty() && instrs.back()->params[0] == exprVar) {
+        if (!instrs.empty() && instrs.back()->params[0] == exprVar)
             instrs.back()->params[0] = varName;
-            return varName;
-        }
-        cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
+        else
+            cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
     }
     return varName;
 }
+
+
+static std::any assignOp(CFG* cfg, const string& varName, const string& exprVar, IRInstr::Operation op) {
+    string tmp = cfg->create_new_tempvar(INT32);
+    cfg->current_bb->add_IRInstr(op, INT32, {tmp, varName, exprVar});
+    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, tmp});
+    return varName;
+}
+
+std::any CodeGenVisitor::visitAssignAdd(ifccParser::AssignAddContext *ctx) {
+    return assignOp(cfg, resolve(ctx->ID()->getText()), materialize(any_cast<string>(visit(ctx->expr()))), IRInstr::add);
+}
+std::any CodeGenVisitor::visitAssignSub(ifccParser::AssignSubContext *ctx) {
+    return assignOp(cfg, resolve(ctx->ID()->getText()), materialize(any_cast<string>(visit(ctx->expr()))), IRInstr::sub);
+}
+std::any CodeGenVisitor::visitAssignMul(ifccParser::AssignMulContext *ctx) {
+    return assignOp(cfg, resolve(ctx->ID()->getText()), materialize(any_cast<string>(visit(ctx->expr()))), IRInstr::mul);
+}
+std::any CodeGenVisitor::visitAssignDiv(ifccParser::AssignDivContext *ctx) {
+    return assignOp(cfg, resolve(ctx->ID()->getText()), materialize(any_cast<string>(visit(ctx->expr()))), IRInstr::div);
+}
+std::any CodeGenVisitor::visitAssignMod(ifccParser::AssignModContext *ctx) {
+    return assignOp(cfg, resolve(ctx->ID()->getText()), materialize(any_cast<string>(visit(ctx->expr()))), IRInstr::mod);
+}
+
 
 std::any CodeGenVisitor::visitAssignArray(ifccParser::AssignArrayContext *ctx) {
     string arrayName = resolve(ctx->ID()->getText());
@@ -543,72 +568,172 @@ std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
     return 0;
 }
 
-
 std::any CodeGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 {
-    BasicBlock* testBB = cfg->current_bb;
     string condVar = any_cast<string>(this->visit(ctx->expr()));
-    condVar = materialize(condVar);  
+    condVar = materialize(condVar); 
+
+    BasicBlock* testBB = cfg->current_bb; 
     testBB->test_var_name = condVar;
 
     BasicBlock* thenBB  = new BasicBlock(cfg, cfg->new_BB_name());
     BasicBlock* endIfBB = new BasicBlock(cfg, cfg->new_BB_name());
+    
     testBB->exit_true = thenBB;
 
-    // visiter le then — ctx->stmt(0)
+    // Bloc THEN 
     cfg->add_bb(thenBB);
     scopeRename.push_back({});
-    this->visit(ctx->stmt(0));   
+    this->visit(ctx->stmt(0));
     scopeRename.pop_back();
-    cfg->current_bb->exit_true  = endIfBB;
-    cfg->current_bb->exit_false = nullptr;
+    
+    cfg->current_bb->exit_true = endIfBB;
 
+    // Bloc ELSE
     if (ctx->stmt().size() > 1) {
         BasicBlock* elseBB = new BasicBlock(cfg, cfg->new_BB_name());
         testBB->exit_false = elseBB;
         cfg->add_bb(elseBB);
         scopeRename.push_back({});
-        this->visit(ctx->stmt(1));   
+        this->visit(ctx->stmt(1));
         scopeRename.pop_back();
-        cfg->current_bb->exit_true  = endIfBB;
-        cfg->current_bb->exit_false = nullptr;
+        cfg->current_bb->exit_true = endIfBB;
     } else {
         testBB->exit_false = endIfBB;
     }
 
+    // Sortie
     cfg->add_bb(endIfBB);
     return 0;
 }
 
-std::any CodeGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
-{
-    BasicBlock* beforeWhileBB = cfg->current_bb;
 
-    BasicBlock* testBB = new BasicBlock(cfg, cfg->new_BB_name());
-    beforeWhileBB->exit_true  = testBB;
-    beforeWhileBB->exit_false = nullptr;
+std::any CodeGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx) {
+    
+    BasicBlock* bb_cond = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* bb_body = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* bb_end  = new BasicBlock(cfg, cfg->new_BB_name());
 
-    BasicBlock* bodyBB = new BasicBlock(cfg, cfg->new_BB_name());
+    // Branchement depuis le bloc précédent vers la condition
+    cfg->current_bb->exit_true = bb_cond;
+    cfg->current_bb->exit_false = nullptr;
 
-    BasicBlock* afterWhileBB = new BasicBlock(cfg, cfg->new_BB_name());
+    // Bloc CONDITION
+    cfg->add_bb(bb_cond);
 
-    testBB->exit_true  = bodyBB;
-    testBB->exit_false = afterWhileBB;
+    string condVar = any_cast<string>(visit(ctx->expr()));
+    
+    cfg->current_bb->test_var_name = materialize(condVar);
+    cfg->current_bb->exit_true = bb_body;
+    cfg->current_bb->exit_false = bb_end;
 
-    cfg->add_bb(testBB);
-    string condVar = any_cast<string>(this->visit(ctx->expr()));
-    condVar = materialize(condVar);  
-    testBB->test_var_name = condVar;
+    // Bloc BODY
+    cfg->add_bb(bb_body);
 
-    cfg->add_bb(bodyBB);
-    scopeRename.push_back({});
-    this->visit(ctx->stmt());
-    scopeRename.pop_back();
-    BasicBlock* bodyLastBB = cfg->current_bb;
+    scopeRename.push_back({}); 
+    visit(ctx->stmt());
+    scopeRename.pop_back();    
+    
+    cfg->current_bb->exit_true = bb_cond;
+    cfg->current_bb->exit_false = nullptr;
 
-    bodyLastBB->exit_true  = testBB;
-    bodyLastBB->exit_false = nullptr;
+    // Bloc END
+    cfg->add_bb(bb_end);
 
-    cfg->add_bb(afterWhileBB);
     return 0;
+}
+
+
+std::any CodeGenVisitor::visitIncdec(ifccParser::IncdecContext *ctx)
+{
+    string varName = resolve(ctx->ID()->getText());
+
+    string one = cfg->create_new_tempvar(INT32);
+    cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {one, "1"});
+
+    string tmp = cfg->create_new_tempvar(INT32);
+
+    string op = ctx->op->getText();
+
+    if (op == "++") {
+        cfg->current_bb->add_IRInstr(IRInstr::add, INT32, {tmp, varName, one});
+    } else {
+        cfg->current_bb->add_IRInstr(IRInstr::sub, INT32, {tmp, varName, one});
+    }
+
+    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, tmp});
+
+    return 0;
+}
+
+std::any CodeGenVisitor::visitExprAnd(ifccParser::ExprAndContext *ctx)
+{
+    string leftVar = any_cast<string>(visit(ctx->expr(0)));
+    
+    if (isConst(leftVar) && getConst(leftVar) == 0) return makeConst(0);
+
+    string destVar = cfg->create_new_tempvar(INT32);
+    BasicBlock* bb_right = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* bb_false = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* bb_end   = new BasicBlock(cfg, cfg->new_BB_name());
+
+    cfg->current_bb->test_var_name = materialize(leftVar);
+    cfg->current_bb->exit_true  = bb_right;
+    cfg->current_bb->exit_false = bb_false;
+
+    // Bloc FALSE : on met 0 dans dest
+    cfg->add_bb(bb_false);
+    cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {destVar, "0"});
+    cfg->current_bb->exit_true = bb_end;
+
+    // Bloc RIGHT : on évalue la partie droite
+    cfg->add_bb(bb_right);
+    string rightVar = any_cast<string>(visit(ctx->expr(1)));
+    string rvMat = materialize(rightVar);
+    
+    string zero = cfg->create_new_tempvar(INT32);
+    cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {zero, "0"});
+    cfg->current_bb->add_IRInstr(IRInstr::cmp_ne, INT32, {destVar, rvMat, zero});
+    cfg->current_bb->exit_true = bb_end;
+
+    cfg->add_bb(bb_end);
+    cfg->current_bb = bb_end; 
+
+    return destVar;
+}
+
+std::any CodeGenVisitor::visitExprOr(ifccParser::ExprOrContext *ctx)
+{
+    string leftVar = any_cast<string>(visit(ctx->expr(0)));
+    
+    if (isConst(leftVar) && getConst(leftVar) != 0) return makeConst(1);
+
+    string destVar = cfg->create_new_tempvar(INT32);
+    BasicBlock* bb_true  = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* bb_right = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* bb_end   = new BasicBlock(cfg, cfg->new_BB_name());
+
+    cfg->current_bb->test_var_name = materialize(leftVar);
+    cfg->current_bb->exit_true  = bb_true;
+    cfg->current_bb->exit_false = bb_right;
+
+    // Bloc TRUE : on met 1
+    cfg->add_bb(bb_true);
+    cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {destVar, "1"});
+    cfg->current_bb->exit_true = bb_end;
+
+    // Bloc RIGHT
+    cfg->add_bb(bb_right);
+    string rightVar = any_cast<string>(visit(ctx->expr(1)));
+    string rvMat = materialize(rightVar);
+    
+    string zero = cfg->create_new_tempvar(INT32);
+    cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {zero, "0"});
+    cfg->current_bb->add_IRInstr(IRInstr::cmp_ne, INT32, {destVar, rvMat, zero});
+    cfg->current_bb->exit_true = bb_end;
+
+    cfg->add_bb(bb_end);
+    cfg->current_bb = bb_end;
+
+    return destVar;
 }
