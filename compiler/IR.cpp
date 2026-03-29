@@ -170,15 +170,23 @@ void IRInstr::gen_asm(ostream& o) {
             o << "  movl %eax, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
             break;
         case call:
-            for (int i = 2; i < (int)params.size(); i++) {
-                string regs[] = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
-                o << "  movl " << bb->cfg->IR_reg_to_asm(params[i]) << ", " << regs[i-2] << "\n";
+        {
+            int stackArgs = (params.size() > 2) ? stoi(params[2]) : 0;
+            bool needPadding = (stackArgs % 2 != 0);
+
+            if (needPadding) {
+                o << "  subq $8, %rsp\n"; // alignement de la pile à 16 octets
             }
             o << "  movl $0, %eax\n";
             o << "  call " << params[0] << "@PLT\n";
             if (params[1] != "")
                 o << "  movl %eax, " << bb->cfg->IR_reg_to_asm(params[1]) << "\n";
+            
+            if (needPadding) {
+                o << "  addq $8, %rsp\n"; // restaurer la pile
+            }
             break;
+        }
         case div:
             o << "  movl " << bb->cfg->IR_reg_to_asm(params[1]) << ", %eax\n";
             o << "  cdq\n";
@@ -247,6 +255,20 @@ void IRInstr::gen_asm(ostream& o) {
             // params[0] = dest register, params[1] = source var on stack
             o << "  movl " << bb->cfg->IR_reg_to_asm(params[1]) << ", " << params[0] << "\n";
             break;
+        case push_arg:
+            // pushq étend à 64-bit pour respecter l'alignement
+            o << "  movl " << bb->cfg->IR_reg_to_asm(params[0]) << ", %eax\n";
+            o << "  pushq %rax\n";
+            break;
+        case load_param:
+            // params[1] = offset depuis %rbp (ex: "16")
+            o << "  movl " << params[1] << "(%rbp), %eax\n";
+            o << "  movl %eax, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
+            break;
+        case stack_cleanup:
+            // params[0] = bytes to clean from stack
+            o << "  addq $" << params[0] << ", %rsp\n";
+            break;
         case rmem:
             // params: destVar, baseVar, indexVar
             o << "  movl " << bb->cfg->IR_reg_to_asm(params[2]) << ", %ecx\n";
@@ -269,9 +291,9 @@ void IRInstr::gen_asm(ostream& o) {
                 o << "  movl %edx, (%rax,%rcx,4)\n";
             }
             break;
-                default:
-                    break;
-            }
+        default:
+            break;
+    }
 }
 
 void BasicBlock::gen_asm_msp430(ostream& o) {

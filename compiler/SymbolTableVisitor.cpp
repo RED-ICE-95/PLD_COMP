@@ -11,7 +11,12 @@ std::any SymbolTableVisitor::visitProg(ifccParser::ProgContext *ctx) {
 }
 
 
-
+/**
+ * @brief 
+ * 
+ * @param ctx 
+ * @return std::any 
+ */
 std::any SymbolTableVisitor::visitBlock(ifccParser::BlockContext *ctx) {
     pushScope();
     auto result = visitChildren(ctx);
@@ -27,6 +32,13 @@ std::any SymbolTableVisitor::visitBlock(ifccParser::BlockContext *ctx) {
     return result;
 }
 
+
+/**
+ * @brief 
+ * 
+ * @param ctx 
+ * @return std::any 
+ */
 std::any SymbolTableVisitor::visitDeclar(ifccParser::DeclarContext *ctx) {
     // On itère sur les declItem (chaque ID avec son éventuelle initialisation)
     for (auto item : ctx->declItem()) {
@@ -56,11 +68,7 @@ std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {
     Type returnType = (ctx->getStart()->getText() == "void") ? VOID : INT32; 
     int paramCount = ctx->list_decl_param() ? ctx->list_decl_param()->ID().size() : 0;
 
-    if (paramCount > 6) {
-        std::cerr << "Erreur : fonction '" << fctName 
-                  << "' a plus de 6 paramètres, ce qui n'est pas supporté.\n";
-        errorFlag = true;
-    }
+    
     functions[fctName] = {returnType, paramCount};
     
     // Ne PAS utiliser visitChildren : gérer le scope manuellement

@@ -56,7 +56,10 @@ class IRInstr {
 			cmp_gt,
 			cmp_ge,
 			copy_from_reg,   // params: {destVar, regName}  e.g. {"x_0", "%edi"}
-			copy_to_reg     // params: {regName, srcVar}   e.g. {"%edi", "x_0"}
+			copy_to_reg,     // params: {regName, srcVar}   e.g. {"%edi", "x_0"}
+			stack_cleanup,      // params: {bytes}            e.g. {"16"} pour nettoyer 16 octets de la pile après un call
+			push_arg,          // params: {argVar}           e.g. {"x_7"} pour pousser x_7 en argument au-delà du 6ème
+			load_param
 		} Operation;
 		BasicBlock* bb; /**< The BB this instruction belongs to, which provides a pointer to the CFG this instruction belong to */
 		vector<string> params; /**< For 3-op instrs: d, x, y; for ldconst: d, c;  For call: label, d, params;  for wmem and rmem: choose yourself */

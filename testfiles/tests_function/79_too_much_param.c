@@ -1,4 +1,4 @@
-int f(int x, int y, int z, int w, int a, int c, int d, int e, int f) {
+int f(int x, int y, int z, int w, int a, int b, int d, int e, int f) {
     return x + 1;
 }
 

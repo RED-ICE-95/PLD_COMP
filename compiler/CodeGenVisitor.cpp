@@ -1,6 +1,7 @@
 #include "CodeGenVisitor.h"
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 // ── Propagation de constantes ────────────────────────────────────────────
 // Un visit* retourne "$n" quand la valeur est connue à la compilation.
@@ -92,15 +93,25 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
     } else {
         regsToUse = paramRegs;  // x86: %edi, %esi, %edx, ...
     }
-    
+        
     for (size_t i = 0; i < paramIds.size(); i++) {
         string originalName = paramIds[i]->getText();
         string uniqueName = originalName + "_" + to_string(cfg->getNextIndex());
         cfg->add_to_symbol_table(uniqueName, INT32);
-        scopeRename.back()[originalName] = uniqueName;  // ← après push_back ci-dessous
-        // Copier le registre argument vers la variable locale
-        cfg->current_bb->add_IRInstr(IRInstr::copy_from_reg, INT32, {uniqueName, regsToUse[i]});
+        scopeRename.back()[originalName] = uniqueName; 
+        if (i < regsToUse.size()) {
+            // Depuis les registres comme avant
+            cfg->current_bb->add_IRInstr(IRInstr::copy_from_reg, INT32,
+                                        {uniqueName, regsToUse[i]});
+        } else {
+            // Depuis la pile : +16(%rbp) pour le 7ème, +24 pour le 8ème...
+            int offset = 16 + (i - regsToUse.size()) * 8;
+            cfg->current_bb->add_IRInstr(IRInstr::load_param, INT32,
+                                        {uniqueName, to_string(offset)});
+        }
+        
     }
+
     
     // Re-enregistrer le mapping (push_back doit être avant la boucle — voir note)
     this->visit(ctx->block());
@@ -321,16 +332,34 @@ std::any CodeGenVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext *ct
         }
         cfg->current_bb->add_IRInstr(IRInstr::call, INT32, callParams);
     } else {
-        // x86 : Evaluer les arguments et les mettre dans les registres
-        for (size_t i = 0; i < args.size(); i++) {
-            string argVar = any_cast<string>(this->visit(args[i]));
-            argVar = materialize(argVar); // ???????????????????
-            cfg->current_bb->add_IRInstr(IRInstr::copy_to_reg, INT32,
-                                          {x86ParamRegs[i], argVar});
-        }
-        cfg->current_bb->add_IRInstr(IRInstr::call, INT32, {fctName, destVar});
-    }
+        // 1. Évaluer TOUS les arguments d'abord
+        vector<string> argVars;
+        for (auto arg : args)
+            argVars.push_back(materialize(any_cast<string>(this->visit(arg))));
 
+        // 2. Pousser les args >6 en ordre inverse
+        for (int i = argVars.size() - 1; i >= 6; i--)
+            cfg->current_bb->add_IRInstr(IRInstr::push_arg, INT32, {argVars[i]});
+
+        // 3. Les 6 premiers dans les registres
+        for (int i = 0; i < (int)min(argVars.size(), (size_t)6); i++)
+            cfg->current_bb->add_IRInstr(IRInstr::copy_to_reg, INT32,
+                                        {x86ParamRegs[i], argVars[i]});
+
+        // 4. Émettre le call avec le nombre d'args sur la pile
+        int stackArgCount = max(0, (int)argVars.size() - 6);
+        cfg->current_bb->add_IRInstr(IRInstr::call, INT32, {fctName, destVar, to_string(stackArgCount)});
+
+        // 5. Nettoyer la pile
+        if (argVars.size() > 6) {
+            int extraBytes = (argVars.size() - 6) * 8;
+            cfg->current_bb->add_IRInstr(IRInstr::stack_cleanup, INT32,
+                                        {to_string(extraBytes)});
+        }
+
+}
+
+    
     return destVar;
 }
 
@@ -548,6 +577,11 @@ std::any CodeGenVisitor::visitExprCmp(ifccParser::ExprCmpContext *ctx)
 // Appel de fonction en tant que statement (ex: putchar(x);)
 std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
 {
+
+    static const vector<string> paramRegs = {
+        "%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"
+    };
+
     string functionName = ctx->ID()->getText();
     
     // Évaluer l'argument s'il existe
@@ -558,15 +592,34 @@ std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
         argVars.push_back(argVar);
     }
     
-    // Construire les paramètres de l'instruction IR call
-    // Format: {nom_fonction, var_retour, arg1, arg2, ...}
-    vector<string> callParams = {functionName, ""};  // "" = pas de retour utilisé
-    callParams.insert(callParams.end(), argVars.begin(), argVars.end());
+    // // Construire les paramètres de l'instruction IR call
+    // // Format: {nom_fonction, var_retour, arg1, arg2, ...}
+    // vector<string> callParams = {functionName, ""};  // "" = pas de retour utilisé
+    // callParams.insert(callParams.end(), argVars.begin(), argVars.end());
     
-    cfg->current_bb->add_IRInstr(IRInstr::call, INT32, callParams);
-    
+    // cfg->current_bb->add_IRInstr(IRInstr::call, INT32, callParams);
+    // Args >6 sur la pile en ordre inverse
+    for (int i = argVars.size() - 1; i >= 6; i--)
+        cfg->current_bb->add_IRInstr(IRInstr::push_arg, INT32, {argVars[i]});
+
+    // Les 6 premiers dans les registres
+    for (int i = 0; i < (int)min(argVars.size(), (size_t)6); i++)
+        cfg->current_bb->add_IRInstr(IRInstr::copy_to_reg, INT32,
+                                      {paramRegs[i], argVars[i]});
+
+    int stackArgCount = max(0, (int)argVars.size() - 6);
+    cfg->current_bb->add_IRInstr(IRInstr::call, INT32,
+                                  {functionName, "", to_string(stackArgCount)});
+
+    if (argVars.size() > 6) {
+        int extraBytes = (argVars.size() - 6) * 8;
+        cfg->current_bb->add_IRInstr(IRInstr::stack_cleanup, INT32,
+                                      {to_string(extraBytes)});
+    }
     return 0;
+
 }
+
 
 std::any CodeGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 {
