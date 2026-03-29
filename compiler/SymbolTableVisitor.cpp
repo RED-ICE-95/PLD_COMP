@@ -11,7 +11,12 @@ std::any SymbolTableVisitor::visitProg(ifccParser::ProgContext *ctx) {
 }
 
 
-
+/**
+ * @brief 
+ * 
+ * @param ctx 
+ * @return std::any 
+ */
 std::any SymbolTableVisitor::visitBlock(ifccParser::BlockContext *ctx) {
     pushScope();
     auto result = visitChildren(ctx);
@@ -27,6 +32,13 @@ std::any SymbolTableVisitor::visitBlock(ifccParser::BlockContext *ctx) {
     return result;
 }
 
+
+/**
+ * @brief 
+ * 
+ * @param ctx 
+ * @return std::any 
+ */
 std::any SymbolTableVisitor::visitDeclar(ifccParser::DeclarContext *ctx) {
     // On itère sur les declItem (chaque ID avec son éventuelle initialisation)
     for (auto item : ctx->declItem()) {

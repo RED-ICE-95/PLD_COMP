@@ -11,8 +11,15 @@ static int    getConst(const string& v) { return stoi(v.substr(1)); }
 static string makeConst(int v)          { return "$" + to_string(v); }
 // ────────────────────────────────────────────────────────────────────────
 
-CodeGenVisitor::CodeGenVisitor(DefFonction* ast) {
-    cfg = new CFG(ast);
+CodeGenVisitor::CodeGenVisitor(DefFonction* ast, IRInstr::Target target) : target(target) {
+    switch(target) {
+        case IRInstr::MSP430:
+            cfg = new CFG_MSP430(ast);
+            break;
+        default:
+            cfg = new CFG(ast);
+            break;
+    }
     cfg->push_scope();
     
     // BB de sortie unique pour tous les return
@@ -58,7 +65,14 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
 
     CFG* old_cfg = cfg;
     DefFonction* fctAst = new DefFonction(fctName, vector<pair<string, Type>>{}, returnType);
-    cfg = new CFG(fctAst);
+    switch(target) {
+        case IRInstr::MSP430:
+            cfg = new CFG_MSP430(fctAst);
+            break;
+        default:
+            cfg = new CFG(fctAst);
+            break;
+    }
     cfg->push_scope();
     cfg->exit_bb = new BasicBlock(cfg, cfg->new_BB_name() + "_exit");
     BasicBlock* bb = new BasicBlock(cfg, cfg->new_BB_name());
@@ -67,30 +81,36 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
     if (returnType != VOID) {
         cfg->add_to_symbol_table("!ret", returnType);
     }
-    
+
     scopeRename.push_back({});
     // Allouer chaque paramètre formel et le copier depuis le registre
     auto paramIds = ctx->list_decl_param()->ID();
 
+    // Choisir les registres en fonction de la cible
+    vector<string> regsToUse;
+    if (target == IRInstr::MSP430) {
+        regsToUse = {"R12", "R13", "R14"};
+    } else {
+        regsToUse = paramRegs;  // x86: %edi, %esi, %edx, ...
+    }
+        
     for (size_t i = 0; i < paramIds.size(); i++) {
         string originalName = paramIds[i]->getText();
         string uniqueName = originalName + "_" + to_string(cfg->getNextIndex());
         cfg->add_to_symbol_table(uniqueName, INT32);
-        scopeRename.back()[originalName] = uniqueName;
-
-        if (i < 6) {
+        scopeRename.back()[originalName] = uniqueName; 
+        if (i < regsToUse.size()) {
             // Depuis les registres comme avant
             cfg->current_bb->add_IRInstr(IRInstr::copy_from_reg, INT32,
-                                        {uniqueName, paramRegs[i]});
+                                        {uniqueName, regsToUse[i]});
         } else {
             // Depuis la pile : +16(%rbp) pour le 7ème, +24 pour le 8ème...
-            int offset = 16 + (i - 6) * 8;
+            int offset = 16 + (i - regsToUse.size()) * 8;
             cfg->current_bb->add_IRInstr(IRInstr::load_param, INT32,
                                         {uniqueName, to_string(offset)});
         }
+        
     }
-
-    
 
     
     // Re-enregistrer le mapping (push_back doit être avant la boucle — voir note)
@@ -166,9 +186,20 @@ std::any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
     cfg->current_bb->exit_true = cfg->exit_bb;
     cfg->current_bb->exit_false = nullptr;
     
-    // créer un nouveau BB mort pour les instructions qui suivent éventuellement
+    // Créer un BB mort pour capturer les instructions théoriques après return
+    // (du code qui ne sera jamais atteint, comme: if (cond) { return x; ... })
+    //
+    // AVANT: On faisait cfg->add_bb(dead_bb) pour x86 → générait le code mort en asm
+    //        x86 s'en fichait (processeur ignore le code après ret)
+    //        MSP430 bugguait → mspdebug échouait à lire R15
+    //
+    // MAINTENANT: On change juste current_bb, on n'ajoute PAS à cfg->bbs
+    //             → Le code mort n'est JAMAIS généré en asm
+    //             → Marche à la fois pour x86 (pas besoin du code mort) et MSP430
     BasicBlock* dead_bb = new BasicBlock(cfg, cfg->new_BB_name());
-    cfg->add_bb(dead_bb);
+    dead_bb->exit_true = cfg->exit_bb;
+    dead_bb->exit_false = nullptr;
+    cfg->current_bb = dead_bb;  // Changer current_bb, mais NE PAS ajouter à la liste
     
     return 0;
 }
@@ -223,38 +254,53 @@ std::any CodeGenVisitor::visitAssign(ifccParser::AssignContext *ctx)
 
 std::any CodeGenVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext *ctx)
 {
-    static const vector<string> paramRegs = {
+    static const vector<string> x86ParamRegs = {
         "%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"
     };
 
     string fctName = ctx->ID()->getText();
     auto args = ctx->list_param()->expr();
 
-    // 1. Évaluer TOUS les arguments d'abord
-    vector<string> argVars;
-    for (auto arg : args)
-        argVars.push_back(any_cast<string>(this->visit(arg)));
-
-    // 2. Pousser les args >6 en ordre inverse
-    for (int i = argVars.size() - 1; i >= 6; i--)
-        cfg->current_bb->add_IRInstr(IRInstr::push_arg, INT32, {argVars[i]});
-
-    // 3. Les 6 premiers dans les registres
-    for (int i = 0; i < (int)min(argVars.size(), (size_t)6); i++)
-        cfg->current_bb->add_IRInstr(IRInstr::copy_to_reg, INT32,
-                                      {paramRegs[i], argVars[i]});
-
-    // 4. Émettre le call avec le nombre d'args sur la pile
-    int stackArgCount = max(0, (int)argVars.size() - 6);
     string destVar = cfg->create_new_tempvar(INT32);
-    cfg->current_bb->add_IRInstr(IRInstr::call, INT32, {fctName, destVar, to_string(stackArgCount)});
 
-    // 5. Nettoyer la pile
-    if (argVars.size() > 6) {
-        int extraBytes = (argVars.size() - 6) * 8;
-        cfg->current_bb->add_IRInstr(IRInstr::stack_cleanup, INT32,
-                                      {to_string(extraBytes)});
-    }
+    if (target == IRInstr::MSP430) {
+        // MSP430 : les args sont passés directement dans le call IR (params[2]+)
+        // Le codegen MSP430 de call les place dans R12, R13, R14.
+        vector<string> callParams = {fctName, destVar};
+        for (size_t i = 0; i < args.size(); i++) {
+            string argVar = any_cast<string>(this->visit(args[i]));
+            callParams.push_back(materialize(argVar));
+        }
+        cfg->current_bb->add_IRInstr(IRInstr::call, INT32, callParams);
+    } else {
+        // 1. Évaluer TOUS les arguments d'abord
+        vector<string> argVars;
+        for (auto arg : args)
+            argVars.push_back(any_cast<string>(this->visit(arg)));
+
+        // 2. Pousser les args >6 en ordre inverse
+        for (int i = argVars.size() - 1; i >= 6; i--)
+            cfg->current_bb->add_IRInstr(IRInstr::push_arg, INT32, {argVars[i]});
+
+        // 3. Les 6 premiers dans les registres
+        for (int i = 0; i < (int)min(argVars.size(), (size_t)6); i++)
+            cfg->current_bb->add_IRInstr(IRInstr::copy_to_reg, INT32,
+                                        {x86ParamRegs[i], argVars[i]});
+
+        // 4. Émettre le call avec le nombre d'args sur la pile
+        int stackArgCount = max(0, (int)argVars.size() - 6);
+        cfg->current_bb->add_IRInstr(IRInstr::call, INT32, {fctName, destVar, to_string(stackArgCount)});
+
+        // 5. Nettoyer la pile
+        if (argVars.size() > 6) {
+            int extraBytes = (argVars.size() - 6) * 8;
+            cfg->current_bb->add_IRInstr(IRInstr::stack_cleanup, INT32,
+                                        {to_string(extraBytes)});
+        }
+
+}
+
+    
     return destVar;
 }
 
@@ -512,7 +558,80 @@ std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
                                       {to_string(extraBytes)});
     }
     return 0;
+
 }
+
+ 
+std::any CodeGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
+{
+    BasicBlock* testBB = cfg->current_bb;
+    string condVar = any_cast<string>(this->visit(ctx->expr()));
+    condVar = materialize(condVar);  
+    testBB->test_var_name = condVar;
+
+    BasicBlock* thenBB  = new BasicBlock(cfg, cfg->new_BB_name());
+    BasicBlock* endIfBB = new BasicBlock(cfg, cfg->new_BB_name());
+    testBB->exit_true = thenBB;
+
+    // visiter le then — ctx->stmt(0)
+    cfg->add_bb(thenBB);
+    scopeRename.push_back({});
+    this->visit(ctx->stmt(0));   
+    scopeRename.pop_back();
+    cfg->current_bb->exit_true  = endIfBB;
+    cfg->current_bb->exit_false = nullptr;
+
+    if (ctx->stmt().size() > 1) {
+        BasicBlock* elseBB = new BasicBlock(cfg, cfg->new_BB_name());
+        testBB->exit_false = elseBB;
+        cfg->add_bb(elseBB);
+        scopeRename.push_back({});
+        this->visit(ctx->stmt(1));   
+        scopeRename.pop_back();
+        cfg->current_bb->exit_true  = endIfBB;
+        cfg->current_bb->exit_false = nullptr;
+    } else {
+        testBB->exit_false = endIfBB;
+    }
+
+    cfg->add_bb(endIfBB);
+    return 0;
+}
+
+std::any CodeGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
+{
+    BasicBlock* beforeWhileBB = cfg->current_bb;
+
+    BasicBlock* testBB = new BasicBlock(cfg, cfg->new_BB_name());
+    beforeWhileBB->exit_true  = testBB;
+    beforeWhileBB->exit_false = nullptr;
+
+    BasicBlock* bodyBB = new BasicBlock(cfg, cfg->new_BB_name());
+
+    BasicBlock* afterWhileBB = new BasicBlock(cfg, cfg->new_BB_name());
+
+    testBB->exit_true  = bodyBB;
+    testBB->exit_false = afterWhileBB;
+
+    cfg->add_bb(testBB);
+    string condVar = any_cast<string>(this->visit(ctx->expr()));
+    condVar = materialize(condVar);  
+    testBB->test_var_name = condVar;
+
+    cfg->add_bb(bodyBB);
+    scopeRename.push_back({});
+    this->visit(ctx->stmt());
+    scopeRename.pop_back();
+    BasicBlock* bodyLastBB = cfg->current_bb;
+
+    bodyLastBB->exit_true  = testBB;
+    bodyLastBB->exit_false = nullptr;
+
+    cfg->add_bb(afterWhileBB);
+    return 0;
+}
+
+
 
 
 
