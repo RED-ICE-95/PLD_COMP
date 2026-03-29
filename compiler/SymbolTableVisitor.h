@@ -41,7 +41,7 @@ private:
     
     struct FunctionInfo {
         Type returnType;
-        int paramCount;
+        std::vector<Type> paramTypes;
     };
     std::map<std::string, FunctionInfo> functions;
    

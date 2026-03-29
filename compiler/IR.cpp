@@ -1,17 +1,22 @@
+//IR avant le merge
 #include "IR.h"
 #include <algorithm>
 using namespace std;
 
+
 int CFG::nextBBnumber = 0;
+
 
 void BasicBlock::add_IRInstr(IRInstr::Operation op, Type t, vector<string> params) {
     instrs.push_back(new IRInstr (this, op, t, params));
 }
 
+
 void CFG::push_scope() {
     ScopeIndex.push_back({});
     ScopeType.push_back({});
 }
+
 
 void CFG::pop_scope() {
     ScopeIndex.pop_back();
@@ -19,24 +24,27 @@ void CFG::pop_scope() {
 }
 
 
+
+
 void CFG::add_bb(BasicBlock* bb) {
     bbs.push_back(bb);
     current_bb = bb;
 }
 
+
 void CFG::add_to_symbol_table(string name, Type t, int arraySize) {
     ScopeType.back()[name] = t;
-    
+   
     if (arraySize > 0) {
         // 1. Pare-chocs "Haut" pour absorber les débordements positifs (ex: a[10])
-        nextFreeSymbolIndex += 32; 
-        
+        nextFreeSymbolIndex += 32;
+       
         // 2. On réserve la vraie taille du tableau
         nextFreeSymbolIndex += (arraySize * 4);
-        
+       
         // 3. On fixe l'adresse de base a[0] (tout en bas du tableau)
         ScopeIndex.back()[name] = nextFreeSymbolIndex;
-        
+       
         // 4. Pare-chocs "Bas" pour absorber les potentiels débordements négatifs (ex: a[-1])
         nextFreeSymbolIndex += 32;
     } else {
@@ -47,11 +55,14 @@ void CFG::add_to_symbol_table(string name, Type t, int arraySize) {
 }
 
 
+
+
 string CFG::create_new_tempvar(Type t) {
     string name = "!tmp" + to_string(nextFreeSymbolIndex);
     add_to_symbol_table(name, t);
     return name;
 }
+
 
 int CFG::get_var_index(string name) {
     for (int i = ScopeIndex.size() - 1; i >= 0; i--)
@@ -60,6 +71,7 @@ int CFG::get_var_index(string name) {
     return -1; // ne devrait pas arriver si SymbolTableVisitor a fait son travail
 }
 
+
 Type CFG::get_var_type(string name) {
     for (int i = ScopeType.size() - 1; i >= 0; i--)
         if (ScopeType[i].count(name))
@@ -67,19 +79,23 @@ Type CFG::get_var_type(string name) {
     return INT32;
 }
 
+
 string CFG::new_BB_name() {
     return "BB" + to_string(nextBBnumber++);
 }
 
+
 string CFG::IR_reg_to_asm(string reg) {
     return "-" + to_string(get_var_index(reg)) + "(%rbp)";
 }
+
 
 void CFG::gen_asm_header(ostream& o) {
     o << "  .text\n";
     o << "  .globl " << ast->name << "\n";
     o << ast->name << ":\n";
 }
+
 
 void CFG::gen_asm_prologue(ostream& o) {
     o << "  pushq %rbp\n";
@@ -91,6 +107,7 @@ void CFG::gen_asm_prologue(ostream& o) {
     }
 }
 
+
 void CFG::gen_asm_epilogue(ostream& o) {
     if (ast->returnType != VOID) {
     o << "  movl " << IR_reg_to_asm("!ret") << ", %eax\n";
@@ -100,6 +117,7 @@ void CFG::gen_asm_epilogue(ostream& o) {
     o << "  ret\n";
 }
 
+
 void CFG::gen_asm(ostream& o) {
     gen_asm_header(o);
     gen_asm_prologue(o);
@@ -108,10 +126,12 @@ void CFG::gen_asm(ostream& o) {
     exit_bb->gen_asm(o);  
 }
 
+
 void BasicBlock::gen_asm(ostream& o) {
     o << label << ":\n";
     for (IRInstr* instr : instrs)
         instr->gen_asm(o);
+
 
     if (exit_true == nullptr) {
         cfg->gen_asm_epilogue(o);
@@ -123,6 +143,7 @@ void BasicBlock::gen_asm(ostream& o) {
         o << "  jmp " << exit_true->label  << "\n";
     }
 }
+
 
 void IRInstr::gen_asm(ostream& o) {
     switch(op) {
@@ -171,20 +192,11 @@ void IRInstr::gen_asm(ostream& o) {
             break;
         case call:
         {
-            int stackArgs = (params.size() > 2) ? stoi(params[2]) : 0;
-            bool needPadding = (stackArgs % 2 != 0);
-
-            if (needPadding) {
-                o << "  subq $8, %rsp\n"; // alignement de la pile à 16 octets
-            }
+            
             o << "  movl $0, %eax\n";
             o << "  call " << params[0] << "@PLT\n";
             if (params[1] != "")
                 o << "  movl %eax, " << bb->cfg->IR_reg_to_asm(params[1]) << "\n";
-            
-            if (needPadding) {
-                o << "  addq $8, %rsp\n"; // restaurer la pile
-            }
             break;
         }
         case div:
@@ -266,9 +278,15 @@ void IRInstr::gen_asm(ostream& o) {
             o << "  movl %eax, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
             break;
         case stack_cleanup:
+        {
             // params[0] = bytes to clean from stack
-            o << "  addq $" << params[0] << ", %rsp\n";
+            int bytes = stoi(params[0]);
+            if (bytes > 0)
+                o << "  addq $" << bytes << ", %rsp\n";
+            else if (bytes < 0)
+                o << "  subq $" << (-bytes) << ", %rsp\n";
             break;
+        }
         case rmem:
             // params: destVar, baseVar, indexVar
             o << "  movl " << bb->cfg->IR_reg_to_asm(params[2]) << ", %ecx\n";
@@ -296,10 +314,12 @@ void IRInstr::gen_asm(ostream& o) {
     }
 }
 
+
 void BasicBlock::gen_asm_msp430(ostream& o) {
     o << label << ":\n";
     for (IRInstr* instr : instrs)
         instr->gen_asm_msp430(o);
+
 
     if (exit_true == nullptr) {
         cfg->gen_asm_epilogue(o);
@@ -311,6 +331,7 @@ void BasicBlock::gen_asm_msp430(ostream& o) {
         o << "  jmp " << exit_true->label << "\n";
     }
 }
+
 
 void IRInstr::gen_asm_msp430(ostream& o) {
     switch(op) {
@@ -423,18 +444,10 @@ void IRInstr::gen_asm_msp430(ostream& o) {
             o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[0]) << "\n";
             break;
         case call:
-            // convention d'appel MSP430 : args dans R12, R13, R14 (R15 pour le retour)
-            for (int i = 2; i < (int)params.size(); i++) {
-                if (i - 2 >= 3) {
-                    cerr << "Erreur : MSP430 supporte max 3 arguments en registres\n";
-                    exit(1);
-                }
-                string regs[] = {"R12", "R13", "R14"};
-                o << "  mov " << bb->cfg->IR_reg_to_asm(params[i]) << ", " << regs[i-2] << "\n";
-            }
-            o << "  call #" << params[0] << "\n";
+            o << "  movl $0, %eax\n";
+            o << "  call " << params[0] << "@PLT\n";
             if (params[1] != "")
-                o << "  mov R15, " << bb->cfg->IR_reg_to_asm(params[1]) << "\n";
+                o << "  movl %eax, " << bb->cfg->IR_reg_to_asm(params[1]) << "\n";
             break;
         case copy_from_reg:
             // params[0] = variable destination sur la pile
@@ -450,6 +463,7 @@ void IRInstr::gen_asm_msp430(ostream& o) {
             o << "  add R15, R14\n";                                         // Ajoute l'offset de l'index
             o << "  mov 0(R14), " << bb->cfg->IR_reg_to_asm(params[0]) << "\n"; // Lit la mémoire vers la variable dest
             break;
+
 
         case wmem:
             // params: baseVar, indexVar, srcVar
@@ -473,3 +487,4 @@ void IRInstr::gen_asm_msp430(ostream& o) {
             exit(1);
     }
 }
+
