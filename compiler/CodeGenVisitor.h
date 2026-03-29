@@ -45,6 +45,14 @@ class  CodeGenVisitor : public ifccBaseVisitor {
         private:
         CFG* cfg;
         vector<map<string, string>> scopeRename;
+        
+        // Table des signatures de fonctions : nom -> nombre de paramètres
+        std::unordered_map<std::string, int> functionSignatures;
+        
+        void initBuiltinFunctions() {
+            functionSignatures["getchar"] = 0;
+            functionSignatures["putchar"] = 1;
+        }
 
         string resolve(const string& name) {
                 for (int i = scopeRename.size() - 1; i >= 0; i--)

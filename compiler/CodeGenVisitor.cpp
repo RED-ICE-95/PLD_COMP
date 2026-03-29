@@ -14,6 +14,9 @@ CodeGenVisitor::CodeGenVisitor(DefFonction* ast) {
     cfg = new CFG(ast);
     cfg->push_scope();
     
+    // Initialiser les signatures des fonctions built-in
+    initBuiltinFunctions();
+    
     // BB de sortie unique pour tous les return
     cfg->exit_bb = new BasicBlock(cfg, cfg->new_BB_name() + "_exit");
     
@@ -54,6 +57,10 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
     string returnTypeText = ctx->getStart()->getText();
     Type returnType = (returnTypeText == "void") ? VOID : INT32;
     string fctName = ctx->ID()->getText();
+    
+    // Enregistrer la signature de la fonction
+    auto paramIds = ctx->list_decl_param()->ID();
+    functionSignatures[fctName] = paramIds.size();
 
     CFG* old_cfg = cfg;
     DefFonction* fctAst = new DefFonction(fctName, vector<pair<string, Type>>{}, returnType);
@@ -69,7 +76,6 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
     
     scopeRename.push_back({});
     // Allouer chaque paramètre formel et le copier depuis le registre
-    auto paramIds = ctx->list_decl_param()->ID();
     for (size_t i = 0; i < paramIds.size(); i++) {
         string originalName = paramIds[i]->getText();
         string uniqueName = originalName + "_" + to_string(cfg->getNextIndex());
@@ -218,6 +224,23 @@ std::any CodeGenVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext *ct
 
     string fctName = ctx->ID()->getText();
     auto args = ctx->list_param()->expr();
+    
+    // Vérifier que la fonction existe et que le nombre d'arguments est correct
+    if (functionSignatures.find(fctName) == functionSignatures.end()) {
+        cerr << "Erreur ligne " << ctx->getStart()->getLine() 
+             << ": fonction '" << fctName << "' non déclarée" << endl;
+        exit(1);
+    }
+    
+    int expectedParams = functionSignatures[fctName];
+    int providedArgs = args.size();
+    
+    if (providedArgs != expectedParams) {
+        cerr << "Erreur ligne " << ctx->getStart()->getLine() 
+             << ": la fonction '" << fctName << "' attend " << expectedParams 
+             << " argument(s) mais " << providedArgs << " fourni(s)" << endl;
+        exit(1);
+    }
 
     // Évaluer les arguments et les mettre dans les registres
     for (size_t i = 0; i < args.size(); i++) {
@@ -448,6 +471,25 @@ std::any CodeGenVisitor::visitExprCmp(ifccParser::ExprCmpContext *ctx)
 std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
 {
     string functionName = ctx->ID()->getText();
+    
+    // Vérifier que la fonction existe
+    if (functionSignatures.find(functionName) == functionSignatures.end()) {
+        cerr << "Erreur ligne " << ctx->getStart()->getLine() 
+             << ": fonction '" << functionName << "' non déclarée" << endl;
+        exit(1);
+    }
+    
+    // Compter le nombre d'arguments fournis
+    int providedArgs = ctx->expr() ? 1 : 0;
+    int expectedParams = functionSignatures[functionName];
+    
+    // Vérifier le nombre d'arguments
+    if (providedArgs != expectedParams) {
+        cerr << "Erreur ligne " << ctx->getStart()->getLine() 
+             << ": la fonction '" << functionName << "' attend " << expectedParams 
+             << " argument(s) mais " << providedArgs << " fourni(s)" << endl;
+        exit(1);
+    }
     
     // Évaluer l'argument s'il existe
     vector<string> argVars;
