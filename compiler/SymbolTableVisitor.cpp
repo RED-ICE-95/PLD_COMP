@@ -74,7 +74,7 @@ std::any SymbolTableVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx) {
     // Ne PAS utiliser visitChildren : gérer le scope manuellement
     pushScope();
 
-    // --- CORRECTION ICI : on vérifie que la liste des paramètres existe ---
+
     if (ctx->list_decl_param() != nullptr) {
         for (auto id : ctx->list_decl_param()->ID()) {
             declare(id->getText());
@@ -201,3 +201,45 @@ std::any SymbolTableVisitor::visitExprId(ifccParser::ExprIdContext *ctx) {
     }
     return visitChildren(ctx);
 }
+
+// helper commun pour tous les assign et incdec
+std::any SymbolTableVisitor::checkVarUsed(const std::string& varName) {
+    if (!isDeclared(varName)) {
+        std::cerr << "Erreur : variable '" << varName 
+                  << "' utilisée sans déclaration.\n";
+        errorFlag = true;
+    } else if (isArrayVar[varName]) {
+        std::cerr << "Erreur sémantique : '" << varName 
+                  << "' est un tableau, pas une variable simple.\n";
+        errorFlag = true;
+    } else {
+        usedVars.insert(varName);
+    }
+    return nullptr;
+}
+
+std::any SymbolTableVisitor::visitAssignAdd(ifccParser::AssignAddContext *ctx) {
+    checkVarUsed(ctx->ID()->getText());
+    return visitChildren(ctx);
+}
+std::any SymbolTableVisitor::visitAssignSub(ifccParser::AssignSubContext *ctx) {
+    checkVarUsed(ctx->ID()->getText());
+    return visitChildren(ctx);
+}
+std::any SymbolTableVisitor::visitAssignMul(ifccParser::AssignMulContext *ctx) {
+    checkVarUsed(ctx->ID()->getText());
+    return visitChildren(ctx);
+}
+std::any SymbolTableVisitor::visitAssignDiv(ifccParser::AssignDivContext *ctx) {
+    checkVarUsed(ctx->ID()->getText());
+    return visitChildren(ctx);
+}
+std::any SymbolTableVisitor::visitAssignMod(ifccParser::AssignModContext *ctx) {
+    checkVarUsed(ctx->ID()->getText());
+    return visitChildren(ctx);
+}
+std::any SymbolTableVisitor::visitIncdec(ifccParser::IncdecContext *ctx) {
+    checkVarUsed(ctx->ID()->getText());
+    return nullptr;
+}
+
