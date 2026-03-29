@@ -1,10 +1,26 @@
 #include "CFG_MSP430.h"
 using namespace std;
 
-void CFG_MSP430::add_to_symbol_table(string name, Type t) {
+void CFG_MSP430::add_to_symbol_table(string name, Type t, int arraySize) {
     ScopeType.back()[name] = t;
-    ScopeIndex.back()[name] = nextFreeSymbolIndex;
-    nextFreeSymbolIndex += 2; // 16 bits = 2 octets au lieu de 4
+    
+    if (arraySize > 0) {
+        // 1. Pare-chocs Haut (16 octets suffisent sur microcontrôleur)
+        nextFreeSymbolIndex += 16; 
+        
+        // 2. Taille réelle du tableau (2 octets par int sur MSP430 !)
+        nextFreeSymbolIndex += (arraySize * 2);
+        
+        // 3. Adresse de base a[0]
+        ScopeIndex.back()[name] = nextFreeSymbolIndex;
+        
+        // 4. Pare-chocs Bas
+        nextFreeSymbolIndex += 16;
+    } else {
+        // Variable simple (2 octets)
+        nextFreeSymbolIndex += 2;
+        ScopeIndex.back()[name] = nextFreeSymbolIndex;
+    }
 }
 
 string CFG_MSP430::IR_reg_to_asm(string reg) {
