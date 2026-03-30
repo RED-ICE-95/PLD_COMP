@@ -1,0 +1,140 @@
+\hypertarget{classIRInstr}{}\doxysection{Référence de la classe IRInstr}
+\label{classIRInstr}\index{IRInstr@{IRInstr}}
+
+
+Instruction intermédiaire à trois opérandes.  
+
+
+
+
+{\ttfamily \#include $<$IR.\+h$>$}
+
+
+
+Graphe de collaboration de IRInstr\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=322pt]{classIRInstr__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Types publics}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classIRInstr_a9a854205d11cb022c30ee91945be06aa}\label{classIRInstr_a9a854205d11cb022c30ee91945be06aa}} 
+enum {\bfseries Target} \{ {\bfseries X86}
+, {\bfseries MSP430}
+, {\bfseries ARM}
+ \}
+\item 
+enum \mbox{\hyperlink{classIRInstr_a4e228546957ed6096a45f48d7cfc7f15}{Operation}} \{ \newline
+{\bfseries ldconst}
+, {\bfseries copy}
+, {\bfseries add}
+, {\bfseries sub}
+, \newline
+{\bfseries mul}
+, {\bfseries rmem}
+, {\bfseries wmem}
+, {\bfseries call}
+, \newline
+{\bfseries cmp\+\_\+eq}
+, {\bfseries cmp\+\_\+lt}
+, {\bfseries cmp\+\_\+le}
+, {\bfseries div}
+, \newline
+{\bfseries mod}
+, {\bfseries bit\+\_\+or}
+, {\bfseries bit\+\_\+xor}
+, {\bfseries bit\+\_\+and}
+, \newline
+{\bfseries unary\+\_\+minus}
+, {\bfseries unary\+\_\+not}
+, {\bfseries cmp\+\_\+ne}
+, {\bfseries cmp\+\_\+gt}
+, \newline
+{\bfseries cmp\+\_\+ge}
+, {\bfseries copy\+\_\+from\+\_\+reg}
+, {\bfseries copy\+\_\+to\+\_\+reg}
+, {\bfseries stack\+\_\+cleanup}
+, \newline
+{\bfseries push\+\_\+arg}
+, {\bfseries load\+\_\+param}
+ \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Fonctions membres publiques}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classIRInstr_a8d60fe3337de7ddd6aad387c58dd18ab}{IRInstr}} (\mbox{\hyperlink{classBasicBlock}{Basic\+Block}} $\ast$bb\+\_\+, \mbox{\hyperlink{classIRInstr_a4e228546957ed6096a45f48d7cfc7f15}{Operation}} op, Type t, vector$<$ string $>$ \mbox{\hyperlink{classIRInstr_a48a076af92be103c437bbdbff5d8d3ec}{params}})
+\item 
+void \mbox{\hyperlink{classIRInstr_a90123fda67a97d29de9fd4ffeef3b576}{gen\+\_\+asm}} (ostream \&o)
+\item 
+void \mbox{\hyperlink{classIRInstr_a44db09d5dfbe71cf76be81bd0fd62e46}{gen\+\_\+asm\+\_\+msp430}} (ostream \&o)
+\end{DoxyCompactItemize}
+\doxysubsection*{Attributs publics}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classBasicBlock}{Basic\+Block}} $\ast$ \mbox{\hyperlink{classIRInstr_a0bf0264847ab1c69e99495f1456e3adf}{bb}}
+\item 
+vector$<$ string $>$ \mbox{\hyperlink{classIRInstr_a48a076af92be103c437bbdbff5d8d3ec}{params}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Description détaillée}
+Instruction intermédiaire à trois opérandes. 
+
+Chaque instruction contient un pointeur vers son bloc de base et un ensemble de paramètres décrivant l\textquotesingle{}opération. 
+
+\doxysubsection{Documentation des énumérations membres}
+\mbox{\Hypertarget{classIRInstr_a4e228546957ed6096a45f48d7cfc7f15}\label{classIRInstr_a4e228546957ed6096a45f48d7cfc7f15}} 
+\index{IRInstr@{IRInstr}!Operation@{Operation}}
+\index{Operation@{Operation}!IRInstr@{IRInstr}}
+\doxysubsubsection{\texorpdfstring{Operation}{Operation}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{classIRInstr_a4e228546957ed6096a45f48d7cfc7f15}{IRInstr\+::\+Operation}}}
+
+The instructions themselves -- feel free to subclass instead 
+
+\doxysubsection{Documentation des constructeurs et destructeur}
+\mbox{\Hypertarget{classIRInstr_a8d60fe3337de7ddd6aad387c58dd18ab}\label{classIRInstr_a8d60fe3337de7ddd6aad387c58dd18ab}} 
+\index{IRInstr@{IRInstr}!IRInstr@{IRInstr}}
+\index{IRInstr@{IRInstr}!IRInstr@{IRInstr}}
+\doxysubsubsection{\texorpdfstring{IRInstr()}{IRInstr()}}
+{\footnotesize\ttfamily IRInstr\+::\+IRInstr (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classBasicBlock}{Basic\+Block}} $\ast$}]{bb\+\_\+,  }\item[{\mbox{\hyperlink{classIRInstr_a4e228546957ed6096a45f48d7cfc7f15}{Operation}}}]{op,  }\item[{Type}]{t,  }\item[{vector$<$ string $>$}]{params }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+constructor 
+
+\doxysubsection{Documentation des fonctions membres}
+\mbox{\Hypertarget{classIRInstr_a90123fda67a97d29de9fd4ffeef3b576}\label{classIRInstr_a90123fda67a97d29de9fd4ffeef3b576}} 
+\index{IRInstr@{IRInstr}!gen\_asm@{gen\_asm}}
+\index{gen\_asm@{gen\_asm}!IRInstr@{IRInstr}}
+\doxysubsubsection{\texorpdfstring{gen\_asm()}{gen\_asm()}}
+{\footnotesize\ttfamily void IRInstr\+::gen\+\_\+asm (\begin{DoxyParamCaption}\item[{ostream \&}]{o }\end{DoxyParamCaption})}
+
+Actual code generation x86 assembly code generation for this IR instruction \mbox{\Hypertarget{classIRInstr_a44db09d5dfbe71cf76be81bd0fd62e46}\label{classIRInstr_a44db09d5dfbe71cf76be81bd0fd62e46}} 
+\index{IRInstr@{IRInstr}!gen\_asm\_msp430@{gen\_asm\_msp430}}
+\index{gen\_asm\_msp430@{gen\_asm\_msp430}!IRInstr@{IRInstr}}
+\doxysubsubsection{\texorpdfstring{gen\_asm\_msp430()}{gen\_asm\_msp430()}}
+{\footnotesize\ttfamily void IRInstr\+::gen\+\_\+asm\+\_\+msp430 (\begin{DoxyParamCaption}\item[{ostream \&}]{o }\end{DoxyParamCaption})}
+
+MSP430 assembly code generation for this IR instruction 
+
+\doxysubsection{Documentation des données membres}
+\mbox{\Hypertarget{classIRInstr_a0bf0264847ab1c69e99495f1456e3adf}\label{classIRInstr_a0bf0264847ab1c69e99495f1456e3adf}} 
+\index{IRInstr@{IRInstr}!bb@{bb}}
+\index{bb@{bb}!IRInstr@{IRInstr}}
+\doxysubsubsection{\texorpdfstring{bb}{bb}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classBasicBlock}{Basic\+Block}}$\ast$ IRInstr\+::bb}
+
+The BB this instruction belongs to, which provides a pointer to the \mbox{\hyperlink{classCFG}{CFG}} this instruction belong to \mbox{\Hypertarget{classIRInstr_a48a076af92be103c437bbdbff5d8d3ec}\label{classIRInstr_a48a076af92be103c437bbdbff5d8d3ec}} 
+\index{IRInstr@{IRInstr}!params@{params}}
+\index{params@{params}!IRInstr@{IRInstr}}
+\doxysubsubsection{\texorpdfstring{params}{params}}
+{\footnotesize\ttfamily vector$<$string$>$ IRInstr\+::params}
+
+For 3-\/op instrs\+: d, x, y; for ldconst\+: d, c; For call\+: label, d, params; for wmem and rmem\+: choose yourself 
+
+La documentation de cette classe a été générée à partir du fichier suivant \+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{IR_8h}{IR.\+h}}\item 
+IR.\+cpp\end{DoxyCompactItemize}

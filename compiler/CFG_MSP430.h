@@ -1,6 +1,16 @@
+/**
+ * @file CFG_MSP430.h
+ * @brief Extension de CFG pour la cible MSP430.
+ */
 #pragma once
 #include "IR.h"
 
+/**
+ * @brief Spécialisation du graphe de contrôle de flux pour MSP430.
+ *
+ * Gère la génération d'assemblage et la gestion de la pile spécifique à
+ * l'architecture MSP430.
+ */
 class CFG_MSP430 : public CFG {
 public:
     CFG_MSP430(DefFonction* ast) : CFG(ast) {

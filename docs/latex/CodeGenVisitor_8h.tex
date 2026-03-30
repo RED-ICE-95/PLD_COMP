@@ -1,0 +1,41 @@
+\hypertarget{CodeGenVisitor_8h}{}\doxysection{Référence du fichier Code\+Gen\+Visitor.\+h}
+\label{CodeGenVisitor_8h}\index{CodeGenVisitor.h@{CodeGenVisitor.h}}
+
+
+Visiteur de génération de code pour la compilation.  
+
+
+{\ttfamily \#include \char`\"{}antlr4-\/runtime.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}generated/ifcc\+Base\+Visitor.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}IR.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}CFG\+\_\+\+MSP430.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$unordered\+\_\+map$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+Graphe des dépendances par inclusion de Code\+Gen\+Visitor.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{CodeGenVisitor_8h__incl}
+\end{center}
+\end{figure}
+Ce graphe montre quels fichiers incluent directement ou indirectement ce fichier \+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=181pt]{CodeGenVisitor_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classCodeGenVisitor}{Code\+Gen\+Visitor}}
+\begin{DoxyCompactList}\small\item\em Visiteur de génération de code pour l\textquotesingle{}IR et la \mbox{\hyperlink{classCFG}{CFG}}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Description détaillée}
+Visiteur de génération de code pour la compilation. 
+
+Ce fichier contient le visitor qui parcourt l\textquotesingle{}arbre syntaxique généré par ANTLR et produit une représentation intermédiaire (IR) ainsi qu\textquotesingle{}une \mbox{\hyperlink{classCFG}{CFG}} adaptée à la cible choisie. 

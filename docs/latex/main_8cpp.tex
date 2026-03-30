@@ -1,0 +1,38 @@
+\hypertarget{main_8cpp}{}\doxysection{Référence du fichier main.\+cpp}
+\label{main_8cpp}\index{main.cpp@{main.cpp}}
+
+
+Point d\textquotesingle{}entrée du compilateur ifcc.  
+
+
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$fstream$>$}\newline
+{\ttfamily \#include $<$sstream$>$}\newline
+{\ttfamily \#include $<$cstdlib$>$}\newline
+{\ttfamily \#include \char`\"{}antlr4-\/runtime.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}generated/ifcc\+Lexer.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}generated/ifcc\+Parser.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}generated/ifcc\+Base\+Visitor.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Code\+Gen\+Visitor.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}IR.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Symbol\+Table\+Visitor.\+h\char`\"{}}\newline
+Graphe des dépendances par inclusion de main.\+cpp\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{main_8cpp__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Fonctions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{main_8cpp_a8b3937110c04eb1e952d79abbfe1eb16}\label{main_8cpp_a8b3937110c04eb1e952d79abbfe1eb16}} 
+int {\bfseries main} (int argn, const char $\ast$$\ast$argv)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Description détaillée}
+Point d\textquotesingle{}entrée du compilateur ifcc. 
+
+Ce programme lit un fichier C simplifié, le parse avec ANTLR, vérifie la table des symboles, puis génère du code intermédiaire et de l\textquotesingle{}assemblage. 

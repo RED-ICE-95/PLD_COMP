@@ -1,0 +1,165 @@
+\hypertarget{classCFG}{}\doxysection{Référence de la classe CFG}
+\label{classCFG}\index{CFG@{CFG}}
+
+
+Graphe de contrôle de flux et table des symboles associée.  
+
+
+
+
+{\ttfamily \#include $<$IR.\+h$>$}
+
+
+
+Graphe d\textquotesingle{}héritage de CFG\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=161pt]{classCFG__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Graphe de collaboration de CFG\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=223pt]{classCFG__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Fonctions membres publiques}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCFG_a86375905536fd4c7d2f506fd57812dca}\label{classCFG_a86375905536fd4c7d2f506fd57812dca}} 
+{\bfseries CFG} (\mbox{\hyperlink{classDefFonction}{Def\+Fonction}} $\ast$\mbox{\hyperlink{classCFG_a3adea24d4590a91beaae09fe0080bcca}{ast}})
+\item 
+\mbox{\Hypertarget{classCFG_aad1ed5a4e961c34bf396b1baae2daf52}\label{classCFG_aad1ed5a4e961c34bf396b1baae2daf52}} 
+void {\bfseries add\+\_\+bb} (\mbox{\hyperlink{classBasicBlock}{Basic\+Block}} $\ast$bb)
+\item 
+\mbox{\Hypertarget{classCFG_a5c967633ef5a6fcb7ac188521c86bf88}\label{classCFG_a5c967633ef5a6fcb7ac188521c86bf88}} 
+virtual void {\bfseries gen\+\_\+asm} (ostream \&o)
+\item 
+virtual string \mbox{\hyperlink{classCFG_a7328d93a8d2794c01b43b372fba3ba18}{IR\+\_\+reg\+\_\+to\+\_\+asm}} (string reg)
+\item 
+virtual void \mbox{\hyperlink{classCFG_ab5cce1c15a1cdd05230ca2441a215913}{gen\+\_\+asm\+\_\+header}} (ostream \&o)
+\item 
+\mbox{\Hypertarget{classCFG_ae3e8b1ba9eb33f4dfabb1e64346a4c08}\label{classCFG_ae3e8b1ba9eb33f4dfabb1e64346a4c08}} 
+virtual void {\bfseries gen\+\_\+asm\+\_\+prologue} (ostream \&o)
+\item 
+\mbox{\Hypertarget{classCFG_ad04b6db295cd3db259f7f12a8d528ec1}\label{classCFG_ad04b6db295cd3db259f7f12a8d528ec1}} 
+virtual void {\bfseries gen\+\_\+asm\+\_\+epilogue} (ostream \&o)
+\item 
+\mbox{\Hypertarget{classCFG_aae8a31271aa7bf1e56f1ffa7c37cebe3}\label{classCFG_aae8a31271aa7bf1e56f1ffa7c37cebe3}} 
+virtual void {\bfseries add\+\_\+to\+\_\+symbol\+\_\+table} (string name, Type t, int array\+Size=0)
+\item 
+\mbox{\Hypertarget{classCFG_a353a69345c17081828258d7da9384660}\label{classCFG_a353a69345c17081828258d7da9384660}} 
+string {\bfseries create\+\_\+new\+\_\+tempvar} (Type t)
+\item 
+\mbox{\Hypertarget{classCFG_aae62c709aab217613a24ead107976ee9}\label{classCFG_aae62c709aab217613a24ead107976ee9}} 
+int {\bfseries get\+\_\+var\+\_\+index} (string name)
+\item 
+\mbox{\Hypertarget{classCFG_ad5440f6a6d5cf5c36578ef3c317ee770}\label{classCFG_ad5440f6a6d5cf5c36578ef3c317ee770}} 
+Type {\bfseries get\+\_\+var\+\_\+type} (string name)
+\item 
+\mbox{\Hypertarget{classCFG_a340332111b3688d671c8509724ecb0af}\label{classCFG_a340332111b3688d671c8509724ecb0af}} 
+int {\bfseries get\+Next\+Index} () const
+\item 
+\mbox{\Hypertarget{classCFG_affb68a8d7b21dff67e4aa3244e8338e1}\label{classCFG_affb68a8d7b21dff67e4aa3244e8338e1}} 
+string {\bfseries new\+\_\+\+BB\+\_\+name} ()
+\item 
+\mbox{\Hypertarget{classCFG_a4d8a441de5cd715ae867c803fb6a3310}\label{classCFG_a4d8a441de5cd715ae867c803fb6a3310}} 
+void {\bfseries push\+\_\+scope} ()
+\item 
+\mbox{\Hypertarget{classCFG_ab325a42279316ef7785ed147acf3e386}\label{classCFG_ab325a42279316ef7785ed147acf3e386}} 
+void {\bfseries pop\+\_\+scope} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Attributs publics}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classDefFonction}{Def\+Fonction}} $\ast$ \mbox{\hyperlink{classCFG_a3adea24d4590a91beaae09fe0080bcca}{ast}}
+\item 
+\mbox{\Hypertarget{classCFG_a37b50f8c106bb96c1ba23bba6bddacb7}\label{classCFG_a37b50f8c106bb96c1ba23bba6bddacb7}} 
+\mbox{\hyperlink{classBasicBlock}{Basic\+Block}} $\ast$ {\bfseries current\+\_\+bb}
+\item 
+\mbox{\Hypertarget{classCFG_ab6297dc6923a4f0c0b4a2c4604ff63cd}\label{classCFG_ab6297dc6923a4f0c0b4a2c4604ff63cd}} 
+\mbox{\hyperlink{classBasicBlock}{Basic\+Block}} $\ast$ {\bfseries exit\+\_\+bb}
+\end{DoxyCompactItemize}
+\doxysubsection*{Attributs protégés}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCFG_afee41797d219d0a5ea2365d9cb42e135}\label{classCFG_afee41797d219d0a5ea2365d9cb42e135}} 
+vector$<$ map$<$ string, Type $>$ $>$ {\bfseries Scope\+Type}
+\item 
+\mbox{\Hypertarget{classCFG_a0645f0918604e4bb99883f9e38a96470}\label{classCFG_a0645f0918604e4bb99883f9e38a96470}} 
+vector$<$ map$<$ string, int $>$ $>$ {\bfseries Scope\+Index}
+\item 
+int \mbox{\hyperlink{classCFG_a83e8aba81f1ee18f9b0e799329c77a59}{next\+Free\+Symbol\+Index}}
+\item 
+vector$<$ \mbox{\hyperlink{classBasicBlock}{Basic\+Block}} $\ast$ $>$ \mbox{\hyperlink{classCFG_a766b03f944d7b333c6ebd72f51f02ec9}{bbs}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Attributs protégés statiques}
+\begin{DoxyCompactItemize}
+\item 
+static int \mbox{\hyperlink{classCFG_afecab2ba5b16c25579c003999604c234}{next\+BBnumber}} = 0
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Description détaillée}
+Graphe de contrôle de flux et table des symboles associée. 
+
+The class for the control flow graph, also includes the symbol table
+
+Le \mbox{\hyperlink{classCFG}{CFG}} gère les blocs de base, la génération d\textquotesingle{}assemblage et la résolution des variables temporaires et locales pour une fonction donnée. 
+
+\doxysubsection{Documentation des fonctions membres}
+\mbox{\Hypertarget{classCFG_ab5cce1c15a1cdd05230ca2441a215913}\label{classCFG_ab5cce1c15a1cdd05230ca2441a215913}} 
+\index{CFG@{CFG}!gen\_asm\_header@{gen\_asm\_header}}
+\index{gen\_asm\_header@{gen\_asm\_header}!CFG@{CFG}}
+\doxysubsubsection{\texorpdfstring{gen\_asm\_header()}{gen\_asm\_header()}}
+{\footnotesize\ttfamily void CFG\+::gen\+\_\+asm\+\_\+header (\begin{DoxyParamCaption}\item[{ostream \&}]{o }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+generates the assembly header for this function, including the label and the prologue \mbox{\Hypertarget{classCFG_a7328d93a8d2794c01b43b372fba3ba18}\label{classCFG_a7328d93a8d2794c01b43b372fba3ba18}} 
+\index{CFG@{CFG}!IR\_reg\_to\_asm@{IR\_reg\_to\_asm}}
+\index{IR\_reg\_to\_asm@{IR\_reg\_to\_asm}!CFG@{CFG}}
+\doxysubsubsection{\texorpdfstring{IR\_reg\_to\_asm()}{IR\_reg\_to\_asm()}}
+{\footnotesize\ttfamily string CFG\+::\+IR\+\_\+reg\+\_\+to\+\_\+asm (\begin{DoxyParamCaption}\item[{string}]{reg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+helper method\+: inputs a IR reg or input variable, returns e.\+g. \char`\"{}-\/24(\%rbp)\char`\"{} for the proper value of 24 
+
+Réimplémentée dans \mbox{\hyperlink{classCFG__MSP430_aaa566b39858cd00c1343417bf10b69d3}{CFG\+\_\+\+MSP430}}.
+
+
+
+\doxysubsection{Documentation des données membres}
+\mbox{\Hypertarget{classCFG_a3adea24d4590a91beaae09fe0080bcca}\label{classCFG_a3adea24d4590a91beaae09fe0080bcca}} 
+\index{CFG@{CFG}!ast@{ast}}
+\index{ast@{ast}!CFG@{CFG}}
+\doxysubsubsection{\texorpdfstring{ast}{ast}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classDefFonction}{Def\+Fonction}}$\ast$ CFG\+::ast}
+
+The AST this \mbox{\hyperlink{classCFG}{CFG}} comes from \mbox{\Hypertarget{classCFG_a766b03f944d7b333c6ebd72f51f02ec9}\label{classCFG_a766b03f944d7b333c6ebd72f51f02ec9}} 
+\index{CFG@{CFG}!bbs@{bbs}}
+\index{bbs@{bbs}!CFG@{CFG}}
+\doxysubsubsection{\texorpdfstring{bbs}{bbs}}
+{\footnotesize\ttfamily vector$<$\mbox{\hyperlink{classBasicBlock}{Basic\+Block}}$\ast$$>$ CFG\+::bbs\hspace{0.3cm}{\ttfamily [protected]}}
+
+all the basic blocks of this \mbox{\hyperlink{classCFG}{CFG}} \mbox{\Hypertarget{classCFG_afecab2ba5b16c25579c003999604c234}\label{classCFG_afecab2ba5b16c25579c003999604c234}} 
+\index{CFG@{CFG}!nextBBnumber@{nextBBnumber}}
+\index{nextBBnumber@{nextBBnumber}!CFG@{CFG}}
+\doxysubsubsection{\texorpdfstring{nextBBnumber}{nextBBnumber}}
+{\footnotesize\ttfamily int CFG\+::next\+BBnumber = 0\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [protected]}}
+
+just for naming \mbox{\Hypertarget{classCFG_a83e8aba81f1ee18f9b0e799329c77a59}\label{classCFG_a83e8aba81f1ee18f9b0e799329c77a59}} 
+\index{CFG@{CFG}!nextFreeSymbolIndex@{nextFreeSymbolIndex}}
+\index{nextFreeSymbolIndex@{nextFreeSymbolIndex}!CFG@{CFG}}
+\doxysubsubsection{\texorpdfstring{nextFreeSymbolIndex}{nextFreeSymbolIndex}}
+{\footnotesize\ttfamily int CFG\+::next\+Free\+Symbol\+Index\hspace{0.3cm}{\ttfamily [protected]}}
+
+to allocate new symbols in the symbol table 
+
+La documentation de cette classe a été générée à partir du fichier suivant \+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{IR_8h}{IR.\+h}}\item 
+IR.\+cpp\end{DoxyCompactItemize}

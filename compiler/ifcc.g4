@@ -11,6 +11,9 @@ stmt
     | if_stmt
     | while_stmt
     | block
+    | switch_stmt
+    | break_stmt ';'
+    | continue_stmt ';'
     ;
 
 incdec : ID op=('++' | '--') ;
@@ -46,6 +49,15 @@ list_param : (expr (',' expr)*)? ;
 
 if_stmt    : 'if' '(' expr ')' stmt ('else' stmt)? ;
 while_stmt : 'while' '(' expr ')' stmt ;
+
+
+
+switch_stmt : 'switch' '(' expr ')' '{' case_stmt* default_stmt? '}';
+case_stmt : 'case' CONST ':' stmt*;
+default_stmt : 'default' ':' stmt*;
+break_stmt : 'break' ;
+continue_stmt : 'continue' ;
+
 
 expr
     : '(' expr ')'                         # exprParen

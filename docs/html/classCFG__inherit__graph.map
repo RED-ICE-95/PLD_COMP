@@ -1,0 +1,4 @@
+<map id="CFG" name="CFG">
+<area shape="rect" id="node1" title="Graphe de contrôle de flux et table des symboles associée." alt="" coords="35,5,84,32"/>
+<area shape="rect" id="node2" href="$classCFG__MSP430.html" title="Spécialisation du graphe de contrôle de flux pour MSP430." alt="" coords="5,80,113,107"/>
+</map>

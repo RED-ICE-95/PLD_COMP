@@ -32,6 +32,7 @@ CodeGenVisitor::CodeGenVisitor(DefFonction* ast, IRInstr::Target target) : targe
     
     BasicBlock* bb = new BasicBlock(cfg, cfg->new_BB_name());
     cfg->add_bb(bb);
+    current_break_bb = nullptr; // initialisé à nullptr, mis à jour en cas de break
     if (ast->returnType != VOID) {
         cfg->add_to_symbol_table("!ret", ast->returnType);
     }
@@ -735,6 +736,13 @@ std::any CodeGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx) {
     BasicBlock* bb_body = new BasicBlock(cfg, cfg->new_BB_name());
     BasicBlock* bb_end  = new BasicBlock(cfg, cfg->new_BB_name());
 
+    // sauvegarde pour break et continue
+    BasicBlock* old_break_bb = current_break_bb;
+    BasicBlock* old_continue_bb = current_continue_bb;
+
+    current_break_bb = bb_end;
+    current_continue_bb = bb_cond;
+
     // Branchement depuis le bloc précédent vers la condition
     cfg->current_bb->exit_true = bb_cond;
     cfg->current_bb->exit_false = nullptr;
@@ -755,8 +763,14 @@ std::any CodeGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx) {
     visit(ctx->stmt());
     scopeRename.pop_back();    
     
-    cfg->current_bb->exit_true = bb_cond;
-    cfg->current_bb->exit_false = nullptr;
+    // si pas de break on boucle
+    if (!cfg->current_bb->exit_true && !cfg->current_bb->exit_false) {
+        cfg->current_bb->exit_true = bb_cond;
+    }
+
+    // restaurer break / continue
+    current_break_bb = old_break_bb;
+    current_continue_bb = old_continue_bb;
 
     // Bloc END
     cfg->add_bb(bb_end);
@@ -857,4 +871,140 @@ std::any CodeGenVisitor::visitExprOr(ifccParser::ExprOrContext *ctx)
     cfg->current_bb = bb_end;
 
     return destVar;
+}
+
+
+std::any CodeGenVisitor::visitSwitch_stmt(ifccParser::Switch_stmtContext *ctx)
+{
+    // valeur du switch
+    string switchVar = any_cast<string>(visit(ctx->expr()));
+    switchVar = materialize(switchVar);
+
+    // bloc de fin du switch
+    BasicBlock* endBB = new BasicBlock(cfg, cfg->new_BB_name());
+
+    // gestion du break
+    BasicBlock* old_break_bb = current_break_bb;
+    current_break_bb = endBB;
+
+    // bloc courant pour les tests
+    BasicBlock* currentBB = cfg->current_bb;
+
+    // pour gérer le fallthrough entre cases
+    BasicBlock* prevCaseEnd = nullptr;
+
+    // cases
+    for (auto caseCtx : ctx->case_stmt()) {
+
+        BasicBlock* caseBB = new BasicBlock(cfg, cfg->new_BB_name());
+        BasicBlock* nextBB = new BasicBlock(cfg, cfg->new_BB_name());
+
+        // constante du case
+        string caseVal = makeConst(stoi(caseCtx->CONST()->getText()));
+        caseVal = materialize(caseVal);
+
+        // comparaison
+        string tmp = cfg->create_new_tempvar(INT32);
+        cfg->current_bb->add_IRInstr(IRInstr::cmp_eq, INT32, {tmp, switchVar, caseVal});
+
+        // branchement
+        currentBB->test_var_name = tmp;
+        currentBB->exit_true  = caseBB;
+        currentBB->exit_false = nextBB;
+
+        // ----- CASE -----
+        cfg->add_bb(caseBB);
+
+        // fallthrough depuis le case précédent (si pas de break)
+        if (prevCaseEnd && !prevCaseEnd->exit_true && !prevCaseEnd->exit_false) {
+            prevCaseEnd->exit_true = caseBB;
+        }
+
+        // instructions du case
+        for (auto stmt : caseCtx->stmt()) {
+            visit(stmt);
+        }
+
+        // sauvegarder la fin de ce case
+        prevCaseEnd = cfg->current_bb;
+
+        // ----- NEXT TEST -----
+        cfg->add_bb(nextBB);
+        currentBB = nextBB;
+    }
+
+    // ===== DEFAULT =====
+    if (ctx->default_stmt()) {
+
+        BasicBlock* defaultBB = new BasicBlock(cfg, cfg->new_BB_name());
+
+        currentBB->exit_true  = defaultBB;
+        currentBB->exit_false = defaultBB;
+
+        cfg->add_bb(defaultBB);
+
+        // fallthrough depuis le dernier case
+        if (prevCaseEnd && !prevCaseEnd->exit_true && !prevCaseEnd->exit_false) {
+            prevCaseEnd->exit_true = defaultBB;
+        }
+
+        for (auto stmt : ctx->default_stmt()->stmt()) {
+            visit(stmt);
+        }
+
+        // si pas de break dans default → aller à end
+        if (!cfg->current_bb->exit_true && !cfg->current_bb->exit_false) {
+            cfg->current_bb->exit_true = endBB;
+        }
+    }
+    else {
+        // aucun default → aller direct à end
+        currentBB->exit_true  = endBB;
+        currentBB->exit_false = endBB;
+
+        if (prevCaseEnd && !prevCaseEnd->exit_true && !prevCaseEnd->exit_false) {
+            prevCaseEnd->exit_true = endBB;
+        }
+    }
+
+    // fin du switch
+    cfg->add_bb(endBB);
+
+    // restaurer break
+    current_break_bb = old_break_bb;
+
+    return 0;
+}
+
+std::any CodeGenVisitor::visitBreak_stmt(ifccParser::Break_stmtContext *ctx)
+{
+    if (!current_break_bb) {
+        throw std::runtime_error("break utilisé hors switch ou boucle");
+    }
+
+    cfg->current_bb->exit_true = current_break_bb;
+    cfg->current_bb->exit_false = nullptr;
+
+    // créer un BB mort pour continuer proprement
+    BasicBlock* deadBB = new BasicBlock(cfg, cfg->new_BB_name());
+    cfg->add_bb(deadBB);
+
+    return 0;
+}
+
+
+std::any CodeGenVisitor::visitContinue_stmt(ifccParser::Continue_stmtContext *ctx)
+{
+    if (!current_continue_bb) {
+        throw std::runtime_error("continue utilisé hors boucle");
+    }
+
+    cfg->current_bb->exit_true = current_continue_bb;
+    cfg->current_bb->exit_false = nullptr;
+
+    // bloc mort (comme pour break)
+    BasicBlock* deadBB = new BasicBlock(cfg, cfg->new_BB_name());
+    cfg->add_bb(deadBB);
+
+    return 0;
 }

@@ -1,3 +1,10 @@
+/**
+ * @file main.cpp
+ * @brief Point d'entrée du compilateur ifcc.
+ *
+ * Ce programme lit un fichier C simplifié, le parse avec ANTLR, vérifie la
+ * table des symboles, puis génère du code intermédiaire et de l'assemblage.
+ */
 #include <iostream>
 #include <fstream>
 #include <sstream>

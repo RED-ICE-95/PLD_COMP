@@ -1,0 +1,76 @@
+\hypertarget{classCFG__MSP430}{}\doxysection{Référence de la classe CFG\+\_\+\+MSP430}
+\label{classCFG__MSP430}\index{CFG\_MSP430@{CFG\_MSP430}}
+
+
+Spécialisation du graphe de contrôle de flux pour MSP430.  
+
+
+
+
+{\ttfamily \#include $<$CFG\+\_\+\+MSP430.\+h$>$}
+
+
+
+Graphe d\textquotesingle{}héritage de CFG\+\_\+\+MSP430\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=161pt]{classCFG__MSP430__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Graphe de collaboration de CFG\+\_\+\+MSP430\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=320pt]{classCFG__MSP430__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Fonctions membres publiques}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCFG__MSP430_aa529025c6f69ab088fe29b9e8b5ea032}\label{classCFG__MSP430_aa529025c6f69ab088fe29b9e8b5ea032}} 
+{\bfseries CFG\+\_\+\+MSP430} (\mbox{\hyperlink{classDefFonction}{Def\+Fonction}} $\ast$\mbox{\hyperlink{classCFG_a3adea24d4590a91beaae09fe0080bcca}{ast}})
+\item 
+\mbox{\Hypertarget{classCFG__MSP430_affeb20f347f1b5ae874bdecea2bf7452}\label{classCFG__MSP430_affeb20f347f1b5ae874bdecea2bf7452}} 
+void {\bfseries gen\+\_\+asm} (ostream \&o) override
+\item 
+\mbox{\Hypertarget{classCFG__MSP430_a2955ca468994c9cfc75d7747bddbf6fc}\label{classCFG__MSP430_a2955ca468994c9cfc75d7747bddbf6fc}} 
+void {\bfseries gen\+\_\+asm\+\_\+prologue} (ostream \&o) override
+\item 
+\mbox{\Hypertarget{classCFG__MSP430_a171e69d552e8a408fced6640095f47f2}\label{classCFG__MSP430_a171e69d552e8a408fced6640095f47f2}} 
+void {\bfseries gen\+\_\+asm\+\_\+epilogue} (ostream \&o) override
+\item 
+\mbox{\Hypertarget{classCFG__MSP430_a6fec5d855205c3606dd623707325e606}\label{classCFG__MSP430_a6fec5d855205c3606dd623707325e606}} 
+void {\bfseries add\+\_\+to\+\_\+symbol\+\_\+table} (string name, Type t, int array\+Size=0) override
+\item 
+string \mbox{\hyperlink{classCFG__MSP430_aaa566b39858cd00c1343417bf10b69d3}{IR\+\_\+reg\+\_\+to\+\_\+asm}} (string reg) override
+\end{DoxyCompactItemize}
+\doxysubsection*{Membres hérités additionnels}
+
+
+\doxysubsection{Description détaillée}
+Spécialisation du graphe de contrôle de flux pour MSP430. 
+
+Gère la génération d\textquotesingle{}assemblage et la gestion de la pile spécifique à l\textquotesingle{}architecture MSP430. 
+
+\doxysubsection{Documentation des fonctions membres}
+\mbox{\Hypertarget{classCFG__MSP430_aaa566b39858cd00c1343417bf10b69d3}\label{classCFG__MSP430_aaa566b39858cd00c1343417bf10b69d3}} 
+\index{CFG\_MSP430@{CFG\_MSP430}!IR\_reg\_to\_asm@{IR\_reg\_to\_asm}}
+\index{IR\_reg\_to\_asm@{IR\_reg\_to\_asm}!CFG\_MSP430@{CFG\_MSP430}}
+\doxysubsubsection{\texorpdfstring{IR\_reg\_to\_asm()}{IR\_reg\_to\_asm()}}
+{\footnotesize\ttfamily string CFG\+\_\+\+MSP430\+::\+IR\+\_\+reg\+\_\+to\+\_\+asm (\begin{DoxyParamCaption}\item[{string}]{reg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+helper method\+: inputs a IR reg or input variable, returns e.\+g. \char`\"{}-\/24(\%rbp)\char`\"{} for the proper value of 24 
+
+Réimplémentée à partir de \mbox{\hyperlink{classCFG_a7328d93a8d2794c01b43b372fba3ba18}{CFG}}.
+
+
+
+La documentation de cette classe a été générée à partir du fichier suivant \+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{CFG__MSP430_8h}{CFG\+\_\+\+MSP430.\+h}}\item 
+CFG\+\_\+\+MSP430.\+cpp\end{DoxyCompactItemize}

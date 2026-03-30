@@ -1,0 +1,6 @@
+<map id="IRInstr" name="IRInstr">
+<area shape="rect" id="node1" title="Instruction intermédiaire à trois opérandes." alt="" coords="5,112,69,139"/>
+<area shape="rect" id="node2" href="$classBasicBlock.html" title="Bloc basique dans le graphe de contrôle de flux." alt="" coords="16,7,109,33"/>
+<area shape="rect" id="node3" href="$classCFG.html" title="Graphe de contrôle de flux et table des symboles associée." alt="" coords="169,112,218,139"/>
+<area shape="rect" id="node4" href="$classDefFonction.html" title="Description d&#39;une fonction pour la génération de code." alt="" coords="227,7,327,33"/>
+</map>
