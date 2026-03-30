@@ -1,0 +1,46 @@
+\hypertarget{IR_8h}{}\doxysection{Référence du fichier IR.\+h}
+\label{IR_8h}\index{IR.h@{IR.h}}
+
+
+Structures de l\textquotesingle{}IR, de la \mbox{\hyperlink{classCFG}{CFG}} et des blocs basiques.  
+
+
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$map$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$initializer\+\_\+list$>$}\newline
+{\ttfamily \#include \char`\"{}type.\+h\char`\"{}}\newline
+Graphe des dépendances par inclusion de IR.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{IR_8h__incl}
+\end{center}
+\end{figure}
+Ce graphe montre quels fichiers incluent directement ou indirectement ce fichier \+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=227pt]{IR_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classDefFonction}{Def\+Fonction}}
+\begin{DoxyCompactList}\small\item\em Description d\textquotesingle{}une fonction pour la génération de code. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classIRInstr}{IRInstr}}
+\begin{DoxyCompactList}\small\item\em Instruction intermédiaire à trois opérandes. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classBasicBlock}{Basic\+Block}}
+\begin{DoxyCompactList}\small\item\em Bloc basique dans le graphe de contrôle de flux. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classCFG}{CFG}}
+\begin{DoxyCompactList}\small\item\em Graphe de contrôle de flux et table des symboles associée. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Description détaillée}
+Structures de l\textquotesingle{}IR, de la \mbox{\hyperlink{classCFG}{CFG}} et des blocs basiques. 
+
+Ce fichier définit les instructions intermédiaires, les blocs de base et le graphe de flux de contrôle utilisé par le backend du compilateur. 

@@ -1,0 +1,238 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.9.1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>PLD_COMP: Référence de la classe SymbolTableVisitor</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">PLD_COMP
+   &#160;<span id="projectnumber">1.0</span>
+   </div>
+   <div id="projectbrief">Compilateur IFCC</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Généré par Doxygen 1.9.1 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Recherche','.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Recherche');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-methods">Fonctions membres publiques</a> &#124;
+<a href="classSymbolTableVisitor-members.html">Liste de tous les membres</a>  </div>
+  <div class="headertitle">
+<div class="title">Référence de la classe SymbolTableVisitor</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Visiteur pour contrôler la table des symboles et l'usage des variables.  
+ <a href="classSymbolTableVisitor.html#details">Plus de détails...</a></p>
+
+<p><code>#include &lt;<a class="el" href="SymbolTableVisitor_8h_source.html">SymbolTableVisitor.h</a>&gt;</code></p>
+<div class="dynheader">
+Graphe d'héritage de SymbolTableVisitor:</div>
+<div class="dyncontent">
+<div class="center"><img src="classSymbolTableVisitor__inherit__graph.png" border="0" usemap="#aSymbolTableVisitor_inherit__map" alt="Inheritance graph"/></div>
+<map name="aSymbolTableVisitor_inherit__map" id="aSymbolTableVisitor_inherit__map">
+<area shape="rect" title="Visiteur pour contrôler la table des symboles et l&#39;usage des variables." alt="" coords="5,80,152,107"/>
+<area shape="rect" title=" " alt="" coords="19,5,138,32"/>
+</map>
+<center><span class="legend">[<a href="graph_legend.html">légende</a>]</span></center></div>
+<div class="dynheader">
+Graphe de collaboration de SymbolTableVisitor:</div>
+<div class="dyncontent">
+<div class="center"><img src="classSymbolTableVisitor__coll__graph.png" border="0" usemap="#aSymbolTableVisitor_coll__map" alt="Collaboration graph"/></div>
+<map name="aSymbolTableVisitor_coll__map" id="aSymbolTableVisitor_coll__map">
+<area shape="rect" title="Visiteur pour contrôler la table des symboles et l&#39;usage des variables." alt="" coords="5,80,152,107"/>
+<area shape="rect" title=" " alt="" coords="19,5,138,32"/>
+</map>
+<center><span class="legend">[<a href="graph_legend.html">légende</a>]</span></center></div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Fonctions membres publiques</h2></td></tr>
+<tr class="memitem:a8a69f1cc095440727bb5e8ee28657b50"><td class="memItemLeft" align="right" valign="top"><a id="a8a69f1cc095440727bb5e8ee28657b50"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitDeclar</b> (ifccParser::DeclarContext *ctx) override</td></tr>
+<tr class="separator:a8a69f1cc095440727bb5e8ee28657b50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a471ded85b3eca416a0add4d9bd9d3dc1"><td class="memItemLeft" align="right" valign="top"><a id="a471ded85b3eca416a0add4d9bd9d3dc1"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitExprArrayAccess</b> (ifccParser::ExprArrayAccessContext *ctx) override</td></tr>
+<tr class="separator:a471ded85b3eca416a0add4d9bd9d3dc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6e01aaead04327115758b3c6ba79e8c"><td class="memItemLeft" align="right" valign="top"><a id="ae6e01aaead04327115758b3c6ba79e8c"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitAssignSimple</b> (ifccParser::AssignSimpleContext *ctx) override</td></tr>
+<tr class="separator:ae6e01aaead04327115758b3c6ba79e8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72ecadf5b9de20eb9d0212a08b6281b9"><td class="memItemLeft" align="right" valign="top"><a id="a72ecadf5b9de20eb9d0212a08b6281b9"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitAssignArray</b> (ifccParser::AssignArrayContext *ctx) override</td></tr>
+<tr class="separator:a72ecadf5b9de20eb9d0212a08b6281b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a377cec70550a131eda9272293c0e5d64"><td class="memItemLeft" align="right" valign="top"><a id="a377cec70550a131eda9272293c0e5d64"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitAssignAdd</b> (ifccParser::AssignAddContext *ctx) override</td></tr>
+<tr class="separator:a377cec70550a131eda9272293c0e5d64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25227aa1378e4c17e79fbe1276fe2373"><td class="memItemLeft" align="right" valign="top"><a id="a25227aa1378e4c17e79fbe1276fe2373"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitAssignSub</b> (ifccParser::AssignSubContext *ctx) override</td></tr>
+<tr class="separator:a25227aa1378e4c17e79fbe1276fe2373"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77372c80dd3ce26411d0d7998f687f6f"><td class="memItemLeft" align="right" valign="top"><a id="a77372c80dd3ce26411d0d7998f687f6f"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitAssignMul</b> (ifccParser::AssignMulContext *ctx) override</td></tr>
+<tr class="separator:a77372c80dd3ce26411d0d7998f687f6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90b1a14ba9aa7a03fe3c904cc82039c8"><td class="memItemLeft" align="right" valign="top"><a id="a90b1a14ba9aa7a03fe3c904cc82039c8"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitAssignDiv</b> (ifccParser::AssignDivContext *ctx) override</td></tr>
+<tr class="separator:a90b1a14ba9aa7a03fe3c904cc82039c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb7e6df52193b6f7d67b5f741b145f14"><td class="memItemLeft" align="right" valign="top"><a id="adb7e6df52193b6f7d67b5f741b145f14"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitAssignMod</b> (ifccParser::AssignModContext *ctx) override</td></tr>
+<tr class="separator:adb7e6df52193b6f7d67b5f741b145f14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae820b3e4acb48c4e0fb7e806a4443f72"><td class="memItemLeft" align="right" valign="top"><a id="ae820b3e4acb48c4e0fb7e806a4443f72"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitIncdec</b> (ifccParser::IncdecContext *ctx) override</td></tr>
+<tr class="separator:ae820b3e4acb48c4e0fb7e806a4443f72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff0fd33faf74d7bbb108e2d1d6b5cef8"><td class="memItemLeft" align="right" valign="top"><a id="aff0fd33faf74d7bbb108e2d1d6b5cef8"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitExprId</b> (ifccParser::ExprIdContext *ctx) override</td></tr>
+<tr class="separator:aff0fd33faf74d7bbb108e2d1d6b5cef8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4749e7ca163d2ecbc88b57b46d7a99ae"><td class="memItemLeft" align="right" valign="top"><a id="a4749e7ca163d2ecbc88b57b46d7a99ae"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitProg</b> (ifccParser::ProgContext *ctx) override</td></tr>
+<tr class="separator:a4749e7ca163d2ecbc88b57b46d7a99ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ea2bf51b3ed44d134fd25c067bcdb45"><td class="memItemLeft" align="right" valign="top"><a id="a5ea2bf51b3ed44d134fd25c067bcdb45"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitBlock</b> (ifccParser::BlockContext *ctx) override</td></tr>
+<tr class="separator:a5ea2bf51b3ed44d134fd25c067bcdb45"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c89106685d837c188c50f6b835eaa82"><td class="memItemLeft" align="right" valign="top"><a id="a4c89106685d837c188c50f6b835eaa82"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitFonctDecl</b> (ifccParser::FonctDeclContext *ctx) override</td></tr>
+<tr class="separator:a4c89106685d837c188c50f6b835eaa82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa71fffec4e5a37964b1d8cccb74175ce"><td class="memItemLeft" align="right" valign="top"><a id="aa71fffec4e5a37964b1d8cccb74175ce"></a>
+virtual std::any&#160;</td><td class="memItemRight" valign="bottom"><b>visitExprFonctCall</b> (ifccParser::ExprFonctCallContext *ctx) override</td></tr>
+<tr class="separator:aa71fffec4e5a37964b1d8cccb74175ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac705567c36dcb12754a1768b5166905e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSymbolTableVisitor.html#ac705567c36dcb12754a1768b5166905e">checkFunctionCall</a> (const std::string &amp;fctName, int argCount, bool usedInExpr)</td></tr>
+<tr class="memdesc:ac705567c36dcb12754a1768b5166905e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vérifie qu'un appel de fonction respecte sa signature.  <a href="classSymbolTableVisitor.html#ac705567c36dcb12754a1768b5166905e">Plus de détails...</a><br /></td></tr>
+<tr class="separator:ac705567c36dcb12754a1768b5166905e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac076cd59404014fea7670797ece6205d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSymbolTableVisitor.html#ac076cd59404014fea7670797ece6205d">hasErrors</a> () const</td></tr>
+<tr class="memdesc:ac076cd59404014fea7670797ece6205d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indique si des erreurs de symboles ont été détectées.  <a href="classSymbolTableVisitor.html#ac076cd59404014fea7670797ece6205d">Plus de détails...</a><br /></td></tr>
+<tr class="separator:ac076cd59404014fea7670797ece6205d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Description détaillée</h2>
+<div class="textblock"><p>Visiteur pour contrôler la table des symboles et l'usage des variables. </p>
+<p><a class="el" href="classSymbolTableVisitor.html" title="Visiteur pour contrôler la table des symboles et l&#39;usage des variables.">SymbolTableVisitor</a> parcourt l'arbre syntaxique et vérifie les déclarations avant utilisation, les accès aux tableaux et les appels de fonctions. </p>
+</div><h2 class="groupheader">Documentation des fonctions membres</h2>
+<a id="ac705567c36dcb12754a1768b5166905e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac705567c36dcb12754a1768b5166905e">&#9670;&nbsp;</a></span>checkFunctionCall()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SymbolTableVisitor::checkFunctionCall </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>fctName</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>argCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>usedInExpr</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Vérifie qu'un appel de fonction respecte sa signature. </p>
+<dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fctName</td><td>Nom de la fonction appelée. </td></tr>
+    <tr><td class="paramname">argCount</td><td>Nombre d'arguments passés. </td></tr>
+    <tr><td class="paramname">usedInExpr</td><td>Vrai si l'appel est utilisé dans une expression. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac076cd59404014fea7670797ece6205d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac076cd59404014fea7670797ece6205d">&#9670;&nbsp;</a></span>hasErrors()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool SymbolTableVisitor::hasErrors </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Indique si des erreurs de symboles ont été détectées. </p>
+<dl class="section return"><dt>Renvoie</dt><dd>true si des erreurs existent, false sinon. </dd></dl>
+
+</div>
+</div>
+<hr/>La documentation de cette classe a été générée à partir du fichier suivant :<ul>
+<li><a class="el" href="SymbolTableVisitor_8h_source.html">SymbolTableVisitor.h</a></li>
+<li>SymbolTableVisitor.cpp</li>
+</ul>
+</div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Généré par&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+</small></address>
+</body>
+</html>

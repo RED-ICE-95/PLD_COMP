@@ -1,3 +1,10 @@
+/**
+ * @file IR.h
+ * @brief Structures de l'IR, de la CFG et des blocs basiques.
+ *
+ * Ce fichier définit les instructions intermédiaires, les blocs de base et le
+ * graphe de flux de contrôle utilisé par le backend du compilateur.
+ */
 #ifndef IR_H
 #define IR_H
 
@@ -17,6 +24,11 @@ class BasicBlock;
 class CFG;
 class DefFonction;
 
+/**
+ * @brief Description d'une fonction pour la génération de code.
+ *
+ * Contient le nom, les paramètres et le type de retour de la fonction.
+ */
 class DefFonction {
 public:
 	string name;
@@ -26,7 +38,12 @@ public:
 		: name(name), params(params), returnType(returnType) {}
 };
 
-//! The class for one 3-address instruction
+/**
+ * @brief Instruction intermédiaire à trois opérandes.
+ *
+ * Chaque instruction contient un pointeur vers son bloc de base et un
+ * ensemble de paramètres décrivant l'opération.
+ */
 class IRInstr {
  
 	public:
@@ -110,7 +127,12 @@ Possible optimization:
        generates an actual assembly comparison 
        followed by a conditional jump to the exit_false branch
 */
-
+/**
+ * @brief Bloc basique dans le graphe de contrôle de flux.
+ *
+ * Un BasicBlock contient une liste d'instructions IR et des connexions vers
+ * ses successeurs vrai/faux pour la génération de sauts conditionnels.
+ */
 class BasicBlock {
  public:
 	BasicBlock(CFG* cfg, string entry_label) : cfg(cfg), label(entry_label), exit_true(nullptr), exit_false(nullptr) {};
@@ -144,6 +166,12 @@ class BasicBlock {
 	 The exit block is the one with both exit pointers equal to nullptr.
      (again it could be identified in a more explicit way)
 
+ */
+/**
+ * @brief Graphe de contrôle de flux et table des symboles associée.
+ *
+ * Le CFG gère les blocs de base, la génération d'assemblage et la résolution des
+ * variables temporaires et locales pour une fonction donnée.
  */
 class CFG {
  public:

@@ -1,0 +1,129 @@
+\hypertarget{classSymbolTableVisitor}{}\doxysection{Référence de la classe Symbol\+Table\+Visitor}
+\label{classSymbolTableVisitor}\index{SymbolTableVisitor@{SymbolTableVisitor}}
+
+
+Visiteur pour contrôler la table des symboles et l\textquotesingle{}usage des variables.  
+
+
+
+
+{\ttfamily \#include $<$Symbol\+Table\+Visitor.\+h$>$}
+
+
+
+Graphe d\textquotesingle{}héritage de Symbol\+Table\+Visitor\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=190pt]{classSymbolTableVisitor__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Graphe de collaboration de Symbol\+Table\+Visitor\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=190pt]{classSymbolTableVisitor__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Fonctions membres publiques}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_a8a69f1cc095440727bb5e8ee28657b50}\label{classSymbolTableVisitor_a8a69f1cc095440727bb5e8ee28657b50}} 
+virtual std\+::any {\bfseries visit\+Declar} (ifcc\+Parser\+::\+Declar\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_a471ded85b3eca416a0add4d9bd9d3dc1}\label{classSymbolTableVisitor_a471ded85b3eca416a0add4d9bd9d3dc1}} 
+virtual std\+::any {\bfseries visit\+Expr\+Array\+Access} (ifcc\+Parser\+::\+Expr\+Array\+Access\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_ae6e01aaead04327115758b3c6ba79e8c}\label{classSymbolTableVisitor_ae6e01aaead04327115758b3c6ba79e8c}} 
+virtual std\+::any {\bfseries visit\+Assign\+Simple} (ifcc\+Parser\+::\+Assign\+Simple\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_a72ecadf5b9de20eb9d0212a08b6281b9}\label{classSymbolTableVisitor_a72ecadf5b9de20eb9d0212a08b6281b9}} 
+virtual std\+::any {\bfseries visit\+Assign\+Array} (ifcc\+Parser\+::\+Assign\+Array\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_a377cec70550a131eda9272293c0e5d64}\label{classSymbolTableVisitor_a377cec70550a131eda9272293c0e5d64}} 
+virtual std\+::any {\bfseries visit\+Assign\+Add} (ifcc\+Parser\+::\+Assign\+Add\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_a25227aa1378e4c17e79fbe1276fe2373}\label{classSymbolTableVisitor_a25227aa1378e4c17e79fbe1276fe2373}} 
+virtual std\+::any {\bfseries visit\+Assign\+Sub} (ifcc\+Parser\+::\+Assign\+Sub\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_a77372c80dd3ce26411d0d7998f687f6f}\label{classSymbolTableVisitor_a77372c80dd3ce26411d0d7998f687f6f}} 
+virtual std\+::any {\bfseries visit\+Assign\+Mul} (ifcc\+Parser\+::\+Assign\+Mul\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_a90b1a14ba9aa7a03fe3c904cc82039c8}\label{classSymbolTableVisitor_a90b1a14ba9aa7a03fe3c904cc82039c8}} 
+virtual std\+::any {\bfseries visit\+Assign\+Div} (ifcc\+Parser\+::\+Assign\+Div\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_adb7e6df52193b6f7d67b5f741b145f14}\label{classSymbolTableVisitor_adb7e6df52193b6f7d67b5f741b145f14}} 
+virtual std\+::any {\bfseries visit\+Assign\+Mod} (ifcc\+Parser\+::\+Assign\+Mod\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_ae820b3e4acb48c4e0fb7e806a4443f72}\label{classSymbolTableVisitor_ae820b3e4acb48c4e0fb7e806a4443f72}} 
+virtual std\+::any {\bfseries visit\+Incdec} (ifcc\+Parser\+::\+Incdec\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_aff0fd33faf74d7bbb108e2d1d6b5cef8}\label{classSymbolTableVisitor_aff0fd33faf74d7bbb108e2d1d6b5cef8}} 
+virtual std\+::any {\bfseries visit\+Expr\+Id} (ifcc\+Parser\+::\+Expr\+Id\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_a4749e7ca163d2ecbc88b57b46d7a99ae}\label{classSymbolTableVisitor_a4749e7ca163d2ecbc88b57b46d7a99ae}} 
+virtual std\+::any {\bfseries visit\+Prog} (ifcc\+Parser\+::\+Prog\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_a5ea2bf51b3ed44d134fd25c067bcdb45}\label{classSymbolTableVisitor_a5ea2bf51b3ed44d134fd25c067bcdb45}} 
+virtual std\+::any {\bfseries visit\+Block} (ifcc\+Parser\+::\+Block\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_a4c89106685d837c188c50f6b835eaa82}\label{classSymbolTableVisitor_a4c89106685d837c188c50f6b835eaa82}} 
+virtual std\+::any {\bfseries visit\+Fonct\+Decl} (ifcc\+Parser\+::\+Fonct\+Decl\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classSymbolTableVisitor_aa71fffec4e5a37964b1d8cccb74175ce}\label{classSymbolTableVisitor_aa71fffec4e5a37964b1d8cccb74175ce}} 
+virtual std\+::any {\bfseries visit\+Expr\+Fonct\+Call} (ifcc\+Parser\+::\+Expr\+Fonct\+Call\+Context $\ast$ctx) override
+\item 
+void \mbox{\hyperlink{classSymbolTableVisitor_ac705567c36dcb12754a1768b5166905e}{check\+Function\+Call}} (const std\+::string \&fct\+Name, int arg\+Count, bool used\+In\+Expr)
+\begin{DoxyCompactList}\small\item\em Vérifie qu\textquotesingle{}un appel de fonction respecte sa signature. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classSymbolTableVisitor_ac076cd59404014fea7670797ece6205d}{has\+Errors}} () const
+\begin{DoxyCompactList}\small\item\em Indique si des erreurs de symboles ont été détectées. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Description détaillée}
+Visiteur pour contrôler la table des symboles et l\textquotesingle{}usage des variables. 
+
+\mbox{\hyperlink{classSymbolTableVisitor}{Symbol\+Table\+Visitor}} parcourt l\textquotesingle{}arbre syntaxique et vérifie les déclarations avant utilisation, les accès aux tableaux et les appels de fonctions. 
+
+\doxysubsection{Documentation des fonctions membres}
+\mbox{\Hypertarget{classSymbolTableVisitor_ac705567c36dcb12754a1768b5166905e}\label{classSymbolTableVisitor_ac705567c36dcb12754a1768b5166905e}} 
+\index{SymbolTableVisitor@{SymbolTableVisitor}!checkFunctionCall@{checkFunctionCall}}
+\index{checkFunctionCall@{checkFunctionCall}!SymbolTableVisitor@{SymbolTableVisitor}}
+\doxysubsubsection{\texorpdfstring{checkFunctionCall()}{checkFunctionCall()}}
+{\footnotesize\ttfamily void Symbol\+Table\+Visitor\+::check\+Function\+Call (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{fct\+Name,  }\item[{int}]{arg\+Count,  }\item[{bool}]{used\+In\+Expr }\end{DoxyParamCaption})}
+
+
+
+Vérifie qu\textquotesingle{}un appel de fonction respecte sa signature. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em fct\+Name} & Nom de la fonction appelée. \\
+\hline
+{\em arg\+Count} & Nombre d\textquotesingle{}arguments passés. \\
+\hline
+{\em used\+In\+Expr} & Vrai si l\textquotesingle{}appel est utilisé dans une expression. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classSymbolTableVisitor_ac076cd59404014fea7670797ece6205d}\label{classSymbolTableVisitor_ac076cd59404014fea7670797ece6205d}} 
+\index{SymbolTableVisitor@{SymbolTableVisitor}!hasErrors@{hasErrors}}
+\index{hasErrors@{hasErrors}!SymbolTableVisitor@{SymbolTableVisitor}}
+\doxysubsubsection{\texorpdfstring{hasErrors()}{hasErrors()}}
+{\footnotesize\ttfamily bool Symbol\+Table\+Visitor\+::has\+Errors (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Indique si des erreurs de symboles ont été détectées. 
+
+\begin{DoxyReturn}{Renvoie}
+true si des erreurs existent, false sinon. 
+\end{DoxyReturn}
+
+
+La documentation de cette classe a été générée à partir du fichier suivant \+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{SymbolTableVisitor_8h}{Symbol\+Table\+Visitor.\+h}}\item 
+Symbol\+Table\+Visitor.\+cpp\end{DoxyCompactItemize}

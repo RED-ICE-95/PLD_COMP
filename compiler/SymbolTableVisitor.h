@@ -1,3 +1,7 @@
+/**
+ * @file SymbolTableVisitor.h
+ * @brief Vérification des déclarations et usages de variables.
+ */
 #pragma once
 
 #include <string>
@@ -9,6 +13,12 @@
 #include "antlr4-runtime.h"
 #include "generated/ifccBaseVisitor.h"
 
+/**
+ * @brief Visiteur pour contrôler la table des symboles et l'usage des variables.
+ *
+ * SymbolTableVisitor parcourt l'arbre syntaxique et vérifie les déclarations
+ * avant utilisation, les accès aux tableaux et les appels de fonctions.
+ */
 class SymbolTableVisitor : public ifccBaseVisitor {
 
 public:
@@ -28,7 +38,17 @@ public:
     virtual std::any visitBlock(ifccParser::BlockContext *ctx) override;
     virtual std::any visitFonctDecl(ifccParser::FonctDeclContext *ctx) override;
     virtual std::any visitExprFonctCall(ifccParser::ExprFonctCallContext *ctx) override;
+    /**
+     * @brief Vérifie qu'un appel de fonction respecte sa signature.
+     * @param fctName   Nom de la fonction appelée.
+     * @param argCount  Nombre d'arguments passés.
+     * @param usedInExpr Vrai si l'appel est utilisé dans une expression.
+     */
     void checkFunctionCall(const std::string& fctName, int argCount, bool usedInExpr);
+    /**
+     * @brief Indique si des erreurs de symboles ont été détectées.
+     * @return true si des erreurs existent, false sinon.
+     */
     bool hasErrors() const { return errorFlag; }
 
 private:

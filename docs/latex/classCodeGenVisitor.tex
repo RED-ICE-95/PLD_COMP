@@ -1,0 +1,176 @@
+\hypertarget{classCodeGenVisitor}{}\doxysection{Référence de la classe Code\+Gen\+Visitor}
+\label{classCodeGenVisitor}\index{CodeGenVisitor@{CodeGenVisitor}}
+
+
+Visiteur de génération de code pour l\textquotesingle{}IR et la \mbox{\hyperlink{classCFG}{CFG}}.  
+
+
+
+
+{\ttfamily \#include $<$Code\+Gen\+Visitor.\+h$>$}
+
+
+
+Graphe d\textquotesingle{}héritage de Code\+Gen\+Visitor\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=172pt]{classCodeGenVisitor__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Graphe de collaboration de Code\+Gen\+Visitor\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=172pt]{classCodeGenVisitor__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Fonctions membres publiques}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classCodeGenVisitor_a3a94a40b10652cdee903ceecfc134d89}{Code\+Gen\+Visitor}} (\mbox{\hyperlink{classDefFonction}{Def\+Fonction}} $\ast$ast, IRInstr\+::\+Target target)
+\begin{DoxyCompactList}\small\item\em Initialise le visiteur de génération de code. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCodeGenVisitor_ae162d1d6cb10e93c38d8e520d60d5815}\label{classCodeGenVisitor_ae162d1d6cb10e93c38d8e520d60d5815}} 
+virtual std\+::any {\bfseries visit\+Prog} (ifcc\+Parser\+::\+Prog\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_af5a067a815179fe2a9e7d4f5eea1a74f}\label{classCodeGenVisitor_af5a067a815179fe2a9e7d4f5eea1a74f}} 
+virtual std\+::any {\bfseries visit\+Return\+\_\+stmt} (ifcc\+Parser\+::\+Return\+\_\+stmt\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a0c1a34ccccb1d7507d568eb36ff4e4e3}\label{classCodeGenVisitor_a0c1a34ccccb1d7507d568eb36ff4e4e3}} 
+virtual std\+::any {\bfseries visit\+Declar} (ifcc\+Parser\+::\+Declar\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_adbc89c4706a619016c8dca555ce170bf}\label{classCodeGenVisitor_adbc89c4706a619016c8dca555ce170bf}} 
+virtual std\+::any {\bfseries visit\+Block} (ifcc\+Parser\+::\+Block\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a0544b41b7aa25b41a7c160c729a67a0a}\label{classCodeGenVisitor_a0544b41b7aa25b41a7c160c729a67a0a}} 
+virtual std\+::any {\bfseries visit\+Assign\+Simple} (ifcc\+Parser\+::\+Assign\+Simple\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a214bb70f57f1dcd1b77c3cd3b49751ee}\label{classCodeGenVisitor_a214bb70f57f1dcd1b77c3cd3b49751ee}} 
+virtual std\+::any {\bfseries visit\+Assign\+Add} (ifcc\+Parser\+::\+Assign\+Add\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a523ff6d0d52369786e173e9247ed0edb}\label{classCodeGenVisitor_a523ff6d0d52369786e173e9247ed0edb}} 
+virtual std\+::any {\bfseries visit\+Assign\+Sub} (ifcc\+Parser\+::\+Assign\+Sub\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a9c786bf2ba962c42e73579adf7c04cd6}\label{classCodeGenVisitor_a9c786bf2ba962c42e73579adf7c04cd6}} 
+virtual std\+::any {\bfseries visit\+Assign\+Mul} (ifcc\+Parser\+::\+Assign\+Mul\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a76eddcb88398ca5b0f696468baaa4934}\label{classCodeGenVisitor_a76eddcb88398ca5b0f696468baaa4934}} 
+virtual std\+::any {\bfseries visit\+Assign\+Div} (ifcc\+Parser\+::\+Assign\+Div\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_afe9dcee152040bdbc3b67d0139e93c62}\label{classCodeGenVisitor_afe9dcee152040bdbc3b67d0139e93c62}} 
+virtual std\+::any {\bfseries visit\+Assign\+Mod} (ifcc\+Parser\+::\+Assign\+Mod\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a546445e74a115b4456ba3a40bdffef34}\label{classCodeGenVisitor_a546445e74a115b4456ba3a40bdffef34}} 
+virtual std\+::any {\bfseries visit\+Assign\+Array} (ifcc\+Parser\+::\+Assign\+Array\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a781f8dcf5c62039d652865484358a514}\label{classCodeGenVisitor_a781f8dcf5c62039d652865484358a514}} 
+virtual std\+::any {\bfseries visit\+Expr\+Array\+Access} (ifcc\+Parser\+::\+Expr\+Array\+Access\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a56d14fc7f4814b805bd3c558f30cf523}\label{classCodeGenVisitor_a56d14fc7f4814b805bd3c558f30cf523}} 
+virtual std\+::any {\bfseries visit\+Expr\+Const} (ifcc\+Parser\+::\+Expr\+Const\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a2afa8f05278f73156bb8aab9cdefbd5c}\label{classCodeGenVisitor_a2afa8f05278f73156bb8aab9cdefbd5c}} 
+virtual std\+::any {\bfseries visit\+Expr\+Char\+Const} (ifcc\+Parser\+::\+Expr\+Char\+Const\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a07db2a433421812c49f8050004e21a6d}\label{classCodeGenVisitor_a07db2a433421812c49f8050004e21a6d}} 
+virtual std\+::any {\bfseries visit\+Expr\+Id} (ifcc\+Parser\+::\+Expr\+Id\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_aa2d3ef68633fe88e2d9cef3c38534661}\label{classCodeGenVisitor_aa2d3ef68633fe88e2d9cef3c38534661}} 
+virtual std\+::any {\bfseries visit\+Expr\+Unary\+Minus} (ifcc\+Parser\+::\+Expr\+Unary\+Minus\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a48803135d18dda44b47c6ef97ebdd820}\label{classCodeGenVisitor_a48803135d18dda44b47c6ef97ebdd820}} 
+virtual std\+::any {\bfseries visit\+Expr\+Unary\+Not} (ifcc\+Parser\+::\+Expr\+Unary\+Not\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a9063e4b609772f832974d22b7e3d76aa}\label{classCodeGenVisitor_a9063e4b609772f832974d22b7e3d76aa}} 
+virtual std\+::any {\bfseries visit\+Expr\+Paren} (ifcc\+Parser\+::\+Expr\+Paren\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a1abe33980e045dad2136abe42e91d141}\label{classCodeGenVisitor_a1abe33980e045dad2136abe42e91d141}} 
+virtual std\+::any {\bfseries visit\+Expr\+Add} (ifcc\+Parser\+::\+Expr\+Add\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a5a7ef7579b9f1ebe949936f8e8a5b2f3}\label{classCodeGenVisitor_a5a7ef7579b9f1ebe949936f8e8a5b2f3}} 
+virtual std\+::any {\bfseries visit\+Expr\+Mult} (ifcc\+Parser\+::\+Expr\+Mult\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_ab1962915c34086682ad3a853a327fadd}\label{classCodeGenVisitor_ab1962915c34086682ad3a853a327fadd}} 
+virtual std\+::any {\bfseries visit\+Expr\+Bit\+Or} (ifcc\+Parser\+::\+Expr\+Bit\+Or\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a25f0cb8d1bce22140ca9de0855b355a6}\label{classCodeGenVisitor_a25f0cb8d1bce22140ca9de0855b355a6}} 
+virtual std\+::any {\bfseries visit\+Expr\+Bit\+Xor} (ifcc\+Parser\+::\+Expr\+Bit\+Xor\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a0c7e9d90f865b1cad6cd2e4e779d0c04}\label{classCodeGenVisitor_a0c7e9d90f865b1cad6cd2e4e779d0c04}} 
+virtual std\+::any {\bfseries visit\+Expr\+Bit\+And} (ifcc\+Parser\+::\+Expr\+Bit\+And\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a33f23952e1cbf204167bab5255c71cdb}\label{classCodeGenVisitor_a33f23952e1cbf204167bab5255c71cdb}} 
+virtual std\+::any {\bfseries visit\+Expr\+Eq} (ifcc\+Parser\+::\+Expr\+Eq\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_ae9ae5187ae9df980e49231fc403dbf59}\label{classCodeGenVisitor_ae9ae5187ae9df980e49231fc403dbf59}} 
+virtual std\+::any {\bfseries visit\+Expr\+Cmp} (ifcc\+Parser\+::\+Expr\+Cmp\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a0cc6de96a15a3e1b56db66c423e06273}\label{classCodeGenVisitor_a0cc6de96a15a3e1b56db66c423e06273}} 
+virtual std\+::any {\bfseries visit\+Call\+\_\+stmt} (ifcc\+Parser\+::\+Call\+\_\+stmt\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a914d1765d0f62840f4b112986d75ad00}\label{classCodeGenVisitor_a914d1765d0f62840f4b112986d75ad00}} 
+virtual std\+::any {\bfseries visit\+Fonct\+Decl} (ifcc\+Parser\+::\+Fonct\+Decl\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a91515c37d56731b4f3ce119be1f391c7}\label{classCodeGenVisitor_a91515c37d56731b4f3ce119be1f391c7}} 
+virtual std\+::any {\bfseries visit\+Expr\+Fonct\+Call} (ifcc\+Parser\+::\+Expr\+Fonct\+Call\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_ab5bd2b0700ccbc286099510ee5ac86ed}\label{classCodeGenVisitor_ab5bd2b0700ccbc286099510ee5ac86ed}} 
+virtual std\+::any {\bfseries visit\+Incdec} (ifcc\+Parser\+::\+Incdec\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a63986260d5872dea385bb677a31fae86}\label{classCodeGenVisitor_a63986260d5872dea385bb677a31fae86}} 
+virtual std\+::any {\bfseries visit\+Expr\+And} (ifcc\+Parser\+::\+Expr\+And\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_abfb259fbbf453e94e77b8dd17ea28411}\label{classCodeGenVisitor_abfb259fbbf453e94e77b8dd17ea28411}} 
+virtual std\+::any {\bfseries visit\+Expr\+Or} (ifcc\+Parser\+::\+Expr\+Or\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_abdb5bda8501734a8f101b71e3003c462}\label{classCodeGenVisitor_abdb5bda8501734a8f101b71e3003c462}} 
+virtual std\+::any {\bfseries visit\+If\+\_\+stmt} (ifcc\+Parser\+::\+If\+\_\+stmt\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_a2147cfdd26d46dfc564816b14e15f9c4}\label{classCodeGenVisitor_a2147cfdd26d46dfc564816b14e15f9c4}} 
+virtual std\+::any {\bfseries visit\+While\+\_\+stmt} (ifcc\+Parser\+::\+While\+\_\+stmt\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_aa4c5bdf144739dcba9952c9957f08075}\label{classCodeGenVisitor_aa4c5bdf144739dcba9952c9957f08075}} 
+virtual std\+::any {\bfseries visit\+Switch\+\_\+stmt} (ifcc\+Parser\+::\+Switch\+\_\+stmt\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_ae0ed3dca97ba7eb6d1245502da0d3174}\label{classCodeGenVisitor_ae0ed3dca97ba7eb6d1245502da0d3174}} 
+virtual std\+::any {\bfseries visit\+Break\+\_\+stmt} (ifcc\+Parser\+::\+Break\+\_\+stmt\+Context $\ast$ctx) override
+\item 
+\mbox{\Hypertarget{classCodeGenVisitor_ab9909cae25729a2a9449be3ed75ec9d2}\label{classCodeGenVisitor_ab9909cae25729a2a9449be3ed75ec9d2}} 
+virtual std\+::any {\bfseries visit\+Continue\+\_\+stmt} (ifcc\+Parser\+::\+Continue\+\_\+stmt\+Context $\ast$ctx) override
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Description détaillée}
+Visiteur de génération de code pour l\textquotesingle{}IR et la \mbox{\hyperlink{classCFG}{CFG}}. 
+
+\mbox{\hyperlink{classCodeGenVisitor}{Code\+Gen\+Visitor}} visite les nœuds du parse tree et déclenche l\textquotesingle{}émission des instructions intermédiaires et des blocs de contrôle de flux. 
+
+\doxysubsection{Documentation des constructeurs et destructeur}
+\mbox{\Hypertarget{classCodeGenVisitor_a3a94a40b10652cdee903ceecfc134d89}\label{classCodeGenVisitor_a3a94a40b10652cdee903ceecfc134d89}} 
+\index{CodeGenVisitor@{CodeGenVisitor}!CodeGenVisitor@{CodeGenVisitor}}
+\index{CodeGenVisitor@{CodeGenVisitor}!CodeGenVisitor@{CodeGenVisitor}}
+\doxysubsubsection{\texorpdfstring{CodeGenVisitor()}{CodeGenVisitor()}}
+{\footnotesize\ttfamily Code\+Gen\+Visitor\+::\+Code\+Gen\+Visitor (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classDefFonction}{Def\+Fonction}} $\ast$}]{ast,  }\item[{IRInstr\+::\+Target}]{target }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [explicit]}}
+
+
+
+Initialise le visiteur de génération de code. 
+
+
+\begin{DoxyParams}{Paramètres}
+{\em ast} & Description de la fonction courante. \\
+\hline
+{\em target} & Cible d\textquotesingle{}assemblage (X86 ou MSP430). \\
+\hline
+\end{DoxyParams}
+
+
+La documentation de cette classe a été générée à partir du fichier suivant \+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{CodeGenVisitor_8h}{Code\+Gen\+Visitor.\+h}}\item 
+Code\+Gen\+Visitor-\/\+Old.\+cpp\item 
+Code\+Gen\+Visitor.\+cpp\end{DoxyCompactItemize}
