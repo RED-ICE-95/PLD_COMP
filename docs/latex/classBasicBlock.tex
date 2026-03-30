@@ -1,0 +1,111 @@
+\hypertarget{classBasicBlock}{}\doxysection{Référence de la classe Basic\+Block}
+\label{classBasicBlock}\index{BasicBlock@{BasicBlock}}
+
+
+Bloc basique dans le graphe de contrôle de flux.  
+
+
+
+
+{\ttfamily \#include $<$IR.\+h$>$}
+
+
+
+Graphe de collaboration de Basic\+Block\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=314pt]{classBasicBlock__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Fonctions membres publiques}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classBasicBlock_ac988f9ee1c1e6f0b0545473d66238d4d}\label{classBasicBlock_ac988f9ee1c1e6f0b0545473d66238d4d}} 
+{\bfseries Basic\+Block} (\mbox{\hyperlink{classCFG}{CFG}} $\ast$cfg, string entry\+\_\+label)
+\item 
+void \mbox{\hyperlink{classBasicBlock_aab1d03f6e940cb0d87ed385708aa8741}{gen\+\_\+asm}} (ostream \&o)
+\item 
+void \mbox{\hyperlink{classBasicBlock_a35dd54d027d0ff7ebe87a75e08aa8e13}{gen\+\_\+asm\+\_\+msp430}} (ostream \&o)
+\item 
+\mbox{\Hypertarget{classBasicBlock_a647454e53f56300863aca1603a475913}\label{classBasicBlock_a647454e53f56300863aca1603a475913}} 
+void {\bfseries add\+\_\+\+IRInstr} (\mbox{\hyperlink{classIRInstr_a4e228546957ed6096a45f48d7cfc7f15}{IRInstr\+::\+Operation}} op, Type t, vector$<$ string $>$ params)
+\end{DoxyCompactItemize}
+\doxysubsection*{Attributs publics}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classBasicBlock}{Basic\+Block}} $\ast$ \mbox{\hyperlink{classBasicBlock_ad7dfb0ec10a03ab548f308461e8701e7}{exit\+\_\+true}}
+\item 
+\mbox{\hyperlink{classBasicBlock}{Basic\+Block}} $\ast$ \mbox{\hyperlink{classBasicBlock_a8fa2b8fbdf5275fb15a7eac08e0ed0ea}{exit\+\_\+false}}
+\item 
+string \mbox{\hyperlink{classBasicBlock_ae71b6e72775da2cd4ce28313d12630e7}{label}}
+\item 
+\mbox{\Hypertarget{classBasicBlock_a204455a067b3f3ad4c5652664a763a57}\label{classBasicBlock_a204455a067b3f3ad4c5652664a763a57}} 
+\mbox{\hyperlink{classCFG}{CFG}} $\ast$ {\bfseries cfg}
+\item 
+vector$<$ \mbox{\hyperlink{classIRInstr}{IRInstr}} $\ast$ $>$ \mbox{\hyperlink{classBasicBlock_a390cdaa66b445938aa5f3af2c90d6d71}{instrs}}
+\item 
+string \mbox{\hyperlink{classBasicBlock_a21c45752672cb9cd6813d9753dcffb4f}{test\+\_\+var\+\_\+name}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Description détaillée}
+Bloc basique dans le graphe de contrôle de flux. 
+
+The class for a basic block
+
+Un \mbox{\hyperlink{classBasicBlock}{Basic\+Block}} contient une liste d\textquotesingle{}instructions IR et des connexions vers ses successeurs vrai/faux pour la génération de sauts conditionnels. 
+
+\doxysubsection{Documentation des fonctions membres}
+\mbox{\Hypertarget{classBasicBlock_aab1d03f6e940cb0d87ed385708aa8741}\label{classBasicBlock_aab1d03f6e940cb0d87ed385708aa8741}} 
+\index{BasicBlock@{BasicBlock}!gen\_asm@{gen\_asm}}
+\index{gen\_asm@{gen\_asm}!BasicBlock@{BasicBlock}}
+\doxysubsubsection{\texorpdfstring{gen\_asm()}{gen\_asm()}}
+{\footnotesize\ttfamily void Basic\+Block\+::gen\+\_\+asm (\begin{DoxyParamCaption}\item[{ostream \&}]{o }\end{DoxyParamCaption})}
+
+x86 assembly code generation for this basic block (very simple) \mbox{\Hypertarget{classBasicBlock_a35dd54d027d0ff7ebe87a75e08aa8e13}\label{classBasicBlock_a35dd54d027d0ff7ebe87a75e08aa8e13}} 
+\index{BasicBlock@{BasicBlock}!gen\_asm\_msp430@{gen\_asm\_msp430}}
+\index{gen\_asm\_msp430@{gen\_asm\_msp430}!BasicBlock@{BasicBlock}}
+\doxysubsubsection{\texorpdfstring{gen\_asm\_msp430()}{gen\_asm\_msp430()}}
+{\footnotesize\ttfamily void Basic\+Block\+::gen\+\_\+asm\+\_\+msp430 (\begin{DoxyParamCaption}\item[{ostream \&}]{o }\end{DoxyParamCaption})}
+
+MSP430 assembly code generation for this basic block (very simple) 
+
+\doxysubsection{Documentation des données membres}
+\mbox{\Hypertarget{classBasicBlock_a8fa2b8fbdf5275fb15a7eac08e0ed0ea}\label{classBasicBlock_a8fa2b8fbdf5275fb15a7eac08e0ed0ea}} 
+\index{BasicBlock@{BasicBlock}!exit\_false@{exit\_false}}
+\index{exit\_false@{exit\_false}!BasicBlock@{BasicBlock}}
+\doxysubsubsection{\texorpdfstring{exit\_false}{exit\_false}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classBasicBlock}{Basic\+Block}}$\ast$ Basic\+Block\+::exit\+\_\+false}
+
+pointer to the next basic block, false branch. If null\+\_\+ptr, the basic block ends with an unconditional jump \mbox{\Hypertarget{classBasicBlock_ad7dfb0ec10a03ab548f308461e8701e7}\label{classBasicBlock_ad7dfb0ec10a03ab548f308461e8701e7}} 
+\index{BasicBlock@{BasicBlock}!exit\_true@{exit\_true}}
+\index{exit\_true@{exit\_true}!BasicBlock@{BasicBlock}}
+\doxysubsubsection{\texorpdfstring{exit\_true}{exit\_true}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classBasicBlock}{Basic\+Block}}$\ast$ Basic\+Block\+::exit\+\_\+true}
+
+pointer to the next basic block, true branch. If nullptr, return from procedure \mbox{\Hypertarget{classBasicBlock_a390cdaa66b445938aa5f3af2c90d6d71}\label{classBasicBlock_a390cdaa66b445938aa5f3af2c90d6d71}} 
+\index{BasicBlock@{BasicBlock}!instrs@{instrs}}
+\index{instrs@{instrs}!BasicBlock@{BasicBlock}}
+\doxysubsubsection{\texorpdfstring{instrs}{instrs}}
+{\footnotesize\ttfamily vector$<$\mbox{\hyperlink{classIRInstr}{IRInstr}}$\ast$$>$ Basic\+Block\+::instrs}
+
+$<$ the \mbox{\hyperlink{classCFG}{CFG}} where this block belongs \mbox{\Hypertarget{classBasicBlock_ae71b6e72775da2cd4ce28313d12630e7}\label{classBasicBlock_ae71b6e72775da2cd4ce28313d12630e7}} 
+\index{BasicBlock@{BasicBlock}!label@{label}}
+\index{label@{label}!BasicBlock@{BasicBlock}}
+\doxysubsubsection{\texorpdfstring{label}{label}}
+{\footnotesize\ttfamily string Basic\+Block\+::label}
+
+label of the BB, also will be the label in the generated code \mbox{\Hypertarget{classBasicBlock_a21c45752672cb9cd6813d9753dcffb4f}\label{classBasicBlock_a21c45752672cb9cd6813d9753dcffb4f}} 
+\index{BasicBlock@{BasicBlock}!test\_var\_name@{test\_var\_name}}
+\index{test\_var\_name@{test\_var\_name}!BasicBlock@{BasicBlock}}
+\doxysubsubsection{\texorpdfstring{test\_var\_name}{test\_var\_name}}
+{\footnotesize\ttfamily string Basic\+Block\+::test\+\_\+var\+\_\+name}
+
+$<$ the instructions themselves. 
+
+La documentation de cette classe a été générée à partir du fichier suivant \+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{IR_8h}{IR.\+h}}\item 
+IR.\+cpp\end{DoxyCompactItemize}

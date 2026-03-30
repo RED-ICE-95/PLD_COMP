@@ -1,3 +1,11 @@
+/**
+ * @file CodeGenVisitor.h
+ * @brief Visiteur de génération de code pour la compilation.
+ *
+ * Ce fichier contient le visitor qui parcourt l'arbre syntaxique généré par
+ * ANTLR et produit une représentation intermédiaire (IR) ainsi qu'une
+ * CFG adaptée à la cible choisie.
+ */
 #pragma once
 
 
@@ -10,8 +18,19 @@
 #include <unordered_map>
 #include <string>
 
+/**
+ * @brief Visiteur de génération de code pour l'IR et la CFG.
+ *
+ * CodeGenVisitor visite les nœuds du parse tree et déclenche l'émission des
+ * instructions intermédiaires et des blocs de contrôle de flux.
+ */
 class  CodeGenVisitor : public ifccBaseVisitor {
 	public:
+        /**
+         * @brief Initialise le visiteur de génération de code.
+         * @param ast    Description de la fonction courante.
+         * @param target Cible d'assemblage (X86 ou MSP430).
+         */
         explicit CodeGenVisitor(DefFonction* ast, IRInstr::Target target);
 
         virtual std::any visitProg(ifccParser::ProgContext *ctx) override ;
@@ -54,10 +73,16 @@ class  CodeGenVisitor : public ifccBaseVisitor {
         virtual std::any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
         virtual std::any visitWhile_stmt(ifccParser::While_stmtContext *ctx) override;
 
+        virtual std::any visitSwitch_stmt(ifccParser::Switch_stmtContext *ctx) override;
+        virtual std::any visitBreak_stmt(ifccParser::Break_stmtContext *ctx) override;
+        virtual std::any visitContinue_stmt(ifccParser::Continue_stmtContext *ctx) override;
+
         // virtual std::any visitList_decl_param(ifccParser::List_decl_paramContext *ctx) override;
 
         private:
         CFG* cfg;
+        BasicBlock* current_break_bb;
+        BasicBlock* current_continue_bb;
         IRInstr::Target target;  // Sauvegarde du target (x86 ou MSP430)
         vector<map<string, string>> scopeRename;
         
@@ -80,5 +105,13 @@ class  CodeGenVisitor : public ifccBaseVisitor {
         // Convention : un visit* peut retourner "$n" (ex: "$42") pour signifier
         // une constante connue à la compilation. Aucune IRInstr n'est alors émise.
         // materialize() convertit une telle valeur en vrai registre IR si besoin.
+        /**
+         * @brief Matérialise une constante pliée en registre IR.
+         *
+         * Si la valeur est de la forme "$n", elle est chargée dans un
+         * registre temporaire IR et ce registre est retourné.
+         * @param val Valeur constante ou identifiant de registre.
+         * @return Nom du registre IR contenant la valeur.
+         */
         std::string materialize(const std::string& val);
 };

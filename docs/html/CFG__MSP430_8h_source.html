@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.9.1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>PLD_COMP:  Fichier source de CFG_MSP430.h</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">PLD_COMP
+   &#160;<span id="projectnumber">1.0</span>
+   </div>
+   <div id="projectbrief">Compilateur IFCC</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Généré par Doxygen 1.9.1 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Recherche','.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Recherche');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_e955afc72e8af59637c9070b8690ff98.html">compiler</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">CFG_MSP430.h</div>  </div>
+</div><!--header-->
+<div class="contents">
+<a href="CFG__MSP430_8h.html">Aller à la documentation de ce fichier.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160; </div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="IR_8h.html">IR.h</a>&quot;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
+<div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="classCFG__MSP430.html">   14</a></span>&#160;<span class="keyword">class </span><a class="code" href="classCFG__MSP430.html">CFG_MSP430</a> : <span class="keyword">public</span> <a class="code" href="classCFG.html">CFG</a> {</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <a class="code" href="classCFG__MSP430.html">CFG_MSP430</a>(<a class="code" href="classDefFonction.html">DefFonction</a>* <a class="code" href="classCFG.html#a3adea24d4590a91beaae09fe0080bcca">ast</a>) : <a class="code" href="classCFG.html">CFG</a>(<a class="code" href="classCFG.html#a3adea24d4590a91beaae09fe0080bcca">ast</a>) {</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;        <span class="comment">// MSP430: variables sont 2 bytes (16-bit), donc nextFreeSymbolIndex commence à 2</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;        <span class="comment">// (et pas 4 comme sur x86)</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;        <a class="code" href="classCFG.html#a83e8aba81f1ee18f9b0e799329c77a59">nextFreeSymbolIndex</a> = 2;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    }</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    <span class="keywordtype">void</span> gen_asm(ostream&amp; o) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <span class="keywordtype">void</span> gen_asm_prologue(ostream&amp; o) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keywordtype">void</span> gen_asm_epilogue(ostream&amp; o) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <span class="keywordtype">void</span> add_to_symbol_table(<span class="keywordtype">string</span> name, Type t, <span class="keywordtype">int</span> arraySize = 0) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordtype">string</span> <a class="code" href="classCFG__MSP430.html#aaa566b39858cd00c1343417bf10b69d3">IR_reg_to_asm</a>(<span class="keywordtype">string</span> reg) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;};</div>
+<div class="ttc" id="aIR_8h_html"><div class="ttname"><a href="IR_8h.html">IR.h</a></div><div class="ttdoc">Structures de l'IR, de la CFG et des blocs basiques.</div></div>
+<div class="ttc" id="aclassCFG__MSP430_html"><div class="ttname"><a href="classCFG__MSP430.html">CFG_MSP430</a></div><div class="ttdoc">Spécialisation du graphe de contrôle de flux pour MSP430.</div><div class="ttdef"><b>Definition:</b> CFG_MSP430.h:14</div></div>
+<div class="ttc" id="aclassCFG__MSP430_html_aaa566b39858cd00c1343417bf10b69d3"><div class="ttname"><a href="classCFG__MSP430.html#aaa566b39858cd00c1343417bf10b69d3">CFG_MSP430::IR_reg_to_asm</a></div><div class="ttdeci">string IR_reg_to_asm(string reg) override</div><div class="ttdef"><b>Definition:</b> CFG_MSP430.cpp:26</div></div>
+<div class="ttc" id="aclassCFG_html"><div class="ttname"><a href="classCFG.html">CFG</a></div><div class="ttdoc">Graphe de contrôle de flux et table des symboles associée.</div><div class="ttdef"><b>Definition:</b> IR.h:176</div></div>
+<div class="ttc" id="aclassCFG_html_a3adea24d4590a91beaae09fe0080bcca"><div class="ttname"><a href="classCFG.html#a3adea24d4590a91beaae09fe0080bcca">CFG::ast</a></div><div class="ttdeci">DefFonction * ast</div><div class="ttdef"><b>Definition:</b> IR.h:178</div></div>
+<div class="ttc" id="aclassCFG_html_a83e8aba81f1ee18f9b0e799329c77a59"><div class="ttname"><a href="classCFG.html#a83e8aba81f1ee18f9b0e799329c77a59">CFG::nextFreeSymbolIndex</a></div><div class="ttdeci">int nextFreeSymbolIndex</div><div class="ttdef"><b>Definition:</b> IR.h:213</div></div>
+<div class="ttc" id="aclassDefFonction_html"><div class="ttname"><a href="classDefFonction.html">DefFonction</a></div><div class="ttdoc">Description d'une fonction pour la génération de code.</div><div class="ttdef"><b>Definition:</b> IR.h:32</div></div>
+</div><!-- fragment --></div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Généré par&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+</small></address>
+</body>
+</html>

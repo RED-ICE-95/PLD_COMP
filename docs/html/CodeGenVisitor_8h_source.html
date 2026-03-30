@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.9.1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>PLD_COMP:  Fichier source de CodeGenVisitor.h</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">PLD_COMP
+   &#160;<span id="projectnumber">1.0</span>
+   </div>
+   <div id="projectbrief">Compilateur IFCC</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Généré par Doxygen 1.9.1 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Recherche','.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Recherche');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_e955afc72e8af59637c9070b8690ff98.html">compiler</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">CodeGenVisitor.h</div>  </div>
+</div><!--header-->
+<div class="contents">
+<a href="CodeGenVisitor_8h.html">Aller à la documentation de ce fichier.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160; </div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;antlr4-runtime.h&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;generated/ifccBaseVisitor.h&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="IR_8h.html">IR.h</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="CFG__MSP430_8h.html">CFG_MSP430.h</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160; </div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &lt;iostream&gt;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &lt;unordered_map&gt;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160; </div>
+<div class="line"><a name="l00027"></a><span class="lineno"><a class="line" href="classCodeGenVisitor.html">   27</a></span>&#160;<span class="keyword">class  </span><a class="code" href="classCodeGenVisitor.html">CodeGenVisitor</a> : <span class="keyword">public</span> ifccBaseVisitor {</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <span class="keyword">explicit</span> <a class="code" href="classCodeGenVisitor.html#a3a94a40b10652cdee903ceecfc134d89">CodeGenVisitor</a>(<a class="code" href="classDefFonction.html">DefFonction</a>* ast, IRInstr::Target target);</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        <span class="keyword">virtual</span> std::any visitProg(ifccParser::ProgContext *ctx) <span class="keyword">override</span> ;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        <span class="keyword">virtual</span> std::any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        <span class="keyword">virtual</span> std::any visitDeclar(ifccParser::DeclarContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <span class="keyword">virtual</span> std::any visitBlock(ifccParser::BlockContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        <span class="keyword">virtual</span> std::any visitAssignSimple(ifccParser::AssignSimpleContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <span class="keyword">virtual</span> std::any visitAssignAdd(ifccParser::AssignAddContext *ctx) <span class="keyword">override</span>;    </div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        <span class="keyword">virtual</span> std::any visitAssignSub(ifccParser::AssignSubContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keyword">virtual</span> std::any visitAssignMul(ifccParser::AssignMulContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <span class="keyword">virtual</span> std::any visitAssignDiv(ifccParser::AssignDivContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <span class="keyword">virtual</span> std::any visitAssignMod(ifccParser::AssignModContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <span class="keyword">virtual</span> std::any visitAssignArray(ifccParser::AssignArrayContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        <span class="keyword">virtual</span> std::any visitExprArrayAccess(ifccParser::ExprArrayAccessContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        </div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        <span class="comment">// pour les différentes formes d&#39;expressions</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keyword">virtual</span> std::any visitExprConst(ifccParser::ExprConstContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keyword">virtual</span> std::any visitExprCharConst(ifccParser::ExprCharConstContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        <span class="keyword">virtual</span> std::any visitExprId(ifccParser::ExprIdContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="keyword">virtual</span> std::any visitExprUnaryMinus(ifccParser::ExprUnaryMinusContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="keyword">virtual</span> std::any visitExprUnaryNot(ifccParser::ExprUnaryNotContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <span class="keyword">virtual</span> std::any visitExprParen(ifccParser::ExprParenContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <span class="keyword">virtual</span> std::any visitExprAdd(ifccParser::ExprAddContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <span class="keyword">virtual</span> std::any visitExprMult(ifccParser::ExprMultContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keyword">virtual</span> std::any visitExprBitOr(ifccParser::ExprBitOrContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keyword">virtual</span> std::any visitExprBitXor(ifccParser::ExprBitXorContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="keyword">virtual</span> std::any visitExprBitAnd(ifccParser::ExprBitAndContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <span class="keyword">virtual</span> std::any visitExprEq(ifccParser::ExprEqContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <span class="keyword">virtual</span> std::any visitExprCmp(ifccParser::ExprCmpContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        <span class="keyword">virtual</span> std::any visitCall_stmt(ifccParser::Call_stmtContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <span class="keyword">virtual</span> std::any visitFonctDecl(ifccParser::FonctDeclContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        <span class="keyword">virtual</span> std::any visitExprFonctCall(ifccParser::ExprFonctCallContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        <span class="keyword">virtual</span> std::any visitIncdec(ifccParser::IncdecContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        <span class="keyword">virtual</span> std::any visitExprAnd(ifccParser::ExprAndContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        <span class="keyword">virtual</span> std::any visitExprOr(ifccParser::ExprOrContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <span class="keyword">virtual</span> std::any visitIf_stmt(ifccParser::If_stmtContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <span class="keyword">virtual</span> std::any visitWhile_stmt(ifccParser::While_stmtContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <span class="keyword">virtual</span> std::any visitSwitch_stmt(ifccParser::Switch_stmtContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <span class="keyword">virtual</span> std::any visitBreak_stmt(ifccParser::Break_stmtContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        <span class="keyword">virtual</span> std::any visitContinue_stmt(ifccParser::Continue_stmtContext *ctx) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="comment">// virtual std::any visitList_decl_param(ifccParser::List_decl_paramContext *ctx) override;</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        <a class="code" href="classCFG.html">CFG</a>* cfg;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <a class="code" href="classBasicBlock.html">BasicBlock</a>* current_break_bb;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        <a class="code" href="classBasicBlock.html">BasicBlock</a>* current_continue_bb;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        IRInstr::Target target;  <span class="comment">// Sauvegarde du target (x86 ou MSP430)</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        vector&lt;map&lt;string, string&gt;&gt; scopeRename;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        </div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        <span class="comment">// Table des signatures de fonctions : nom -&gt; nombre de paramètres</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        std::unordered_map&lt;std::string, int&gt; functionSignatures;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <span class="keywordtype">void</span> initBuiltinFunctions() {</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;            functionSignatures[<span class="stringliteral">&quot;getchar&quot;</span>] = 0;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;            functionSignatures[<span class="stringliteral">&quot;putchar&quot;</span>] = 1;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        }</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <span class="keywordtype">string</span> resolve(<span class="keyword">const</span> <span class="keywordtype">string</span>&amp; name) {</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = scopeRename.size() - 1; i &gt;= 0; i--)</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                <span class="keywordflow">if</span> (scopeRename[i].count(name))</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                        <span class="keywordflow">return</span> scopeRename[i][name];</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;                <span class="keywordflow">return</span> name; <span class="comment">// !ret, !tmpN passent tels quels</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;        }</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        <span class="comment">// ── Propagation de constantes ─────────────────────────────────────────</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        <span class="comment">// Convention : un visit* peut retourner &quot;$n&quot; (ex: &quot;$42&quot;) pour signifier</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;        <span class="comment">// une constante connue à la compilation. Aucune IRInstr n&#39;est alors émise.</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;        <span class="comment">// materialize() convertit une telle valeur en vrai registre IR si besoin.</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment"></span>        std::string materialize(<span class="keyword">const</span> std::string&amp; val);</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;};</div>
+<div class="ttc" id="aCFG__MSP430_8h_html"><div class="ttname"><a href="CFG__MSP430_8h.html">CFG_MSP430.h</a></div><div class="ttdoc">Extension de CFG pour la cible MSP430.</div></div>
+<div class="ttc" id="aIR_8h_html"><div class="ttname"><a href="IR_8h.html">IR.h</a></div><div class="ttdoc">Structures de l'IR, de la CFG et des blocs basiques.</div></div>
+<div class="ttc" id="aclassBasicBlock_html"><div class="ttname"><a href="classBasicBlock.html">BasicBlock</a></div><div class="ttdoc">Bloc basique dans le graphe de contrôle de flux.</div><div class="ttdef"><b>Definition:</b> IR.h:136</div></div>
+<div class="ttc" id="aclassCFG_html"><div class="ttname"><a href="classCFG.html">CFG</a></div><div class="ttdoc">Graphe de contrôle de flux et table des symboles associée.</div><div class="ttdef"><b>Definition:</b> IR.h:176</div></div>
+<div class="ttc" id="aclassCodeGenVisitor_html"><div class="ttname"><a href="classCodeGenVisitor.html">CodeGenVisitor</a></div><div class="ttdoc">Visiteur de génération de code pour l'IR et la CFG.</div><div class="ttdef"><b>Definition:</b> CodeGenVisitor.h:27</div></div>
+<div class="ttc" id="aclassCodeGenVisitor_html_a3a94a40b10652cdee903ceecfc134d89"><div class="ttname"><a href="classCodeGenVisitor.html#a3a94a40b10652cdee903ceecfc134d89">CodeGenVisitor::CodeGenVisitor</a></div><div class="ttdeci">CodeGenVisitor(DefFonction *ast, IRInstr::Target target)</div><div class="ttdoc">Initialise le visiteur de génération de code.</div><div class="ttdef"><b>Definition:</b> CodeGenVisitor.cpp:14</div></div>
+<div class="ttc" id="aclassDefFonction_html"><div class="ttname"><a href="classDefFonction.html">DefFonction</a></div><div class="ttdoc">Description d'une fonction pour la génération de code.</div><div class="ttdef"><b>Definition:</b> IR.h:32</div></div>
+</div><!-- fragment --></div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Généré par&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+</small></address>
+</body>
+</html>

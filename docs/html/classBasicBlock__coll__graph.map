@@ -1,0 +1,5 @@
+<map id="BasicBlock" name="BasicBlock">
+<area shape="rect" id="node1" title="Bloc basique dans le graphe de contrôle de flux." alt="" coords="5,7,99,33"/>
+<area shape="rect" id="node2" href="$classCFG.html" title="Graphe de contrôle de flux et table des symboles associée." alt="" coords="131,112,181,139"/>
+<area shape="rect" id="node3" href="$classDefFonction.html" title="Description d&#39;une fonction pour la génération de code." alt="" coords="217,7,317,33"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="Graphe hiérarchique des classes" name="Graphe hiérarchique des classes">
+<area shape="rect" id="node1" href="$classCFG.html" title="Graphe de contrôle de flux et table des symboles associée." alt="" coords="5,5,55,32"/>
+<area shape="rect" id="node2" href="$classCFG__MSP430.html" title="Spécialisation du graphe de contrôle de flux pour MSP430." alt="" coords="103,5,211,32"/>
+</map>

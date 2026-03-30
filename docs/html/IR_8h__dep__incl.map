@@ -1,0 +1,6 @@
+<map id="IR.h" name="IR.h">
+<area shape="rect" id="node1" title="Structures de l&#39;IR, de la CFG et des blocs basiques." alt="" coords="139,5,186,32"/>
+<area shape="rect" id="node2" href="$CFG__MSP430_8h.html" title="Extension de CFG pour la cible MSP430." alt="" coords="5,80,125,107"/>
+<area shape="rect" id="node3" href="$CodeGenVisitor_8h.html" title="Visiteur de génération de code pour la compilation." alt="" coords="41,155,175,181"/>
+<area shape="rect" id="node4" href="$main_8cpp.html" title="Point d&#39;entrée du compilateur ifcc." alt="" coords="119,229,201,256"/>
+</map>
