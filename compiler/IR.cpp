@@ -38,17 +38,11 @@ void CFG::add_to_symbol_table(string name, Type t, int arraySize, bool isPointer
     isPointerMap[name] = isPointer; // Enregistre si c'est un pointeur (ex: paramètre de tableau)
 
     if (arraySize > 0) {
-        // 1. Pare-chocs "Haut" pour absorber les débordements positifs (ex: a[10])
-        nextFreeSymbolIndex += 32;
-       
-        // 2. On réserve la vraie taille du tableau
+        // On réserve uniquement la vraie taille du tableau (4 octets par int)
         nextFreeSymbolIndex += (arraySize * 4);
-       
-        // 3. On fixe l'adresse de base a[0] (tout en bas du tableau)
+        
+        // On fixe l'adresse de base a[0]
         ScopeIndex.back()[name] = nextFreeSymbolIndex;
-       
-        // 4. Pare-chocs "Bas" pour absorber les potentiels débordements négatifs (ex: a[-1])
-        nextFreeSymbolIndex += 32;
     } else if (isPointer) {
         // Variable Pointeur (8 octets pour stocker une adresse 64 bits !)
         nextFreeSymbolIndex += 8;
