@@ -295,5 +295,90 @@ Sur les fichiers de test présents dans `testfiles/` :
 - **Programmes invalides** : ifcc et gcc échouent tous les deux à compiler → tests considérés comme réussis.
 - **Tests MSP430** : exécutés dans le simulateur `mspdebug` ; R15 comparé au code de retour GCC x86.
 
+---
+
+### Différences de couverture entre x86-64 et MSP430
+
+Le backend MSP430 a été ajouté en fin de projet et n'a pas pu bénéficier du même niveau de finition que le backend x86-64. Cette section documente les écarts entre les deux cibles.
+
+#### Résultats globaux
+
+| Cible | Tests validés | Tests skippés | Échecs |
+|---|---|---|---|
+| x86-64 | majorité des tests | 0 | `array_oob`, `test_error_missing_arg` |
+| MSP430 | 184 / 207 | 45 (mul/div) | 23 |
+
+#### Tests échouant sur les deux architectures
+
+Ces deux tests reflètent des comportements non encore implémentés indépendamment de la cible :
+
+| Test | Raison |
+|---|---|
+| `testfiles/tests_tableau_une_dimension/array_oob.c` | Comportement hors-limites de tableau non défini / non géré |
+| `testfiles/tests_function/test_error_missing_arg.c` | Cas-limite de détection d'argument manquant non traité |
+
+#### Tests skippés sur MSP430 uniquement (mul/div absents)
+
+Le MSP430 ne dispose pas d'instructions matérielles de multiplication ou de division. Tout test impliquant `*`, `/` ou `%` sur des variables (non réductibles à la compilation) est donc automatiquement ignoré par `ifcc-test-msp430.py`. Les 45 tests skippés appartiennent principalement aux catégories suivantes :
+
+- `tests_expressions/` : tests mêlant multiplication/division à d'autres opérateurs
+- `tests_declaration_affectation_combine/` : initialisations avec `*` ou `/`
+- `tests_conditionnelles/` : conditions contenant des multiplications
+- `tests_operateurs_aff_incr_decr/` et `tests_operateurs_logiques/` : expressions avec `*`/`/`
+- `DEMO/` : plusieurs programmes de démonstration utilisant ces opérations
+
+#### Tests échouant sur MSP430 mais pas sur x86-64
+
+**1. Limitation du nombre de paramètres de fonctions**
+
+Sur x86-64, jusqu'à 6 arguments sont passés dans des registres (`%rdi`, `%rsi`, `%rdx`, `%rcx`, `%r8`, `%r9`). Sur MSP430, seuls 3 registres sont utilisés pour le passage des paramètres (`R12`, `R13`, `R14`). Les fonctions nécessitant plus de 3 arguments ne sont pas supportées sur MSP430, ce qui provoque soit un rejet erroné de programmes valides, soit une génération d'assembleur incorrecte :
+
+| Test | Échec |
+|---|---|
+| `testfiles/tests_fonctions_coherence/06_plus_de_6_args.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/07_ok_6_args.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/11_nbr_pair.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/12_nbr_impair.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/13_6_registres.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/14.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/15_fcts_imbriquees.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/16_negative_value.c` | Rejette un programme valide |
+| `testfiles/tests_function/79_too_much_param.c` | Rejette un programme valide |
+
+**2. `putchar` non supporté sur MSP430**
+
+`putchar` repose sur un appel système (`write` via la libc) qui n'est pas disponible dans l'environnement de simulation MSP430 (`mspdebug`). L'appel produit un assembleur que le simulateur ne peut pas exécuter correctement :
+
+| Test | Échec |
+|---|---|
+| `testfiles/tests_putchar_getchar/27_putchar_simple.c` | Assembleur incorrect |
+| `testfiles/tests_putchar_getchar/28_putchar_char.c` | Assembleur incorrect |
+| `testfiles/tests_putchar_getchar/29_putchar_expr.c` | Assembleur incorrect |
+| `testfiles/tests_putchar_getchar/30_putchar_multiple.c` | Assembleur incorrect |
+| `testfiles/tests_putchar_getchar/32_getchar_putchar.c` | Assembleur incorrect |
+| `testfiles/tests_putchar_getchar/33_char_arithmetic.c` | Assembleur incorrect |
+| `testfiles/tests_putchar_getchar/34_putchar_newline.c` | Assembleur incorrect |
+
+**3. Fonctions avec structure complexe ou passage d'arguments > 3**
+
+Certains tests du dossier `DEMO/` et de `tests_function/` mettent en jeu des fonctions avec plusieurs arguments ou des schémas d'appel imbriqués qui ne sont pas correctement gérés par le backend MSP430 :
+
+| Test | Échec |
+|---|---|
+| `testfiles/DEMO/Autres_Tests/1.c` | Assembleur incorrect |
+| `testfiles/DEMO/Autres_Tests/test_fibo.c` | Assembleur incorrect |
+| `testfiles/DEMO/Tests_Sujet/test_1_sujet.c` | Assembleur incorrect |
+| `testfiles/tests_function/test_function_args.c` | Assembleur incorrect |
+
+**4. Opérateur logique `||` / `&&`**
+
+Un test d'opérateur logique produit des résultats d'exécution différents entre MSP430 et x86, révélant une divergence dans la gestion des courts-circuits ou de la représentation booléenne sur 16 bits :
+
+| Test | Échec |
+|---|---|
+| `testfiles/tests_operateurs_logiques/5.c` | Résultats différents à l'exécution |
+
+---
+
 ### Source
 Ce fichier README.md a été rédigé à l'aide d'une IA (Claude Claude 4.6).
