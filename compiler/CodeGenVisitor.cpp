@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+static const vector<string> reg32 = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
+static const vector<string> reg64 = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
 // ── Propagation de constantes ────────────────────────────────────────────
 // Un visit* retourne "$n" quand la valeur est connue à la compilation.
 // Cela évite d'émettre des IRInstr inutiles ; l'émission est différée.
@@ -68,8 +70,8 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
     string fctName = ctx->ID()->getText();
     
     // Enregistrer la signature de la fonction
-    auto paramIds = ctx->list_decl_param()->ID();
-    functionSignatures[fctName] = paramIds.size();
+    auto params = ctx->list_decl_param()->param();
+    functionSignatures[fctName] = params.size();
 
     CFG* old_cfg = cfg;
     DefFonction* fctAst = new DefFonction(fctName, vector<pair<string, Type>>{}, returnType);
@@ -101,22 +103,31 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
         regsToUse = paramRegs;  // x86: %edi, %esi, %edx, ...
     }
         
-    for (size_t i = 0; i < paramIds.size(); i++) {
-        string originalName = paramIds[i]->getText();
+    for (size_t i = 0; i < params.size(); i++) {
+        string originalName = params[i]->ID()->getText(); // On récupère l'ID à l'intérieur du param
         string uniqueName = originalName + "_" + to_string(cfg->getNextIndex());
-        cfg->add_to_symbol_table(uniqueName, INT32);
+        
+        // Détection : est-ce un tableau en argument ? (ex: int tab[])
+        bool isArray = params[i]->getText().find('[') != string::npos;
+        
+        cfg->add_to_symbol_table(uniqueName, INT32, 0, isArray);
+        
         scopeRename.back()[originalName] = uniqueName; 
         if (i < regsToUse.size()) {
-            // Depuis les registres comme avant
-            cfg->current_bb->add_IRInstr(IRInstr::copy_from_reg, INT32,
-                                        {uniqueName, regsToUse[i]});
+            if (target != IRInstr::MSP430 && isArray) {
+                cfg->current_bb->add_IRInstr(IRInstr::copy_ptr_from_reg, INT32,
+                                            {uniqueName, reg64[i]});
+            } else {
+                // Depuis les registres comme avant
+                cfg->current_bb->add_IRInstr(IRInstr::copy_from_reg, INT32,
+                                            {uniqueName, regsToUse[i]});
+            }
         } else {
             // Depuis la pile : +16(%rbp) pour le 7ème, +24 pour le 8ème...
             int offset = 16 + (i - regsToUse.size()) * 8;
             cfg->current_bb->add_IRInstr(IRInstr::load_param, INT32,
                                         {uniqueName, to_string(offset)});
         }
-        
     }
 
     
@@ -371,9 +382,15 @@ std::any CodeGenVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext *ct
         for (int i = argVars.size() - 1; i >= 6; i--)
             cfg->current_bb->add_IRInstr(IRInstr::push_arg, INT32, {argVars[i]});
         // 3. Les 6 premiers dans les registres
-        for (int i = 0; i < (int)min(argVars.size(), (size_t)6); i++)
-            cfg->current_bb->add_IRInstr(IRInstr::copy_to_reg, INT32,
-                                        {x86ParamRegs[i], argVars[i]});
+        for (int i = 0; i < (int)min(argVars.size(), (size_t)6); i++) {
+            if (cfg->is_pointer(argVars[i]) || cfg->is_array(argVars[i])) {
+                cfg->current_bb->add_IRInstr(IRInstr::copy_ptr_to_reg, INT32,
+                                              {reg64[i], argVars[i]});
+            } else {
+                cfg->current_bb->add_IRInstr(IRInstr::copy_to_reg, INT32,
+                                              {reg32[i], argVars[i]});
+            }
+        }
 
         // 4. Émettre le call avec le nombre d'args sur la pile
         cfg->current_bb->add_IRInstr(IRInstr::call, INT32, {fctName, destVar, to_string(stackArgCount)});
@@ -422,9 +439,21 @@ std::any CodeGenVisitor::visitExprCharConst(ifccParser::ExprCharConstContext *ct
 std::any CodeGenVisitor::visitExprId(ifccParser::ExprIdContext *ctx)
 {
     string varName = resolve(ctx->ID()->getText());
-    string destVar = cfg->create_new_tempvar(INT32);
-    cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {destVar, varName});
-    return destVar;
+    
+    if (cfg->is_array(varName)) {
+        string destVar = cfg->create_new_tempvar(INT32, true); 
+        
+        if (cfg->is_pointer(varName)) {
+            cfg->current_bb->add_IRInstr(IRInstr::copy_ptr, INT32, {destVar, varName});
+        } else {
+            cfg->current_bb->add_IRInstr(IRInstr::address_of, INT32, {destVar, varName});
+        }
+        return destVar;
+    } else {
+        string destVar = cfg->create_new_tempvar(INT32, false);
+        cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {destVar, varName});
+        return destVar;
+    }
 }
 
 
@@ -603,11 +632,6 @@ std::any CodeGenVisitor::visitExprCmp(ifccParser::ExprCmpContext *ctx)
 // Appel de fonction en tant que statement (ex: putchar(x);)
 std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
 {
-
-    static const vector<string> paramRegs = {
-        "%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"
-    };
-
     string functionName = ctx->ID()->getText();
     
     // Vérifier que la fonction existe
@@ -618,7 +642,8 @@ std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
     }
     
     // Compter le nombre d'arguments fournis
-    int providedArgs = ctx->expr() ? 1 : 0;
+    auto args = ctx->list_param()->expr(); 
+    int providedArgs = args.size();
     int expectedParams = functionSignatures[functionName];
     
     // Vérifier le nombre d'arguments
@@ -631,26 +656,26 @@ std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
     
     // Évaluer l'argument s'il existe
     vector<string> argVars;
-    if (ctx->expr()) {
-        string argVar = any_cast<string>(visit(ctx->expr()));
+    for (auto arg : args) {
+        string argVar = any_cast<string>(visit(arg));
         argVar = materialize(argVar);
         argVars.push_back(argVar);
     }
     
-    // // Construire les paramètres de l'instruction IR call
-    // // Format: {nom_fonction, var_retour, arg1, arg2, ...}
-    // vector<string> callParams = {functionName, ""};  // "" = pas de retour utilisé
-    // callParams.insert(callParams.end(), argVars.begin(), argVars.end());
-    
-    // cfg->current_bb->add_IRInstr(IRInstr::call, INT32, callParams);
     // Args >6 sur la pile en ordre inverse
     for (int i = argVars.size() - 1; i >= 6; i--)
         cfg->current_bb->add_IRInstr(IRInstr::push_arg, INT32, {argVars[i]});
 
     // Les 6 premiers dans les registres
-    for (int i = 0; i < (int)min(argVars.size(), (size_t)6); i++)
-        cfg->current_bb->add_IRInstr(IRInstr::copy_to_reg, INT32,
-                                      {paramRegs[i], argVars[i]});
+    for (int i = 0; i < (int)min(argVars.size(), (size_t)6); i++) {
+        if (cfg->is_pointer(argVars[i]) || cfg->is_array(argVars[i])) {
+            cfg->current_bb->add_IRInstr(IRInstr::copy_ptr_to_reg, INT32,
+                                          {reg64[i], argVars[i]});
+        } else {
+            cfg->current_bb->add_IRInstr(IRInstr::copy_to_reg, INT32,
+                                          {reg32[i], argVars[i]});
+        }
+    }
 
     int stackArgCount = max(0, (int)argVars.size() - 6);
     cfg->current_bb->add_IRInstr(IRInstr::call, INT32,
@@ -662,7 +687,6 @@ std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
                                       {to_string(extraBytes)});
     }
     return 0;
-
 }
 
 
