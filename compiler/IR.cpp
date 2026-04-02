@@ -12,15 +12,36 @@ void BasicBlock::add_IRInstr(IRInstr::Operation op, Type t, vector<string> param
 }
 
 
-void CFG::push_scope() {
-    ScopeIndex.push_back({});
-    ScopeType.push_back({});
+void CFG::push_scope() {}  // ne fait plus rien
+void CFG::pop_scope()  {}  // ne fait plus rien
+
+void CFG::add_to_symbol_table(string name, Type t, int arraySize, bool isPointer) {
+    SymbolType[name] = t;
+    isArrayMap[name] = (arraySize > 0);
+    isPointerMap[name] = isPointer;
+
+    if (arraySize > 0) {
+        nextFreeSymbolIndex += (arraySize * 4);
+        SymbolIndex[name] = nextFreeSymbolIndex;
+    } else if (isPointer) {
+        nextFreeSymbolIndex += 8;
+        SymbolIndex[name] = nextFreeSymbolIndex;
+    } else {
+        nextFreeSymbolIndex += 4;
+        SymbolIndex[name] = nextFreeSymbolIndex;
+    }
 }
 
+int CFG::get_var_index(string name) {
+    if (SymbolIndex.count(name))
+        return SymbolIndex[name];
+    return -1;
+}
 
-void CFG::pop_scope() {
-    ScopeIndex.pop_back();
-    ScopeType.pop_back();
+Type CFG::get_var_type(string name) {
+    if (SymbolType.count(name))
+        return SymbolType[name];
+    return INT32;
 }
 
 
@@ -32,29 +53,6 @@ void CFG::add_bb(BasicBlock* bb) {
 }
 
 
-void CFG::add_to_symbol_table(string name, Type t, int arraySize, bool isPointer) {
-    ScopeType.back()[name] = t;
-    isArrayMap[name] = (arraySize > 0);
-    isPointerMap[name] = isPointer; // Enregistre si c'est un pointeur (ex: paramètre de tableau)
-
-    if (arraySize > 0) {
-        // On réserve uniquement la vraie taille du tableau (4 octets par int)
-        nextFreeSymbolIndex += (arraySize * 4);
-        
-        // On fixe l'adresse de base a[0]
-        ScopeIndex.back()[name] = nextFreeSymbolIndex;
-    } else if (isPointer) {
-        // Variable Pointeur (8 octets pour stocker une adresse 64 bits !)
-        nextFreeSymbolIndex += 8;
-        ScopeIndex.back()[name] = nextFreeSymbolIndex;
-    } else {
-        // Variable simple (on ne change rien, 4 octets pour un int 32 bits)
-        nextFreeSymbolIndex += 4;
-        ScopeIndex.back()[name] = nextFreeSymbolIndex;
-    }
-}
-
-
 
 
 string CFG::create_new_tempvar(Type t, bool isPointer) {
@@ -63,21 +61,6 @@ string CFG::create_new_tempvar(Type t, bool isPointer) {
     return name;
 }
 
-
-int CFG::get_var_index(string name) {
-    for (int i = ScopeIndex.size() - 1; i >= 0; i--)
-        if (ScopeIndex[i].count(name))
-            return ScopeIndex[i][name];
-    return -1; // ne devrait pas arriver si SymbolTableVisitor a fait son travail
-}
-
-
-Type CFG::get_var_type(string name) {
-    for (int i = ScopeType.size() - 1; i >= 0; i--)
-        if (ScopeType[i].count(name))
-            return ScopeType[i][name];
-    return INT32;
-}
 
 
 string CFG::new_BB_name() {

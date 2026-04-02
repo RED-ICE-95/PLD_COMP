@@ -219,8 +219,8 @@ class CFG {
 
  protected:
  
- 	vector<map<string, Type>> ScopeType;
- 	vector<map<string, int>>  ScopeIndex;
+ 	map<string, Type> SymbolType;
+	map<string, int>  SymbolIndex;
 	int nextFreeSymbolIndex; /**< to allocate new symbols in the symbol table */
  	static int nextBBnumber; /**< just for naming */
  	
