@@ -295,5 +295,185 @@ Sur les fichiers de test présents dans `testfiles/` :
 - **Programmes invalides** : ifcc et gcc échouent tous les deux à compiler → tests considérés comme réussis.
 - **Tests MSP430** : exécutés dans le simulateur `mspdebug` ; R15 comparé au code de retour GCC x86.
 
+---
+
+### Limites connues du compilateur (x86-64)
+
+Le compilateur implémente un **sous-ensemble significatif du langage C**, mais certaines constructions standard ne sont pas supportées par manque de temps. Ces limitations sont identifiées, documentées et accompagnées de tests dans le dossier [`testfiles/tests_failed/`](testfiles/tests_failed/). Ces programmes sont tous compilables par GCC mais sont rejetés ou mal compilés par ifcc.
+
+#### Boucles
+
+| Limitation | Fichier de test |
+|---|---|
+| Boucle `for` non supportée (seul `while` est implémenté) | [01_for_loop.c](testfiles/tests_failed/01_for_loop.c) |
+| Boucle `do-while` non supportée | [02_do_while.c](testfiles/tests_failed/02_do_while.c) |
+| Boucles `for` imbriquées | [20_for_nested.c](testfiles/tests_failed/20_for_nested.c) |
+
+#### Opérateurs manquants
+
+| Limitation | Fichier de test |
+|---|---|
+| Opérateur ternaire `? :` | [03_ternary_operator.c](testfiles/tests_failed/03_ternary_operator.c) |
+| Opérateurs de décalage `<<` et `>>` | [11_bitshift.c](testfiles/tests_failed/11_bitshift.c) |
+| Opérateur virgule `(a, b)` | [16_comma_operator.c](testfiles/tests_failed/16_comma_operator.c) |
+| Comparaisons `<=` et `>=` (seuls `<` et `>` sont dans la grammaire) | [19_cmp_le_ge.c](testfiles/tests_failed/19_cmp_le_ge.c), [30_cmp_ge.c](testfiles/tests_failed/30_cmp_ge.c) |
+| `sizeof` | [10_sizeof.c](testfiles/tests_failed/10_sizeof.c) |
+| Pré-incrémentation dans une expression (`int b = ++a`) | [27_pre_increment_expr.c](testfiles/tests_failed/27_pre_increment_expr.c) |
+| Post-incrémentation dans une expression (`int b = a++`) | [28_post_increment_expr.c](testfiles/tests_failed/28_post_increment_expr.c) |
+
+#### Types non supportés
+
+| Limitation | Fichier de test |
+|---|---|
+| `float` | [08_float.c](testfiles/tests_failed/08_float.c) |
+| `double` | [09_double.c](testfiles/tests_failed/09_double.c) |
+| `unsigned int` | [17_unsigned.c](testfiles/tests_failed/17_unsigned.c) |
+| `long` | [18_long.c](testfiles/tests_failed/18_long.c) |
+| Paramètre de type `char` (seul `int` est accepté comme type de paramètre) | [29_char_param.c](testfiles/tests_failed/29_char_param.c) |
+
+#### Pointeurs et mémoire
+
+| Limitation | Fichier de test |
+|---|---|
+| Déclaration de pointeurs (`int *p = &x`) | [05_pointer_basic.c](testfiles/tests_failed/05_pointer_basic.c) |
+| Arithmétique de pointeurs (`p + 2`, `*p`) | [21_pointer_arithmetic.c](testfiles/tests_failed/21_pointer_arithmetic.c) |
+| Variables globales | [04_global_variable.c](testfiles/tests_failed/04_global_variable.c) |
+| Tableaux multi-dimensionnels (`int arr[2][3]`) | [14_array_2d.c](testfiles/tests_failed/14_array_2d.c) |
+| Chaînes de caractères (`"hello"`) | [13_string_literal.c](testfiles/tests_failed/13_string_literal.c) |
+
+#### Constructions du langage non supportées
+
+| Limitation | Fichier de test |
+|---|---|
+| `struct` | [06_struct.c](testfiles/tests_failed/06_struct.c) |
+| `enum` | [07_enum.c](testfiles/tests_failed/07_enum.c) |
+| `union` | [25_union.c](testfiles/tests_failed/25_union.c) |
+| `typedef` | [15_typedef.c](testfiles/tests_failed/15_typedef.c) |
+| Cast explicite (`(int)x`) | [12_cast.c](testfiles/tests_failed/12_cast.c) |
+| `goto` | [23_goto.c](testfiles/tests_failed/23_goto.c) |
+| Qualificateur `const` | [24_const_qualifier.c](testfiles/tests_failed/24_const_qualifier.c) |
+| Variables `static` | [26_static_variable.c](testfiles/tests_failed/26_static_variable.c) |
+| Préprocesseur (`#define`) | [22_define.c](testfiles/tests_failed/22_define.c) |
+
+> **Note** : Ces limitations sont inhérentes au périmètre choisi pour le projet (sous-ensemble du C) et non des bugs. Elles auraient pu être implémentées avec davantage de temps.
+
+#### Cas limites dans les fonctionnalités implémentées
+
+En plus des constructions non implémentées, certains **cas limites** au sein des fonctionnalités existantes produisent des résultats incorrects ou des erreurs de parsing inattendues. Tous les tests ci-dessous **échouent** effectivement avec ifcc.
+
+**Résultat d'exécution incorrect**
+
+| Cas limite | Description | Fichier de test |
+|---|---|---|
+| `return` implicite absent | `int main() { int x = 42; }` — pas de `return` → valeur indéterminée (C99 impose `return 0` implicite dans `main`) | [31_missing_return.c](testfiles/tests_failed/31_missing_return.c) |
+| Opérateur `~` (NOT bit-à-bit) | `~x` est accepté par le parser (ANTLR error recovery) mais produit un résultat incorrect à l'exécution | [39_bitwise_not.c](testfiles/tests_failed/39_bitwise_not.c) |
+
+**Limitations de la grammaire sur des constructions supportées**
+
+| Cas limite | Description | Fichier de test |
+|---|---|---|
+| `<=` et `>=` absents | La grammaire n'inclut que `<` et `>` ; `<=` provoque une erreur de parsing | [19_cmp_le_ge.c](testfiles/tests_failed/19_cmp_le_ge.c), [30_cmp_ge.c](testfiles/tests_failed/30_cmp_ge.c) |
+| `while (i <= n)` impossible | Boucle classique inutilisable à cause de l'absence de `<=` | [35_le_ge_in_loop.c](testfiles/tests_failed/35_le_ge_in_loop.c) |
+| `return;` dans fonction `void` | La grammaire exige `return expr;` — un `return;` seul est rejeté | [32_void_return_no_expr.c](testfiles/tests_failed/32_void_return_no_expr.c) |
+| Déclaration de variable `char` | Seul `int` est accepté comme type de déclaration ; `char c = 'A';` est rejeté | [33_char_variable_decl.c](testfiles/tests_failed/33_char_variable_decl.c) |
+| `case` négatif dans `switch` | Les `case` n'acceptent que des constantes `[0-9]+` ; `case -1:` est rejeté | [40_switch_negative_case.c](testfiles/tests_failed/40_switch_negative_case.c) |
+| `case` avec expression | `case 2+3:` rejeté (seules les constantes littérales sont acceptées) | [43_switch_const_expr.c](testfiles/tests_failed/43_switch_const_expr.c) |
+| Affectation dans une condition | `if (x = 5)` rejeté car l'affectation n'est pas une expression | [38_assign_in_condition.c](testfiles/tests_failed/38_assign_in_condition.c) |
+| Affectation chaînée | `a = b = c = 5;` rejeté car l'affectation est un statement, pas une expression | [37_chained_assign.c](testfiles/tests_failed/37_chained_assign.c) |
+| Affectation composée dans une expression | `int b = (a += 3);` rejeté | [34_compound_assign_in_expr.c](testfiles/tests_failed/34_compound_assign_in_expr.c) |
+
+**Fonctions : ordre de définition**
+
+| Cas limite | Description | Fichier de test |
+|---|---|---|
+| Prototypes (forward declarations) | Non supportés ; impossible de déclarer une fonction avant sa définition | [41_forward_declaration.c](testfiles/tests_failed/41_forward_declaration.c) |
+| Ordre de définition imposé | Si `f()` appelle `g()` définie plus bas, erreur « fonction non déclarée » | [42_function_order.c](testfiles/tests_failed/42_function_order.c) |
+| Récursion mutuelle | Impossible sans forward declaration (`est_pair` ↔ `est_impair`) | [36_mutual_recursion.c](testfiles/tests_failed/36_mutual_recursion.c) |
+
+---
+
+### Différences de couverture entre x86-64 et MSP430
+
+Le backend MSP430 a été ajouté en fin de projet et n'a pas pu bénéficier du même niveau de finition que le backend x86-64. Cette section documente les écarts entre les deux cibles.
+
+#### Résultats globaux
+
+| Cible | Tests validés | Tests skippés | Échecs |
+|---|---|---|---|
+| x86-64 | majorité des tests | 0 | `array_oob`, `test_error_missing_arg` |
+| MSP430 | 184 / 207 | 45 (mul/div) | 23 |
+
+#### Tests échouant sur les deux architectures
+
+Ces deux tests reflètent des comportements non encore implémentés indépendamment de la cible :
+
+| Test | Raison |
+|---|---|
+| `testfiles/tests_tableau_une_dimension/array_oob.c` | Comportement hors-limites de tableau non défini / non géré |
+| `testfiles/tests_function/test_error_missing_arg.c` | Cas-limite de détection d'argument manquant non traité |
+
+#### Tests skippés sur MSP430 uniquement (mul/div absents)
+
+Le MSP430 ne dispose pas d'instructions matérielles de multiplication ou de division. Tout test impliquant `*`, `/` ou `%` sur des variables (non réductibles à la compilation) est donc automatiquement ignoré par `ifcc-test-msp430.py`. Les 45 tests skippés appartiennent principalement aux catégories suivantes :
+
+- `tests_expressions/` : tests mêlant multiplication/division à d'autres opérateurs
+- `tests_declaration_affectation_combine/` : initialisations avec `*` ou `/`
+- `tests_conditionnelles/` : conditions contenant des multiplications
+- `tests_operateurs_aff_incr_decr/` et `tests_operateurs_logiques/` : expressions avec `*`/`/`
+- `DEMO/` : plusieurs programmes de démonstration utilisant ces opérations
+
+#### Tests échouant sur MSP430 mais pas sur x86-64
+
+**1. Limitation du nombre de paramètres de fonctions**
+
+Sur x86-64, jusqu'à 6 arguments sont passés dans des registres (`%rdi`, `%rsi`, `%rdx`, `%rcx`, `%r8`, `%r9`). Sur MSP430, seuls 3 registres sont utilisés pour le passage des paramètres (`R12`, `R13`, `R14`). Les fonctions nécessitant plus de 3 arguments ne sont pas supportées sur MSP430, ce qui provoque soit un rejet erroné de programmes valides, soit une génération d'assembleur incorrecte :
+
+| Test | Échec |
+|---|---|
+| `testfiles/tests_fonctions_coherence/06_plus_de_6_args.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/07_ok_6_args.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/11_nbr_pair.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/12_nbr_impair.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/13_6_registres.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/14.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/15_fcts_imbriquees.c` | Rejette un programme valide |
+| `testfiles/tests_fonctions_coherence/16_negative_value.c` | Rejette un programme valide |
+| `testfiles/tests_function/79_too_much_param.c` | Rejette un programme valide |
+
+**2. `putchar` non supporté sur MSP430**
+
+`putchar` repose sur un appel système (`write` via la libc) qui n'est pas disponible dans l'environnement de simulation MSP430 (`mspdebug`). L'appel produit un assembleur que le simulateur ne peut pas exécuter correctement :
+
+| Test | Échec |
+|---|---|
+| `testfiles/tests_putchar_getchar/27_putchar_simple.c` | Assembleur incorrect |
+| `testfiles/tests_putchar_getchar/28_putchar_char.c` | Assembleur incorrect |
+| `testfiles/tests_putchar_getchar/29_putchar_expr.c` | Assembleur incorrect |
+| `testfiles/tests_putchar_getchar/30_putchar_multiple.c` | Assembleur incorrect |
+| `testfiles/tests_putchar_getchar/32_getchar_putchar.c` | Assembleur incorrect |
+| `testfiles/tests_putchar_getchar/33_char_arithmetic.c` | Assembleur incorrect |
+| `testfiles/tests_putchar_getchar/34_putchar_newline.c` | Assembleur incorrect |
+
+**3. Fonctions avec structure complexe ou passage d'arguments > 3**
+
+Certains tests du dossier `DEMO/` et de `tests_function/` mettent en jeu des fonctions avec plusieurs arguments ou des schémas d'appel imbriqués qui ne sont pas correctement gérés par le backend MSP430 :
+
+| Test | Échec |
+|---|---|
+| `testfiles/DEMO/Autres_Tests/1.c` | Assembleur incorrect |
+| `testfiles/DEMO/Autres_Tests/test_fibo.c` | Assembleur incorrect |
+| `testfiles/DEMO/Tests_Sujet/test_1_sujet.c` | Assembleur incorrect |
+| `testfiles/tests_function/test_function_args.c` | Assembleur incorrect |
+
+**4. Opérateur logique `||` / `&&`**
+
+Un test d'opérateur logique produit des résultats d'exécution différents entre MSP430 et x86, révélant une divergence dans la gestion des courts-circuits ou de la représentation booléenne sur 16 bits :
+
+| Test | Échec |
+|---|---|
+| `testfiles/tests_operateurs_logiques/5.c` | Résultats différents à l'exécution |
+
+---
+
 ### Source
 Ce fichier README.md a été rédigé à l'aide d'une IA (Claude Claude 4.6).
