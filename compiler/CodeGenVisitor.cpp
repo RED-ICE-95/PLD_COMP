@@ -5,13 +5,14 @@
 
 static const vector<string> reg32 = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
 static const vector<string> reg64 = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
-// ── Propagation de constantes ────────────────────────────────────────────
+
+// Propagation de constantes 
 // Un visit* retourne "$n" quand la valeur est connue à la compilation.
 // Cela évite d'émettre des IRInstr inutiles ; l'émission est différée.
 static bool   isConst(const string& v)  { return !v.empty() && v[0] == '$'; }
 static int    getConst(const string& v) { return stoi(v.substr(1)); }
 static string makeConst(int v)          { return "$" + to_string(v); }
-// ────────────────────────────────────────────────────────────────────────
+
 
 CodeGenVisitor::CodeGenVisitor(DefFonction* ast, IRInstr::Target target) : target(target) {
     switch(target) {
@@ -38,6 +39,8 @@ CodeGenVisitor::CodeGenVisitor(DefFonction* ast, IRInstr::Target target) : targe
     }
 }
 
+
+
 // Si val est une constante pliée "$n", alloue un temp et émet ldconst.
 // Sinon retourne val tel quel (c'est déjà un registre IR).
 string CodeGenVisitor::materialize(const string& val) {
@@ -49,6 +52,8 @@ string CodeGenVisitor::materialize(const string& val) {
     return val;
 }
 
+
+
 std::any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
     for (auto fctd : ctx->fonctDecl()) {
@@ -58,6 +63,8 @@ std::any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
     cfg->gen_asm(cout);
     return 0;
 }
+
+
 
 std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
 {
@@ -100,14 +107,14 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
     if (target == IRInstr::MSP430) {
         regsToUse = {"R12", "R13", "R14"};
     } else {
-        regsToUse = paramRegs;  // x86: %edi, %esi, %edx, ...
+        regsToUse = paramRegs;  // x86: %edi, %esi, %edx...
     }
         
     for (size_t i = 0; i < params.size(); i++) {
-        string originalName = params[i]->ID()->getText(); // On récupère l'ID à l'intérieur du param
+        string originalName = params[i]->ID()->getText(); 
         string uniqueName = originalName + "_" + to_string(cfg->getNextIndex());
         
-        // Détection : est-ce un tableau en argument ? (ex: int tab[])
+        // Détection : est-ce un tableau en argument ?
         bool isArray = params[i]->getText().find('[') != string::npos;
         
         cfg->add_to_symbol_table(uniqueName, INT32, 0, isArray);
@@ -131,7 +138,6 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
     }
 
     
-    // Re-enregistrer le mapping (push_back doit être avant la boucle — voir note)
     this->visit(ctx->block());
     scopeRename.pop_back();
 
@@ -140,36 +146,6 @@ std::any CodeGenVisitor::visitFonctDecl(ifccParser::FonctDeclContext *ctx)
     return 0;
 }
 
-/*std::any CodeGenVisitor::visitList_decl_param(ifccParser::List_decl_paramContext *ctx)
-{
-    // on suppose que les fonctions ont 6 paramètres
-    for (auto id : ctx->ID()) {
-        string paramName = id->getText();
-        Type paramType = (ctx->getStart()->getText() == "void") ? VOID : INT32; // on suppose que les paramètres sont du même type que le retour pour l'instant
-        cfg->add_to_symbol_table(paramName, paramType);
-        // si id = expr, on suppose que c'est un paramètre de type int
-        //on verifie s'il existe un "= expr" pour le paramètre
-        if (ctx->expr()) {
-            string exprVar = any_cast<string>(this->visit(ctx->expr()));
-            cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {paramName, exprVar});
-            // attribuer la valeur de sortie de l'expression à la variable du paramètre
-            //??
-
-        }
-         auto& instrs = cfg->current_bb->instrs; // si instrs est public
-        if (!instrs.empty()) {
-            IRInstr* last = instrs.back();
-            if (last->params[0] == exprVar) {
-                // Redirige la destination directement vers varName
-                last->params[0] = varName;
-                return varName;
-            }
-        }
-        cfg->current_bb->add_IRInstr(IRInstr::copy, INT32, {varName, exprVar});
-        return varName;
-    }
-    return 0;
-}*/
 
 
 
@@ -183,6 +159,8 @@ std::any CodeGenVisitor::visitBlock(ifccParser::BlockContext *ctx)
     return 0;
 }
 
+
+
 std::any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 {
     if (cfg->ast->returnType != VOID) {
@@ -191,7 +169,6 @@ std::any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
             cfg->current_bb->add_IRInstr(IRInstr::ldconst, INT32, {"!ret", exprVar.substr(1)});
         }
         else {
-            // Même optimisation que visitAssign
             auto& instrs = cfg->current_bb->instrs;
             if (!instrs.empty() && instrs.back()->params[0] == exprVar) {
                 instrs.back()->params[0] = "!ret";
@@ -200,27 +177,20 @@ std::any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
             }
         }
     }
-    // sauter vers le BB de sortie
+
     cfg->current_bb->exit_true = cfg->exit_bb;
     cfg->current_bb->exit_false = nullptr;
     
-    // Créer un BB mort pour capturer les instructions théoriques après return
-    // (du code qui ne sera jamais atteint, comme: if (cond) { return x; ... })
-    //
-    // AVANT: On faisait cfg->add_bb(dead_bb) pour x86 → générait le code mort en asm
-    //        x86 s'en fichait (processeur ignore le code après ret)
-    //        MSP430 bugguait → mspdebug échouait à lire R15
-    //
-    // MAINTENANT: On change juste current_bb, on n'ajoute PAS à cfg->bbs
-    //             → Le code mort n'est JAMAIS généré en asm
-    //             → Marche à la fois pour x86 (pas besoin du code mort) et MSP430
     BasicBlock* dead_bb = new BasicBlock(cfg, cfg->new_BB_name());
     dead_bb->exit_true = cfg->exit_bb;
     dead_bb->exit_false = nullptr;
-    cfg->current_bb = dead_bb;  // Changer current_bb, mais NE PAS ajouter à la liste
+    cfg->current_bb = dead_bb;  
     
     return 0;
 }
+
+
+
 
 std::any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
 {
@@ -266,6 +236,8 @@ std::any CodeGenVisitor::visitDeclar(ifccParser::DeclarContext *ctx)
 }
 
 
+
+
 std::any CodeGenVisitor::visitAssignSimple(ifccParser::AssignSimpleContext *ctx) {
     string varName = resolve(ctx->ID()->getText());
     string exprVar = any_cast<string>(this->visit(ctx->expr()));
@@ -280,6 +252,8 @@ std::any CodeGenVisitor::visitAssignSimple(ifccParser::AssignSimpleContext *ctx)
     }
     return varName;
 }
+
+
 
 
 static std::any assignOp(CFG* cfg, const string& varName, const string& exprVar, IRInstr::Operation op) {
@@ -306,6 +280,7 @@ std::any CodeGenVisitor::visitAssignMod(ifccParser::AssignModContext *ctx) {
 }
 
 
+
 std::any CodeGenVisitor::visitAssignArray(ifccParser::AssignArrayContext *ctx) {
     string arrayName = resolve(ctx->ID()->getText());
     string indexVar  = any_cast<string>(this->visit(ctx->expr(0)));
@@ -317,6 +292,8 @@ std::any CodeGenVisitor::visitAssignArray(ifccParser::AssignArrayContext *ctx) {
     return valueVar;
 }
 
+
+
 std::any CodeGenVisitor::visitExprArrayAccess(ifccParser::ExprArrayAccessContext *ctx) {
     string arrayName = resolve(ctx->ID()->getText());
     string indexVar  = any_cast<string>(this->visit(ctx->expr()));
@@ -325,7 +302,6 @@ std::any CodeGenVisitor::visitExprArrayAccess(ifccParser::ExprArrayAccessContext
     cfg->current_bb->add_IRInstr(IRInstr::rmem, INT32, {destVar, arrayName, idxMat});
     return destVar;
 }
-
 
 
 
@@ -408,17 +384,19 @@ std::any CodeGenVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext *ct
 
 std::any CodeGenVisitor::visitExprConst(ifccParser::ExprConstContext *ctx)
 {
-    // Retourne une sentinelle "$n" : aucune IRInstr émise ici.
-    // L'émission du ldconst est différée au premier point d'utilisation.
+    // Retourne une sentinelle "$n" : aucune IRInstr émise ici
+    // L'émission du ldconst est différée au premier point d'utilisation
     return makeConst(stoi(ctx->CONST()->getText()));
 }
+
+
 
 std::any CodeGenVisitor::visitExprCharConst(ifccParser::ExprCharConstContext *ctx)
 {
     string text = ctx->CHAR_CONST()->getText(); 
     string inner = text.substr(1, text.size() - 2);    // on enlève guillemets
     int value = 0;
-    if (inner.size() == 1) {    // caractère simple, le cast suffit (ex: 'Z')
+    if (inner.size() == 1) {    
         value = (int)(unsigned char)inner[0];
     } else if (inner.size() == 2 && inner[0] == '\\') { //  séquence d'échappement (ex: '\n')
         switch (inner[1]) {
@@ -432,9 +410,11 @@ std::any CodeGenVisitor::visitExprCharConst(ifccParser::ExprCharConstContext *ct
             default:   value = (int)(unsigned char)inner[1]; break;
         }
     }
-    // Retourne une sentinelle "$n" : aucune IRInstr émise ici.
+    // Retourne une sentinelle "$n" : aucune IRInstr émise ici
     return makeConst(value);
 }
+
+
 
 std::any CodeGenVisitor::visitExprId(ifccParser::ExprIdContext *ctx)
 {
@@ -457,10 +437,13 @@ std::any CodeGenVisitor::visitExprId(ifccParser::ExprIdContext *ctx)
 }
 
 
+
 std::any CodeGenVisitor::visitExprParen(ifccParser::ExprParenContext *ctx)
 {
     return this->visit(ctx->expr());
 }
+
+
 
 // Opérations unaires
 std::any CodeGenVisitor::visitExprUnaryMinus(ifccParser::ExprUnaryMinusContext *ctx)
@@ -511,6 +494,8 @@ std::any CodeGenVisitor::visitExprAdd(ifccParser::ExprAddContext *ctx)
     return destVar;
 }
 
+
+
 std::any CodeGenVisitor::visitExprMult(ifccParser::ExprMultContext *ctx)
 {
     string leftVar  = any_cast<string>(this->visit(ctx->expr(0)));
@@ -546,6 +531,8 @@ std::any CodeGenVisitor::visitExprMult(ifccParser::ExprMultContext *ctx)
     return destVar;
 }
 
+
+
 // Bit-à-bit
 std::any CodeGenVisitor::visitExprBitOr(ifccParser::ExprBitOrContext *ctx)
 {
@@ -562,6 +549,8 @@ std::any CodeGenVisitor::visitExprBitOr(ifccParser::ExprBitOrContext *ctx)
     return destVar;
 }
 
+
+
 std::any CodeGenVisitor::visitExprBitXor(ifccParser::ExprBitXorContext *ctx)
 {
     string leftVar  = any_cast<string>(this->visit(ctx->expr(0)));
@@ -577,6 +566,8 @@ std::any CodeGenVisitor::visitExprBitXor(ifccParser::ExprBitXorContext *ctx)
     return destVar;
 }
 
+
+
 std::any CodeGenVisitor::visitExprBitAnd(ifccParser::ExprBitAndContext *ctx)
 {
     string leftVar  = any_cast<string>(this->visit(ctx->expr(0)));
@@ -591,6 +582,8 @@ std::any CodeGenVisitor::visitExprBitAnd(ifccParser::ExprBitAndContext *ctx)
     cfg->current_bb->add_IRInstr(IRInstr::bit_and, INT32, {destVar, lv, rv});
     return destVar;
 }
+
+
 
 // Comparaisons
 std::any CodeGenVisitor::visitExprEq(ifccParser::ExprEqContext *ctx)
@@ -611,6 +604,8 @@ std::any CodeGenVisitor::visitExprEq(ifccParser::ExprEqContext *ctx)
     return destVar;
 }
 
+
+
 std::any CodeGenVisitor::visitExprCmp(ifccParser::ExprCmpContext *ctx)
 {
     string leftVar  = any_cast<string>(this->visit(ctx->expr(0)));
@@ -628,6 +623,8 @@ std::any CodeGenVisitor::visitExprCmp(ifccParser::ExprCmpContext *ctx)
         cfg->current_bb->add_IRInstr(IRInstr::cmp_gt, INT32, {destVar, lv, rv});
     return destVar;
 }
+
+
 
 // Appel de fonction en tant que statement (ex: putchar(x);)
 std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
@@ -690,6 +687,8 @@ std::any CodeGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
 }
 
 
+
+
 std::any CodeGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 {
     string condVar = any_cast<string>(this->visit(ctx->expr()));
@@ -728,6 +727,7 @@ std::any CodeGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
     cfg->add_bb(endIfBB);
     return 0;
 }
+
 
 
 std::any CodeGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx) {
@@ -779,6 +779,7 @@ std::any CodeGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx) {
 }
 
 
+
 std::any CodeGenVisitor::visitIncdec(ifccParser::IncdecContext *ctx)
 {
     string varName = resolve(ctx->ID()->getText());
@@ -800,6 +801,8 @@ std::any CodeGenVisitor::visitIncdec(ifccParser::IncdecContext *ctx)
 
     return 0;
 }
+
+
 
 std::any CodeGenVisitor::visitExprAnd(ifccParser::ExprAndContext *ctx)
 {
@@ -836,6 +839,8 @@ std::any CodeGenVisitor::visitExprAnd(ifccParser::ExprAndContext *ctx)
 
     return destVar;
 }
+
+
 
 std::any CodeGenVisitor::visitExprOr(ifccParser::ExprOrContext *ctx)
 {
@@ -876,11 +881,10 @@ std::any CodeGenVisitor::visitExprOr(ifccParser::ExprOrContext *ctx)
 
 std::any CodeGenVisitor::visitSwitch_stmt(ifccParser::Switch_stmtContext *ctx)
 {
-    // valeur du switch
+
     string switchVar = any_cast<string>(visit(ctx->expr()));
     switchVar = materialize(switchVar);
 
-    // bloc de fin du switch
     BasicBlock* endBB = new BasicBlock(cfg, cfg->new_BB_name());
 
     // gestion du break
@@ -912,7 +916,6 @@ std::any CodeGenVisitor::visitSwitch_stmt(ifccParser::Switch_stmtContext *ctx)
         currentBB->exit_true  = caseBB;
         currentBB->exit_false = nextBB;
 
-        // ----- CASE -----
         cfg->add_bb(caseBB);
 
         // fallthrough depuis le case précédent (si pas de break)
@@ -925,15 +928,12 @@ std::any CodeGenVisitor::visitSwitch_stmt(ifccParser::Switch_stmtContext *ctx)
             visit(stmt);
         }
 
-        // sauvegarder la fin de ce case
         prevCaseEnd = cfg->current_bb;
 
-        // ----- NEXT TEST -----
         cfg->add_bb(nextBB);
         currentBB = nextBB;
     }
 
-    // ===== DEFAULT =====
     if (ctx->default_stmt()) {
 
         BasicBlock* defaultBB = new BasicBlock(cfg, cfg->new_BB_name());
@@ -943,7 +943,6 @@ std::any CodeGenVisitor::visitSwitch_stmt(ifccParser::Switch_stmtContext *ctx)
 
         cfg->add_bb(defaultBB);
 
-        // fallthrough depuis le dernier case
         if (prevCaseEnd && !prevCaseEnd->exit_true && !prevCaseEnd->exit_false) {
             prevCaseEnd->exit_true = defaultBB;
         }
@@ -967,7 +966,6 @@ std::any CodeGenVisitor::visitSwitch_stmt(ifccParser::Switch_stmtContext *ctx)
         }
     }
 
-    // fin du switch
     cfg->add_bb(endBB);
 
     // restaurer break
@@ -975,6 +973,9 @@ std::any CodeGenVisitor::visitSwitch_stmt(ifccParser::Switch_stmtContext *ctx)
 
     return 0;
 }
+
+
+
 
 std::any CodeGenVisitor::visitBreak_stmt(ifccParser::Break_stmtContext *ctx)
 {

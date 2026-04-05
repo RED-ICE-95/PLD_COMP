@@ -120,7 +120,7 @@ std::any SymbolTableVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext
             // Ici, on suppose que tout est int
             // (on pourrait ajouter une fonction getExprType(expr) si besoin)
             Type expected = info.paramTypes[i];
-            Type actual = INT32; // TODO: déduire le type réel de l'expression
+            Type actual = INT32; 
             if (expected != actual) {
                 std::cerr << "Erreur : argument " << (i+1) << " de la fonction '" << fctName << "' : type incorrect.\n";
                 errorFlag = true;
@@ -128,14 +128,13 @@ std::any SymbolTableVisitor::visitExprFonctCall(ifccParser::ExprFonctCallContext
         }
     }
 
-    // Marquage des arguments comme utilisés (sans lever d'erreur si c'est un tableau)
     if (ctx->list_param()) {
         for (auto expr : ctx->list_param()->expr()) {
             if (auto idCtx = dynamic_cast<ifccParser::ExprIdContext*>(expr)) {
                 std::string argName = idCtx->ID()->getText();
-                markAsUsed(argName); // On le marque comme utilisé, c'est tout.
+                markAsUsed(argName); 
             } else {
-                this->visit(expr); // On visite les autres expressions normales (calculs, etc.)
+                this->visit(expr);
             }
         }
     }

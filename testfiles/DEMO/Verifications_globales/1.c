@@ -5,7 +5,7 @@ int main() {
         int b;     // warning : b jamais utilisé
         {
             int c;
-            c = a; // c utilisé, a utilisé
+            c = a; 
             a = c + 1;
         }
     }

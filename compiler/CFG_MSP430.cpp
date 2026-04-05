@@ -2,24 +2,22 @@
 using namespace std;
 
 void CFG_MSP430::add_to_symbol_table(string name, Type t, int arraySize, bool isPointer) {
-    ScopeType.back()[name] = t;
+    SymbolType[name] = t;
     isArrayMap[name] = (arraySize > 0);
-    isPointerMap[name] = isPointer; // Enregistre si c'est un pointeur (ex: paramètre de tableau)
+    isPointerMap[name] = isPointer; 
     
     if (arraySize > 0) {
-        // Taille réelle du tableau (2 octets par int sur MSP430)
+        // Taille réelle du tableau (2 octets par int/char sur MSP430 16-bit)
         nextFreeSymbolIndex += (arraySize * 2);
-        
-        // Adresse de base a[0]
-        ScopeIndex.back()[name] = nextFreeSymbolIndex;
+        SymbolIndex[name] = nextFreeSymbolIndex;
     } else if (isPointer) {
-        // Variable Pointeur sur MSP430 (adresse 16-bit = 2 octets)
+        // Un pointeur sur MSP430 fait 16 bits (2 octets)
         nextFreeSymbolIndex += 2;
-        ScopeIndex.back()[name] = nextFreeSymbolIndex;
+        SymbolIndex[name] = nextFreeSymbolIndex;
     } else {
-        // Variable simple (2 octets)
+        // Variable simple (2 octets pour s'aligner sur l'architecture)
         nextFreeSymbolIndex += 2;
-        ScopeIndex.back()[name] = nextFreeSymbolIndex;
+        SymbolIndex[name] = nextFreeSymbolIndex;
     }
 }
 
