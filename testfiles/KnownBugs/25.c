@@ -1,3 +1,6 @@
+// Ce code est valide en C : on peut avoir des case après default.
+// Mais notre grammaire impose que default soit en dernier (case* puis default?).
+// Donc le parser rejette "case 2" après default donc erreur de syntaxe.
 int main() {
     int x = 3;
     int y = 0;
