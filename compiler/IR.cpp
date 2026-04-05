@@ -1,4 +1,3 @@
-//IR avant le merge
 #include "IR.h"
 #include <algorithm>
 using namespace std;
@@ -6,14 +5,8 @@ using namespace std;
 
 int CFG::nextBBnumber = 0;
 
-
-void BasicBlock::add_IRInstr(IRInstr::Operation op, Type t, vector<string> params) {
-    instrs.push_back(new IRInstr (this, op, t, params));
-}
-
-
-void CFG::push_scope() {}  // ne fait plus rien
-void CFG::pop_scope()  {}  // ne fait plus rien
+void CFG::push_scope() {}  
+void CFG::pop_scope()  {}  
 
 void CFG::add_to_symbol_table(string name, Type t, int arraySize, bool isPointer) {
     SymbolType[name] = t;
@@ -45,14 +38,10 @@ Type CFG::get_var_type(string name) {
 }
 
 
-
-
 void CFG::add_bb(BasicBlock* bb) {
     bbs.push_back(bb);
     current_bb = bb;
 }
-
-
 
 
 string CFG::create_new_tempvar(Type t, bool isPointer) {
@@ -60,7 +49,6 @@ string CFG::create_new_tempvar(Type t, bool isPointer) {
     add_to_symbol_table(name, t, 0, isPointer);
     return name;
 }
-
 
 
 string CFG::new_BB_name() {
@@ -107,6 +95,13 @@ void CFG::gen_asm(ostream& o) {
     for (BasicBlock* bb : bbs)
         bb->gen_asm(o);
     exit_bb->gen_asm(o);  
+}
+
+
+
+
+void BasicBlock::add_IRInstr(IRInstr::Operation op, Type t, vector<string> params) {
+    instrs.push_back(new IRInstr (this, op, t, params));
 }
 
 
@@ -492,16 +487,16 @@ void IRInstr::gen_asm_msp430(ostream& o) {
 
         case wmem:
             // params: baseVar, indexVar, srcVar
-            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n"; // Charge l'index
-            o << "  rla R15\n";                                             // Multiplie par 2
+            o << "  mov " << bb->cfg->IR_reg_to_asm(params[1]) << ", R15\n"; 
+            o << "  rla R15\n";                                           
             
             if (bb->cfg->is_pointer(params[0])) {
-                o << "  mov " << bb->cfg->IR_reg_to_asm(params[0]) << ", R14\n"; // Adresse directe
+                o << "  mov " << bb->cfg->IR_reg_to_asm(params[0]) << ", R14\n"; 
             } else {
-                o << "  mov R4, R14\n";                                          // Récupère le Frame Pointer
-                o << "  sub #" << bb->cfg->get_var_index(params[0]) << ", R14\n"; // Adresse de base locale
+                o << "  mov R4, R14\n";                                          
+                o << "  sub #" << bb->cfg->get_var_index(params[0]) << ", R14\n"; 
             }
-            o << "  add R15, R14\n";                                         // Ajoute l'offset de l'index
+            o << "  add R15, R14\n";                                       
             {
                 // Vérifie si la source est une constante (ex: $5) ou une variable
                 bool is_const = !params[2].empty() && std::all_of(params[2].begin(), params[2].end(), [](char c){ return (c == '-' || isdigit(c)); });
